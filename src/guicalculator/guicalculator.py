@@ -686,7 +686,7 @@ class VarsPopupTreeFrm(ttk.Frame):
         self.focus_set()
 
         # scrollbar and treeview
-        self.scrollbar = ttk.Scrollbar(self)
+        self.scrollbar = ttk.Scrollbar(self, orient="vertical")
         self.vars_tree = ttk.Treeview(
             self,
             yscrollcommand=self.scrollbar.set,
@@ -705,7 +705,7 @@ class VarsPopupTreeFrm(ttk.Frame):
         self.vars_tree.column("value", width=325, anchor="w")
 
         self.vars_tree.grid(row=0, column=0, sticky="news")
-        self.scrollbar.grid(row=0, column=1)
+        self.scrollbar.grid(row=0, column=1, sticky="ns")
 
         self.columnconfigure(0, weight=1)
         self.columnconfigure(1, weight=0)
