@@ -1,28 +1,4 @@
-import ast
 from decimal import Decimal
-from typing import Callable
-
-
-def wrap_button_invoke(func: Callable) -> Callable:
-    """
-    wrap_button_invoke - Wrapper to allow keyboard event binding to call
-    TKButton.invoke() by swallowing unneded event parameter.
-
-    Parameters
-    ----------
-    func : Callable
-        Function being wrapped (button.invoke).
-
-    Returns
-    -------
-    Callable
-        The wrapped function.
-    """
-
-    def inner_wrap(_):
-        func()
-
-    return inner_wrap
 
 
 def numtostr(

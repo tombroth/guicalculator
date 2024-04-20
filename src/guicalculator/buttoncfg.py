@@ -1,323 +1,224 @@
-from typing import List
+from typing import List, NamedTuple, NotRequired, TypedDict
+
+from guicalculator import BACKSPACE, SQUAREROOTX, XSQUARED
 
 
-# calcfrm is a guicalculator.CalcFrm, but we can't type it due to circular imports
-def get_buttons(calcfrm) -> List[dict]:
+class ButtonLocation(NamedTuple):
     """
-    get_buttons - Return the list of buttons for the calculator.
+    ButtonLocation - Where to locate a button on the calculator
 
     Parameters
     ----------
-    calcfrm : Any
-        Actually a guicalculator.py CalcFrm, cannot type hint due to circular references.
-        The frame that holds the calculator, various functions, stored data, etc.
-
-    Returns
-    -------
-    List[dict]
-        A list of dictionaries, one for each calculator button
-        Top level keys  of the dictionaries in the list:
-
-            btnopts    - REQUIRED - contains a dictionary with the options for ttk.Button
-
-            btnfrm     - REQUIRED - frame number for this button, each frame has a different # of columns
-
-            gridopts   - REQUIRED - contains a dictionary with the options for .grid
-
-            bindevents - OPTIONAL - contains a list of events (like <Return>) to bind to this button's action
+    NamedTuple : A tuple consisting of:
+        btnfrm : int
+            This indicates which sub-frame of BtnDispFrm to put the button
+            into. Subframes are used to group rows with the same number of
+            buttons. The first subframe is 0.
+        btnrow : int
+            This indicates which row in the sub-frame the button is placed
+            on. The first row of a new sub-frame is 0.
+        btncol : int
+            This indicates which column in the row the button is placed on.
+            The first column of a new sub-frame is 0.
     """
 
-    return [
-        # btnfrm 0
-        {
-            "btnopts": {
-                "text": "\u232B",
-                "style": "red.TButton",
-                "command": lambda: calcfrm.backspace(),
-            },
-            "btnfrm": 0,
-            "gridopts": {"row": 0, "column": 0, "sticky": "news"},
-            "bindevents": ["<BackSpace>"],
-        },
-        {
-            "btnopts": {
-                "text": "CE",
-                "style": "red.TButton",
-                "command": lambda: calcfrm.clear_value(),
-            },
-            "btnfrm": 0,
-            "gridopts": {"row": 0, "column": 1, "sticky": "news"},
-            "bindevents": ["<KeyPress-C>", "<KeyPress-c>"],
-        },
-        {
-            "btnopts": {
-                "text": "AC",
-                "style": "red.TButton",
-                "command": lambda: calcfrm.clear_everything(),
-            },
-            "btnfrm": 0,
-            "gridopts": {"row": 0, "column": 2, "sticky": "news"},
-        },
-        # btnfrm 1
-        {
-            "btnopts": {
-                "text": "MClr",
-                "style": "memory.TButton",
-                "command": lambda: calcfrm.memClear(),
-            },
-            "btnfrm": 1,
-            "gridopts": {"row": 0, "column": 0, "sticky": "news"},
-        },
-        {
-            "btnopts": {
-                "text": "MRcl",
-                "style": "memory.TButton",
-                "command": lambda: calcfrm.memRecall(),
-            },
-            "btnfrm": 1,
-            "gridopts": {"row": 0, "column": 1, "sticky": "news"},
-        },
-        {
-            "btnopts": {
-                "text": "MSto",
-                "style": "memory.TButton",
-                "command": lambda: calcfrm.memStore(),
-            },
-            "btnfrm": 1,
-            "gridopts": {"row": 0, "column": 2, "sticky": "news"},
-        },
-        {
-            "btnopts": {
-                "text": "MSwp",
-                "style": "memory.TButton",
-                "command": lambda: calcfrm.memSwap(),
-            },
-            "btnfrm": 1,
-            "gridopts": {"row": 0, "column": 3, "sticky": "news"},
-        },
-        {
-            "btnopts": {
-                "text": "M+",
-                "style": "memory.TButton",
-                "command": lambda: calcfrm.memAdd(),
-            },
-            "btnfrm": 1,
-            "gridopts": {"row": 0, "column": 4, "sticky": "news"},
-        },
-        {
-            "btnopts": {
-                "text": "M-",
-                "style": "memory.TButton",
-                "command": lambda: calcfrm.memAdd(False),
-            },
-            "btnfrm": 1,
-            "gridopts": {"row": 0, "column": 5, "sticky": "news"},
-        },
-        # btnfrm 2 row 0
-        {
-            "btnopts": {"text": "1/x", "command": lambda: calcfrm.inverseNumber()},
-            "btnfrm": 2,
-            "gridopts": {"row": 0, "column": 0, "sticky": "news"},
-        },
-        {
-            "btnopts": {"text": "x\u00b2", "command": lambda: calcfrm.squareNumber()},
-            "btnfrm": 2,
-            "gridopts": {"row": 0, "column": 1, "sticky": "news"},
-        },
-        {
-            "btnopts": {"text": "\u221ax", "command": lambda: calcfrm.rootNumber()},
-            "btnfrm": 2,
-            "gridopts": {"row": 0, "column": 2, "sticky": "news"},
-        },
-        {
-            "btnopts": {
-                "text": "/",
-                "style": "mathop.TButton",
-                "command": lambda: calcfrm.buttonPress("/"),
-            },
-            "btnfrm": 2,
-            "gridopts": {"row": 0, "column": 3, "sticky": "news"},
-            "bindevents": ["<KeyPress-/>"],
-        },
-        # btnfrm 2 row 1
-        {
-            "btnopts": {"text": "vars...", "command": calcfrm.vars_popup},
-            "btnfrm": 2,
-            "gridopts": {"row": 1, "column": 0, "sticky": "news"},
-        },
-        {
-            "btnopts": {"text": "(", "command": lambda: calcfrm.buttonPress("(")},
-            "btnfrm": 2,
-            "gridopts": {"row": 1, "column": 1, "sticky": "news"},
-            "bindevents": ["<KeyPress-(>"],
-        },
-        {
-            "btnopts": {"text": ")", "command": lambda: calcfrm.buttonPress(")")},
-            "btnfrm": 2,
-            "gridopts": {"row": 1, "column": 2, "sticky": "news"},
-            "bindevents": ["<KeyPress-)>"],
-        },
-        {
-            "btnopts": {
-                "text": "*",
-                "style": "mathop.TButton",
-                "command": lambda: calcfrm.buttonPress("*"),
-            },
-            "btnfrm": 2,
-            "gridopts": {"row": 1, "column": 3, "sticky": "news"},
-            "bindevents": ["<KeyPress-*>"],
-        },
-        # btnfrm 2 row 2
-        {
-            "btnopts": {
-                "text": "7",
-                "style": "number.TButton",
-                "command": lambda: calcfrm.buttonPress(7),
-            },
-            "btnfrm": 2,
-            "gridopts": {"row": 2, "column": 0, "sticky": "news"},
-            "bindevents": ["<KeyPress-7>"],
-        },
-        {
-            "btnopts": {
-                "text": "8",
-                "style": "number.TButton",
-                "command": lambda: calcfrm.buttonPress(8),
-            },
-            "btnfrm": 2,
-            "gridopts": {"row": 2, "column": 1, "sticky": "news"},
-            "bindevents": ["<KeyPress-8>"],
-        },
-        {
-            "btnopts": {
-                "text": "9",
-                "style": "number.TButton",
-                "command": lambda: calcfrm.buttonPress(9),
-            },
-            "btnfrm": 2,
-            "gridopts": {"row": 2, "column": 2, "sticky": "news"},
-            "bindevents": ["<KeyPress-9>"],
-        },
-        {
-            "btnopts": {
-                "text": "-",
-                "style": "mathop.TButton",
-                "command": lambda: calcfrm.buttonPress("-"),
-            },
-            "btnfrm": 2,
-            "gridopts": {"row": 2, "column": 3, "sticky": "news"},
-            "bindevents": ["<KeyPress-minus>"],
-        },
-        # btnfrm 2 row 3
-        {
-            "btnopts": {
-                "text": "4",
-                "style": "number.TButton",
-                "command": lambda: calcfrm.buttonPress(4),
-            },
-            "btnfrm": 2,
-            "gridopts": {"row": 3, "column": 0, "sticky": "news"},
-            "bindevents": ["<KeyPress-4>"],
-        },
-        {
-            "btnopts": {
-                "text": "5",
-                "style": "number.TButton",
-                "command": lambda: calcfrm.buttonPress(5),
-            },
-            "btnfrm": 2,
-            "gridopts": {"row": 3, "column": 1, "sticky": "news"},
-            "bindevents": ["<KeyPress-5>"],
-        },
-        {
-            "btnopts": {
-                "text": "6",
-                "style": "number.TButton",
-                "command": lambda: calcfrm.buttonPress(6),
-            },
-            "btnfrm": 2,
-            "gridopts": {"row": 3, "column": 2, "sticky": "news"},
-            "bindevents": ["<KeyPress-6>"],
-        },
-        {
-            "btnopts": {
-                "text": "+",
-                "style": "mathop.TButton",
-                "command": lambda: calcfrm.buttonPress("+"),
-            },
-            "btnfrm": 2,
-            "gridopts": {"row": 3, "column": 3, "sticky": "news"},
-            "bindevents": ["<KeyPress-+>"],
-        },
-        # btnfrm 2 row 4
-        {
-            "btnopts": {
-                "text": "1",
-                "style": "number.TButton",
-                "command": lambda: calcfrm.buttonPress(1),
-            },
-            "btnfrm": 2,
-            "gridopts": {"row": 4, "column": 0, "sticky": "news"},
-            "bindevents": ["<KeyPress-1>"],
-        },
-        {
-            "btnopts": {
-                "text": "2",
-                "style": "number.TButton",
-                "command": lambda: calcfrm.buttonPress(2),
-            },
-            "btnfrm": 2,
-            "gridopts": {"row": 4, "column": 1, "sticky": "news"},
-            "bindevents": ["<KeyPress-2>"],
-        },
-        {
-            "btnopts": {
-                "text": "3",
-                "style": "number.TButton",
-                "command": lambda: calcfrm.buttonPress(3),
-            },
-            "btnfrm": 2,
-            "gridopts": {"row": 4, "column": 2, "sticky": "news"},
-            "bindevents": ["<KeyPress-3>"],
-        },
-        {
-            "btnopts": {
-                "text": "=",
-                "style": "orange.TButton",
-                "command": lambda: calcfrm.calculate(),
-            },
-            "btnfrm": 2,
-            "gridopts": {"row": 4, "column": 3, "rowspan": 2, "sticky": "news"},
-            "bindevents": ["<KeyPress-=>", "<Return>"],
-        },
-        # btnfrm 2 row 5
-        {
-            "btnopts": {
-                "text": "+/-",
-                "style": "number.TButton",
-                "command": lambda: calcfrm.invertSign(),
-            },
-            "btnfrm": 2,
-            "gridopts": {"row": 5, "column": 0, "sticky": "news"},
-        },
-        {
-            "btnopts": {
-                "text": "0",
-                "style": "number.TButton",
-                "command": lambda: calcfrm.buttonPress(0),
-            },
-            "btnfrm": 2,
-            "gridopts": {"row": 5, "column": 1, "sticky": "news"},
-            "bindevents": ["<KeyPress-0>"],
-        },
-        {
-            "btnopts": {
-                "text": ".",
-                "style": "number.TButton",
-                "command": lambda: calcfrm.buttonPress("."),
-            },
-            "btnfrm": 2,
-            "gridopts": {"row": 5, "column": 2, "sticky": "news"},
-            "bindevents": ["<KeyPress-.>"],
-        },
-    ]
+    btnfrm: int
+    btnrow: int
+    btncol: int
+
+
+class ButtonInfo(TypedDict):
+    """
+    ButtonInfo - Information needed to create a button on the calculator.
+
+    Parameters
+    ----------
+    TypedDict : A dictionary consisting of:
+        label : str | int
+            Mandatory. The button text. Number buttons should be int,
+            everything else a str.
+        command : NotRequired[str]
+            Optional. Which command to execute. No command is needed for
+            basic number and math operators. Commands are decoded by the
+            processbutton funciton in CalcFrm in guicalculator.py.
+        style : NotRequired[str]
+            Optional. Style information for the button. Styles are found
+            in CalcStyle in guicalculator.py.
+        rowspan : NotRequired[int]
+            Optional. This is the rowspan parameter of the grid call.
+        columnspan : NotRequired[int]
+            Optional. This is the columnspan parameter of the grid call.
+        events : NotRequired[List[str]]
+            Optional. This is a list of events bound to this button.invoke,
+            bound at winfo_toplevel.
+    """
+
+    label: str | int
+    command: NotRequired[str]
+    style: NotRequired[str]
+    rowspan: NotRequired[int]
+    columnspan: NotRequired[int]
+    events: NotRequired[List[str]]
+
+
+# The calculator buttons
+buttons: dict[ButtonLocation, ButtonInfo] = {
+    ButtonLocation(0, 0, 0): {
+        "label": BACKSPACE,
+        "command": "backspace",
+        "style": "red.TButton",
+        "events": ["<BackSpace>"],
+    },
+    ButtonLocation(0, 0, 1): {
+        "label": "CE",
+        "command": "clearValue",
+        "style": "red.TButton",
+        "events": ["<KeyPress-C>", "<KeyPress-c>"],
+    },
+    ButtonLocation(0, 0, 2): {
+        "label": "AC",
+        "command": "clearAll",
+        "style": "red.TButton",
+    },
+    ButtonLocation(1, 0, 0): {
+        "label": "MClr",
+        "command": "memClear",
+        "style": "memory.TButton",
+    },
+    ButtonLocation(1, 0, 1): {
+        "label": "MRcl",
+        "command": "memRecall",
+        "style": "memory.TButton",
+    },
+    ButtonLocation(1, 0, 2): {
+        "label": "MSto",
+        "command": "memStore",
+        "style": "memory.TButton",
+    },
+    ButtonLocation(1, 0, 3): {
+        "label": "MSwp",
+        "command": "memSwap",
+        "style": "memory.TButton",
+    },
+    ButtonLocation(1, 0, 4): {
+        "label": "M+",
+        "command": "memAdd",
+        "style": "memory.TButton",
+    },
+    ButtonLocation(1, 0, 5): {
+        "label": "M-",
+        "command": "memSubtract",
+        "style": "memory.TButton",
+    },
+    ButtonLocation(2, 0, 0): {
+        "label": "1/x",
+        "command": "inverseNumber",
+    },
+    ButtonLocation(2, 0, 1): {
+        "label": XSQUARED,
+        "command": "squareNumber",
+    },
+    ButtonLocation(2, 0, 2): {
+        "label": SQUAREROOTX,
+        "command": "rootNumber",
+    },
+    ButtonLocation(2, 0, 3): {
+        "label": "/",
+        "style": "mathop.TButton",
+        "events": ["<KeyPress-/>"],
+    },
+    ButtonLocation(2, 1, 0): {
+        "label": "vars...",
+        "command": "varsPopup",
+    },
+    ButtonLocation(2, 1, 1): {
+        "label": "(",
+        "events": ["<KeyPress-(>"],
+    },
+    ButtonLocation(2, 1, 2): {
+        "label": ")",
+        "events": ["<KeyPress-)>"],
+    },
+    ButtonLocation(2, 1, 3): {
+        "label": "*",
+        "style": "mathop.TButton",
+        "events": ["<KeyPress-*>"],
+    },
+    ButtonLocation(2, 2, 0): {
+        "label": 7,
+        "style": "number.TButton",
+        "events": ["<KeyPress-7>"],
+    },
+    ButtonLocation(2, 2, 1): {
+        "label": 8,
+        "style": "number.TButton",
+        "events": ["<KeyPress-8>"],
+    },
+    ButtonLocation(2, 2, 2): {
+        "label": 9,
+        "style": "number.TButton",
+        "events": ["<KeyPress-9>"],
+    },
+    ButtonLocation(2, 2, 3): {
+        "label": "-",
+        "style": "mathop.TButton",
+        "events": ["<KeyPress-minus>"],
+    },
+    ButtonLocation(2, 3, 0): {
+        "label": 4,
+        "style": "number.TButton",
+        "events": ["<KeyPress-4>"],
+    },
+    ButtonLocation(2, 3, 1): {
+        "label": 5,
+        "style": "number.TButton",
+        "events": ["<KeyPress-5>"],
+    },
+    ButtonLocation(2, 3, 2): {
+        "label": 6,
+        "style": "number.TButton",
+        "events": ["<KeyPress-6>"],
+    },
+    ButtonLocation(2, 3, 3): {
+        "label": "+",
+        "style": "mathop.TButton",
+        "events": ["<KeyPress-+>"],
+    },
+    ButtonLocation(2, 4, 0): {
+        "label": 1,
+        "style": "number.TButton",
+        "events": ["<KeyPress-1>"],
+    },
+    ButtonLocation(2, 4, 1): {
+        "label": 2,
+        "style": "number.TButton",
+        "events": ["<KeyPress-2>"],
+    },
+    ButtonLocation(2, 4, 2): {
+        "label": 3,
+        "style": "number.TButton",
+        "events": ["<KeyPress-3>"],
+    },
+    ButtonLocation(2, 4, 3): {
+        "label": "=",
+        "command": "calculate",
+        "style": "orange.TButton",
+        "rowspan": 2,
+        "events": ["<KeyPress-=>", "<Return>"],
+    },
+    ButtonLocation(2, 5, 0): {
+        "label": "+/-",
+        "command": "invertSign",
+        "style": "number.TButton",
+    },
+    ButtonLocation(2, 5, 1): {
+        "label": 0,
+        "style": "number.TButton",
+        "events": ["<KeyPress-0>"],
+    },
+    ButtonLocation(2, 5, 2): {
+        "label": ".",
+        "style": "number.TButton",
+        "events": ["<KeyPress-.>"],
+    },
+}

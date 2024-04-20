@@ -7,10 +7,10 @@ from tkinter import scrolledtext, ttk
 from typing import Any, Callable, Dict, Tuple, Type
 from unicodedata import normalize
 
-from . import buttoncfg as bc  # type: ignore
-from .supportfuncs import numtostr, strtodecimal, wrap_button_invoke
+from guicalculator import FONT, PI
 
-FONT = ("TkDefaultFont", "12", "bold")
+from .buttoncfg import buttons
+from .supportfuncs import numtostr, strtodecimal
 
 OPERATOR_MAP: dict[Type[ast.AST], Callable] = {
     ast.Div: operator.truediv,
@@ -20,6 +20,7 @@ OPERATOR_MAP: dict[Type[ast.AST], Callable] = {
     ast.USub: operator.neg,
     ast.UAdd: operator.pos,
 }
+
 
 class GuiCalculator(tk.Tk):
     """
@@ -83,14 +84,12 @@ class CalcFrm(ttk.Frame):
     current_eval_calc: str = ""  # the current calculation to be evalueated
     current_input: str = ""  # the current number input
 
-    pi = "\u03c0"  # Greek letter pi, 3.14....
-
     # variables stores default variables pi and e and user defined variables
     # including first 30 digits because default precision is 28 in Decimal
     # hard coding instead of using math.pi due to float to Decimal rounding issues
     variables: dict[str, dict[str, Decimal]] = {
         "default": {
-            normalize("NFKC", pi): Decimal("3.141592653589793238462643383279"),
+            normalize("NFKC", PI): Decimal("3.141592653589793238462643383279"),
             "e": Decimal("2.718281828459045235360287471352"),
         },
         "user variables": {},
@@ -99,7 +98,7 @@ class CalcFrm(ttk.Frame):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
-        self.buttons = bc.get_buttons(self)  # the list of calculator buttons
+        # self.buttons = bc.get_buttons(self)  # the list of calculator buttons
 
         # scrolled text display
         self.display = scrolledtext.ScrolledText(self, height=10, width=20, font=FONT)
@@ -119,8 +118,9 @@ class CalcFrm(ttk.Frame):
         self.btnfrm.grid(column=0, row=2, sticky="news")
         self.rowconfigure(2, weight=1)
 
-        invk = wrap_button_invoke(self.winfo_toplevel().destroy)
-        self.winfo_toplevel().bind("<Escape>", invk)
+        self.winfo_toplevel().bind(
+            "<Escape>", lambda _: self.winfo_toplevel().destroy()
+        )
 
     def get_current_display_calc(self, symbol: str = "") -> str:
         """
@@ -237,6 +237,53 @@ class CalcFrm(ttk.Frame):
         self.current_input = ""
         self.update_display()
 
+    def processbutton(self, buttoncmd: str, buttontxt: str | int = "") -> None:
+        """
+        processbutton - Process a calculator button press
+
+        Parameters
+        ----------
+        button : str
+            button being pressed
+        """
+
+        match buttoncmd:
+            case "button":
+                self.buttonPress(buttontxt)
+            case "backspace":
+                self.backspace()
+            case "calculate":
+                self.calculate()
+            case "clearAll":
+                self.clearAll()
+            case "clearValue":
+                self.clearValue()
+            case "inverseNumber":
+                self.inverseNumber()
+            case "invertSign":
+                self.invertSign()
+            case "memAdd":
+                self.memAdd()
+            case "memClear":
+                self.memClear()
+            case "memRecall":
+                self.memRecall()
+            case "memStore":
+                self.memStore()
+            case "memSubtract":
+                self.memAdd(False)
+            case "memSwap":
+                self.memSwap()
+            case "rootNumber":
+                self.rootNumber()
+            case "squareNumber":
+                self.squareNumber()
+            case "varsPopup":
+                self.varsPopup()
+            case _:
+                self.bell()
+                print(f"Unknown command: {buttoncmd!r}")
+
     def buttonPress(self, symbol: str | int) -> None:
         """
         buttonPress - Handles simple button presses.
@@ -277,9 +324,9 @@ class CalcFrm(ttk.Frame):
             self.current_input = self.current_input[:-1]
         self.update_display()
 
-    def clear_value(self) -> None:
+    def clearValue(self) -> None:
         """
-        clear_value - Clear the current number input, or if that is empty
+        clearValue - Clear the current number input, or if that is empty
         then clear the current calculation.
         """
         if self.current_input:
@@ -289,9 +336,9 @@ class CalcFrm(ttk.Frame):
             self.current_eval_calc = ""
         self.update_display()
 
-    def clear_everything(self) -> None:
+    def clearAll(self) -> None:
         """
-        clear_everything - Clear the current number being input, the current
+        clearAll - Clear the current number being input, the current
         calculation, and the display. Does not clear the value in memory.
         """
         self.display.configure(state="normal")
@@ -448,9 +495,9 @@ class CalcFrm(ttk.Frame):
             self.current_input = numtostr(Decimal.sqrt(self.get_current_input()))
         self.update_display()
 
-    def vars_popup(self) -> None:
+    def varsPopup(self) -> None:
         """
-        vars_popup - Display a popup window with currently defined variables.
+        varsPopup - Display a popup window with currently defined variables.
         """
         x = self.winfo_toplevel().winfo_x() + 10
         x = max(x, 10)
@@ -623,33 +670,49 @@ class BtnDispFrm(ttk.Frame):
         # this frame contains only frames, so has only one column
         self.columnconfigure(0, weight=1)
 
-        for btn in self.master.buttons:  # type: ignore
+        for btnloc, btninfo in sorted(buttons.items()):
 
             # if we have a new frame to add
-            if btn["btnfrm"] not in self.btnfrms:
-
-                self.btnfrms[btn["btnfrm"]] = ttk.Frame(self)
-                self.btnfrms[btn["btnfrm"]].grid(
-                    column=0, row=btn["btnfrm"], sticky="news"
+            if btnloc.btnfrm not in self.btnfrms:
+                self.btnfrms[btnloc.btnfrm] = ttk.Frame(self)
+                self.btnfrms[btnloc.btnfrm].grid(
+                    column=0, row=btnloc.btnfrm, sticky="news"
                 )
-                self.rowconfigure(btn["btnfrm"], weight=1)
+                # self.rowconfigure(bframe, weight=1)
 
             # add this button to this frame
-            b = ttk.Button(self.btnfrms[btn["btnfrm"]], **btn["btnopts"])
-            b.grid(**btn["gridopts"])
+            if "command" in btninfo:
+                cmd = lambda x=btninfo["command"]: self.master.processbutton(x)  # type: ignore
+            else:
+                cmd = lambda x=btninfo["label"]: self.master.processbutton("button", x)  # type: ignore
+
+            btnopts: dict = {"text": btninfo["label"], "command": cmd}
+            if "style" in btninfo:
+                btnopts["style"] = btninfo["style"]
+
+            b = ttk.Button(self.btnfrms[btnloc.btnfrm], **btnopts)
+
+            gridopts: dict = {
+                "row": btnloc.btnrow,
+                "column": btnloc.btncol,
+                "sticky": "news",
+            }
+            if "rowspan" in btninfo:
+                gridopts["rowspan"] = btninfo["rowspan"]
+            if "columnspan" in btninfo:
+                gridopts["columnspan"] = btninfo["columnspan"]
+
+            b.grid(**gridopts)
 
             # if this button is binding any events ...
-            if "bindevents" in btn:
-                invk = wrap_button_invoke(b.invoke)
-                for be in btn["bindevents"]:
-                    self.winfo_toplevel().bind(be, invk)
+            if "events" in btninfo:
+                for be in btninfo["events"]:
+                    self.winfo_toplevel().bind(be, lambda _, c=b: c.invoke())  # type: ignore
 
             # configure the weigts for the buttons
-            self.btnfrms[btn["btnfrm"]].rowconfigure(btn["gridopts"]["row"], weight=1)
-            self.btnfrms[btn["btnfrm"]].columnconfigure(
-                btn["gridopts"]["column"], weight=1
-            )
-            self.rowconfigure(btn["btnfrm"], weight=btn["gridopts"]["row"] + 1)
+            self.btnfrms[btnloc.btnfrm].rowconfigure(btnloc.btnrow, weight=1)
+            self.btnfrms[btnloc.btnfrm].columnconfigure(btnloc.btncol, weight=1)
+            self.rowconfigure(btnloc.btnfrm, weight=btnloc.btnrow + 1)
 
 
 class VarsPopup(tk.Toplevel):
@@ -749,11 +812,11 @@ class VarsPopupTreeFrmButtons(ttk.Frame):
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=0)
 
-        invk = wrap_button_invoke(self.select_button.invoke)
-        self.winfo_toplevel().bind("<Return>", invk)
+        self.winfo_toplevel().bind("<Return>", lambda _: self.select_button.invoke())
 
-        invk = wrap_button_invoke(self.winfo_toplevel().destroy)
-        self.winfo_toplevel().bind("<Escape>", invk)
+        self.winfo_toplevel().bind(
+            "<Escape>", lambda _: self.winfo_toplevel().destroy()
+        )
 
         self.edit_button = ttk.Button(
             self,
@@ -864,8 +927,7 @@ class UserVarsEditFrm(tk.Frame):
         self.cancelbtn.grid(row=1001, column=0)
         self.rowconfigure(1001, weight=0)
 
-        invk = wrap_button_invoke(self.cancelbtn.invoke)
-        self.winfo_toplevel().bind("<Escape>", invk)
+        self.winfo_toplevel().bind("<Escape>", lambda _: self.cancelbtn.invoke())
 
         # ok button
         self.okbtn = ttk.Button(
@@ -875,8 +937,7 @@ class UserVarsEditFrm(tk.Frame):
         )
         self.okbtn.grid(row=1001, column=1)
 
-        invk = wrap_button_invoke(self.okbtn.invoke)
-        self.winfo_toplevel().bind("<Return>", invk)
+        self.winfo_toplevel().bind("<Return>", lambda _: self.okbtn.invoke())
 
         # error message display
         self.errmsg = tk.StringVar(self)
@@ -1075,4 +1136,4 @@ class UserVarsEditFrm(tk.Frame):
 
         # rebuild the varspopup
         self.calcfrm.varspopup.destroy()
-        self.calcfrm.vars_popup()
+        self.calcfrm.varsPopup()
