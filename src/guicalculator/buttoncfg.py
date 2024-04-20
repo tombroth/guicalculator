@@ -1,5 +1,3 @@
-import ast
-import operator as op
 from typing import List
 
 
@@ -27,11 +25,8 @@ def get_buttons(calcfrm) -> List[dict]:
             gridopts   - REQUIRED - contains a dictionary with the options for .grid
 
             bindevents - OPTIONAL - contains a list of events (like <Return>) to bind to this button's action
-
-            operators  - OPTIONAL - contains a dictionary that maps ast operators to mathematical operators for this button
-
     """
-    
+
     return [
         # btnfrm 0
         {
@@ -143,7 +138,6 @@ def get_buttons(calcfrm) -> List[dict]:
             "btnfrm": 2,
             "gridopts": {"row": 0, "column": 3, "sticky": "news"},
             "bindevents": ["<KeyPress-/>"],
-            "operators": {ast.Div: op.truediv},
         },
         # btnfrm 2 row 1
         {
@@ -172,7 +166,6 @@ def get_buttons(calcfrm) -> List[dict]:
             "btnfrm": 2,
             "gridopts": {"row": 1, "column": 3, "sticky": "news"},
             "bindevents": ["<KeyPress-*>"],
-            "operators": {ast.Mult: op.mul},
         },
         # btnfrm 2 row 2
         {
@@ -214,7 +207,6 @@ def get_buttons(calcfrm) -> List[dict]:
             "btnfrm": 2,
             "gridopts": {"row": 2, "column": 3, "sticky": "news"},
             "bindevents": ["<KeyPress-minus>"],
-            "operators": {ast.Sub: op.sub, ast.USub: op.neg},
         },
         # btnfrm 2 row 3
         {
@@ -256,7 +248,6 @@ def get_buttons(calcfrm) -> List[dict]:
             "btnfrm": 2,
             "gridopts": {"row": 3, "column": 3, "sticky": "news"},
             "bindevents": ["<KeyPress-+>"],
-            "operators": {ast.Add: op.add, ast.UAdd: op.pos},
         },
         # btnfrm 2 row 4
         {

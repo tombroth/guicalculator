@@ -1,9 +1,10 @@
 import ast
 import keyword
+import operator
 import tkinter as tk
 from decimal import Decimal
 from tkinter import scrolledtext, ttk
-from typing import Any, Dict, Tuple
+from typing import Any, Callable, Dict, Tuple, Type
 from unicodedata import normalize
 
 from . import buttoncfg as bc  # type: ignore
@@ -11,6 +12,14 @@ from .supportfuncs import numtostr, strtodecimal, wrap_button_invoke
 
 FONT = ("TkDefaultFont", "12", "bold")
 
+OPERATOR_MAP: dict[Type[ast.AST], Callable] = {
+    ast.Div: operator.truediv,
+    ast.Mult: operator.mul,
+    ast.Sub: operator.sub,
+    ast.Add: operator.add,
+    ast.USub: operator.neg,
+    ast.UAdd: operator.pos,
+}
 
 class GuiCalculator(tk.Tk):
     """
@@ -91,14 +100,6 @@ class CalcFrm(ttk.Frame):
         super().__init__(*args, **kwargs)
 
         self.buttons = bc.get_buttons(self)  # the list of calculator buttons
-
-        # the map of ast operators to math operators for the parser, gathered from the buttons
-        self.operator_map = {
-            k: v
-            for button in self.buttons
-            if "operators" in button
-            for k, v in button["operators"].items()
-        }
 
         # scrolled text display
         self.display = scrolledtext.ScrolledText(self, height=10, width=20, font=FONT)
@@ -534,14 +535,14 @@ class CalcFrm(ttk.Frame):
                     raise TypeError(f"Unknown constant: ast.{ast.dump(node, indent=2)}")
             case ast.BinOp():
                 left, right, op = node.left, node.right, node.op
-                method = self.operator_map[type(op)]
+                method = OPERATOR_MAP[type(op)]
                 return method(
                     self._eval(left),
                     self._eval(right),
                 )
             case ast.UnaryOp():
                 operand, uop = node.operand, node.op
-                method = self.operator_map[type(uop)]
+                method = OPERATOR_MAP[type(uop)]
                 return method(self._eval(operand))
             case ast.Name():
                 # unary plus forces rounding to precision in Decimal context
