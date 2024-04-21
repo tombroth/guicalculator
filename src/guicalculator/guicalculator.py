@@ -12,6 +12,7 @@ from guicalculator import FONT, PI
 from .buttoncfg import buttons
 from .supportfuncs import numtostr, strtodecimal
 
+# map of ast operators to functions used by parser
 OPERATOR_MAP: dict[Type[ast.AST], Callable] = {
     ast.Div: operator.truediv,
     ast.Mult: operator.mul,
@@ -19,6 +20,14 @@ OPERATOR_MAP: dict[Type[ast.AST], Callable] = {
     ast.Add: operator.add,
     ast.USub: operator.neg,
     ast.UAdd: operator.pos,
+}
+
+# stores default variables pi and e
+# including first 30 digits because default precision is 28 in Decimal
+# hard coding instead of using math.pi due to float to Decimal rounding issues
+defaultVariables: dict[str, Decimal] = {
+    normalize("NFKC", PI): Decimal("3.141592653589793238462643383279"),
+    "e": Decimal("2.718281828459045235360287471352"),
 }
 
 
@@ -84,16 +93,8 @@ class CalcFrm(ttk.Frame):
     current_eval_calc: str = ""  # the current calculation to be evalueated
     current_input: str = ""  # the current number input
 
-    # variables stores default variables pi and e and user defined variables
-    # including first 30 digits because default precision is 28 in Decimal
-    # hard coding instead of using math.pi due to float to Decimal rounding issues
-    variables: dict[str, dict[str, Decimal]] = {
-        "default": {
-            normalize("NFKC", PI): Decimal("3.141592653589793238462643383279"),
-            "e": Decimal("2.718281828459045235360287471352"),
-        },
-        "user variables": {},
-    }
+    # stores user defined variables
+    userVariables: dict[str, Decimal] = {}
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -593,11 +594,11 @@ class CalcFrm(ttk.Frame):
                 return method(self._eval(operand))
             case ast.Name():
                 # unary plus forces rounding to precision in Decimal context
-                if normalize("NFKC", node.id) in self.variables["default"]:
-                    return +self.variables["default"][normalize("NFKC", node.id)]
+                if normalize("NFKC", node.id) in defaultVariables:
+                    return +defaultVariables[normalize("NFKC", node.id)]
 
-                elif normalize("NFKC", node.id) in self.variables["user variables"]:
-                    return +self.variables["user variables"][normalize("NFKC", node.id)]
+                elif normalize("NFKC", node.id) in self.userVariables:
+                    return +self.userVariables[normalize("NFKC", node.id)]
 
                 else:
                     raise TypeError(
@@ -776,16 +777,27 @@ class VarsPopupTreeFrm(ttk.Frame):
         self.rowconfigure(0, weight=1)
 
         # this loop iterates over the variables and adds them to the treeview
-        for section, vars in self.calcfrm.variables.items():
-            section_id = self.vars_tree.insert("", "end", text=section, values=([""]))
-            for v_key, v_value in vars.items():
-                self.vars_tree.insert(
-                    section_id,
-                    "end",
-                    text=v_key,
-                    values=([numtostr(v_value, commas=True)]),
-                )
-            self.vars_tree.item(section_id, open=True)
+        section_id = self.vars_tree.insert("", "end", text="default", values=([""]))
+        for v_key, v_value in defaultVariables.items():
+            self.vars_tree.insert(
+                section_id,
+                "end",
+                text=v_key,
+                values=([numtostr(v_value, commas=True)]),
+            )
+        self.vars_tree.item(section_id, open=True)
+
+        section_id = self.vars_tree.insert(
+            "", "end", text="user variables", values=([""])
+        )
+        for v_key, v_value in self.calcfrm.userVariables.items():
+            self.vars_tree.insert(
+                section_id,
+                "end",
+                text=v_key,
+                values=([numtostr(v_value, commas=True)]),
+            )
+        self.vars_tree.item(section_id, open=True)
 
         # add buttons to select or edit user variables
         self.buttonfrm = VarsPopupTreeFrmButtons(self, vptf=self)
@@ -900,7 +912,7 @@ class UserVarsEditFrm(tk.Frame):
         # column 1 is variable value
         self.uservars: dict[Tuple[int, int], ttk.Entry] = {}
 
-        for k, v in calcfrm.variables["user variables"].items():
+        for k, v in calcfrm.userVariables.items():
             lastrow += 1
             self.addrow(lastrow, k, numtostr(v, commas=True))
 
@@ -1101,18 +1113,21 @@ class UserVarsEditFrm(tk.Frame):
 
             # if we don't have a valid identifier, print an error
             if not nam.isidentifier():
+                self.bell()
                 self.errmsg.set(f"ERROR on row {i}: invalid variable name {nam!r}")
                 return
 
             # if we have a keyword, print an error
             if keyword.iskeyword(nam):
+                self.bell()
                 self.errmsg.set(
                     f"ERROR on row {i}: variable name {nam!r} is a reserved word"
                 )
                 return
 
             # if we  have a duplicate variable name, print an error
-            if nam in newuservars.keys():
+            if nam in newuservars.keys() or nam in defaultVariables.keys():
+                self.bell()
                 self.errmsg.set(f"ERROR on row {i}, duplicate variable name {nam!r}")
                 return
 
@@ -1129,7 +1144,7 @@ class UserVarsEditFrm(tk.Frame):
             newuservars[nam] = val_decimal
 
         # save the new variables
-        self.calcfrm.variables["user variables"] = newuservars
+        self.calcfrm.userVariables = newuservars
 
         # close this window
         self.winfo_toplevel().destroy()
