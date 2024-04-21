@@ -1,34 +1,12 @@
-import ast
 import keyword
-import operator
 import tkinter as tk
 from decimal import Decimal
 from tkinter import scrolledtext, ttk
-from typing import Any, Callable, Dict, Tuple, Type
-from unicodedata import normalize
+from typing import Any, Dict, Tuple
 
-from guicalculator import FONT, PI
-
-from .buttoncfg import buttons
-from .supportfuncs import numtostr, strtodecimal
-
-# map of ast operators to functions used by parser
-OPERATOR_MAP: dict[Type[ast.AST], Callable] = {
-    ast.Div: operator.truediv,
-    ast.Mult: operator.mul,
-    ast.Sub: operator.sub,
-    ast.Add: operator.add,
-    ast.USub: operator.neg,
-    ast.UAdd: operator.pos,
-}
-
-# stores default variables pi and e
-# including first 30 digits because default precision is 28 in Decimal
-# hard coding instead of using math.pi due to float to Decimal rounding issues
-defaultVariables: dict[str, Decimal] = {
-    normalize("NFKC", PI): Decimal("3.141592653589793238462643383279"),
-    "e": Decimal("2.718281828459045235360287471352"),
-}
+from . import DEFAULT_VARIABLES, FONT
+from .buttoncfg import ButtonInfo, ButtonLocation, buttons
+from .supportfuncs import evaluate_calculation, numtostr, strtodecimal
 
 
 class GuiCalculator(tk.Tk):
@@ -85,7 +63,8 @@ class CalcStyle(ttk.Style):
 
 class CalcFrm(ttk.Frame):
     """
-    CalcFrm - The main frame of the calculator root window. Everything is in this frame.
+    CalcFrm - The main frame of the calculator root window. Everything is
+    in this frame.
     """
 
     # data used by the calculator
@@ -93,8 +72,7 @@ class CalcFrm(ttk.Frame):
     current_eval_calc: str = ""  # the current calculation to be evalueated
     current_input: str = ""  # the current number input
 
-    # stores user defined variables
-    userVariables: dict[str, Decimal] = {}
+    user_variables: dict[str, Decimal] = {}  # user defined variables
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -102,7 +80,12 @@ class CalcFrm(ttk.Frame):
         # self.buttons = bc.get_buttons(self)  # the list of calculator buttons
 
         # scrolled text display
-        self.display = scrolledtext.ScrolledText(self, height=10, width=20, font=FONT)
+        self.display = scrolledtext.ScrolledText(
+            self,
+            height=10,
+            width=20,
+            font=FONT,
+        )
         # display is only enabled when we write to it
         self.display.configure(state="disabled")
         self.display.grid(row=0, column=0, sticky="news")
@@ -141,24 +124,33 @@ class CalcFrm(ttk.Frame):
         str
             The current displayed calculation.
         """
+
         if self.current_input:
-            inpt = numtostr(self.get_current_input(), commas=True, removeZeroes=False)
+            inpt = numtostr(
+                self.get_current_input(),
+                commas=True,
+                removeZeroes=False,
+            )
             if self.current_input[-1] == ".":
                 inpt += "."
         else:
             inpt = ""
-        rv = " ".join(filter(None, [self.current_display_calc, inpt, symbol])).strip()
-        return rv
+
+        return_value = " ".join(
+            filter(None, [self.current_display_calc, inpt, symbol])
+        ).strip()
+        return return_value
 
     def get_current_eval_calc(self, symbol: str = "") -> str:
         """
         get_current_eval_calc - Get the current calculation to be evaluated.
 
-        Get the current calculation to be evaluated, including current number input
-        and optional mathematical operator. The primary difference from
-        get_current_display_calc is that the number inputs are surrounded by calls to
-        Decimal to convert int and float inputs into Decimal to avoid
-        decimal to binary and back to decimal conversion errors.
+        Get the current calculation to be evaluated, including current number
+        input and optional mathematical operator. The primary difference from
+        get_current_display_calc is that the number inputs are surrounded by
+        calls to Decimal to convert int and float inputs into Decimal to avoid
+        decimal to binary and back to decimal rounding errors. In other words
+        0.3 - 0.2 should be 0.1, not 0.09999999999999998.
 
         Parameters
         ----------
@@ -169,15 +161,17 @@ class CalcFrm(ttk.Frame):
         Returns
         -------
         str
-            _description_
+            The calculation to be evaluated.
         """
+
         if self.current_input:
             i = +Decimal(self.current_input)
             inpt = f"Decimal({str(i)!r})"
         else:
             inpt = ""
-        rv = " ".join([self.current_eval_calc, inpt, symbol]).strip()
-        return rv
+
+        return_value = " ".join([self.current_eval_calc, inpt, symbol]).strip()
+        return return_value
 
     def get_current_input(self) -> Decimal:
         """
@@ -189,6 +183,7 @@ class CalcFrm(ttk.Frame):
             Decimal version of the number currently being input. 0 if no
             number is currently being input.
         """
+
         if self.current_input:
             return Decimal(self.current_input)
         else:
@@ -198,14 +193,15 @@ class CalcFrm(ttk.Frame):
         """
         update_display - Update the calculator display.
 
-        This works be erasing the last line that displays the formula
-        being input and replacing it with the most recent changes as
-        returned by get_current_display_calc.
+        This works be erasing the last line that displays the formula being
+        input and replacing it with the most recent changes as returned by
+        get_current_display_calc.
         """
+
         self.display.configure(state="normal")
         # replace last line
         self.display.delete("end-1l", "end")
-        self.display.insert("end", "\n{}".format(self.get_current_display_calc()))
+        self.display.insert("end", f"\n{self.get_current_display_calc()}")
         # move to end
         self.display.see(tk.END)
         self.display.configure(state="disabled")
@@ -222,8 +218,8 @@ class CalcFrm(ttk.Frame):
 
         Notes
         -----
-        As a side effect, will round the number currently being input to precision
-        in Decimal context.
+        As a side effect, will round the number currently being input to the
+        precision in the Decimal context.
 
         Parameters
         ----------
@@ -231,63 +227,87 @@ class CalcFrm(ttk.Frame):
             Optional string to be added to the end of the calculation. Normally
             will be blank or a mathematical operator, by default "".
         """
+
         if self.current_input:  # if we have a value, round it
             self.current_input = numtostr(self.get_current_input())
+
         self.current_display_calc = self.get_current_display_calc(symbol)
         self.current_eval_calc = self.get_current_eval_calc(symbol)
         self.current_input = ""
+
         self.update_display()
 
-    def processbutton(self, buttoncmd: str, buttontxt: str | int = "") -> None:
+    def process_button(self, buttoncmd: str, buttontxt: str | int = "") -> None:
         """
-        processbutton - Process a calculator button press
+        process_button - Process a calculator button press.
 
         Parameters
         ----------
-        button : str
-            button being pressed
+        buttoncmd : str
+            The command string from the ButtonInfo dictionary in
+            buttoncfg.py buttons.
+        buttontxt : str | int, optional
+            For buttons in buttoncfg.py that don't have a command
+            (number and basic math symbols) this is the button label,
+            by default ""
         """
 
         match buttoncmd:
             case "button":
-                self.buttonPress(buttontxt)
+                self.button_press(buttontxt)
+
             case "backspace":
                 self.backspace()
+
             case "calculate":
                 self.calculate()
+
             case "clearAll":
-                self.clearAll()
+                self.clear_all()
+
             case "clearValue":
-                self.clearValue()
+                self.clear_value()
+
             case "inverseNumber":
-                self.inverseNumber()
+                self.inverse_number()
+
             case "invertSign":
-                self.invertSign()
+                self.invert_sign()
+
             case "memAdd":
-                self.memAdd()
+                self.memory_add()
+
             case "memClear":
-                self.memClear()
+                self.memory_clear()
+
             case "memRecall":
-                self.memRecall()
+                self.memory_recall()
+
             case "memStore":
-                self.memStore()
+                self.memory_store()
+
             case "memSubtract":
-                self.memAdd(False)
+                self.memory_add(False)
+
             case "memSwap":
-                self.memSwap()
+                self.memory_swap()
+
             case "rootNumber":
-                self.rootNumber()
+                self.root_number()
+
             case "squareNumber":
-                self.squareNumber()
+                self.square_number()
+
             case "varsPopup":
-                self.varsPopup()
+                self.vars_popup()
+
             case _:
                 self.bell()
                 print(f"Unknown command: {buttoncmd!r}")
 
-    def buttonPress(self, symbol: str | int) -> None:
+    def button_press(self, symbol: str | int) -> None:
         """
-        buttonPress - Handles simple button presses.
+        button_press - Handles simple button presses.
 
         Handles simple button presses that just add to the current formula. For
         example, a digit (passed as int, not str), ".", "+", "-", etc. Does not
@@ -296,24 +316,28 @@ class CalcFrm(ttk.Frame):
 
         Notes
         -----
-        As a side effect, will round the number currently being input to precision
-        in Decimal context if symbol is not a digit or decimal point.
+        As a side effect, will round the number currently being input to the
+        precision in the Decimal context if symbol is not a digit or decimal
+        point.
 
         Parameters
         ----------
         symbol : str | int
             The digit or mathematical operator being processed.
         """
+
         if isinstance(symbol, int):
             self.current_input += str(symbol)
             self.update_display()
+
         elif symbol == ".":
-            if not (symbol in self.current_input):
-                if self.current_input:
-                    self.current_input += symbol
-                else:
-                    self.current_input = f"0{symbol}"
-                self.update_display()
+            if symbol in self.current_input:
+                self.bell()
+                return
+
+            self.current_input = (self.current_input or "0") + symbol
+            self.update_display()
+
         else:
             self.update_current_calc(symbol)
 
@@ -321,38 +345,45 @@ class CalcFrm(ttk.Frame):
         """
         backspace - Erase last character from number being input.
         """
+
         if self.current_input:
             self.current_input = self.current_input[:-1]
         self.update_display()
 
-    def clearValue(self) -> None:
+    def clear_value(self) -> None:
         """
-        clearValue - Clear the current number input, or if that is empty
+        clear_value - Clear the current number input, or if that is empty
         then clear the current calculation.
         """
+
         if self.current_input:
             self.current_input = ""
         else:
             self.current_display_calc = ""
             self.current_eval_calc = ""
+
         self.update_display()
 
-    def clearAll(self) -> None:
+    def clear_all(self) -> None:
         """
-        clearAll - Clear the current number being input, the current
+        clear_all - Clear the current number being input, the current
         calculation, and the display. Does not clear the value in memory.
         """
+
         self.display.configure(state="normal")
         self.display.delete(1.0, "end")
         self.display.configure(state="disabled")
+
         self.current_display_calc = ""
         self.current_eval_calc = ""
         self.current_input = ""
+
         self.update_display()
 
     def get_current_memory(self) -> Decimal:
         """
-        get_current_memory - Get the current value stored in memory as a Decimal.
+        get_current_memory - Get the current value stored in memory as a
+        Decimal.
 
         Returns
         -------
@@ -360,150 +391,189 @@ class CalcFrm(ttk.Frame):
             Decimal version of the value stored in memory. 0 if no value is
             currently stored in memory.
         """
+
         mem = self.memfrm.memval.get().replace(",", "")
         if mem:
             return Decimal(mem)
         else:
             return Decimal(0)
 
-    def memClear(self) -> None:
+    def memory_clear(self) -> None:
         """
-        memClear - Clear the value stored in memory
+        memory_clear - Clear the value stored in memory
         """
+
         self.memfrm.memval.set("")
 
-    def memRecall(self) -> None:
+    def memory_recall(self) -> None:
         """
-        memRecall - Replace the current number being input with the value stored
-        in memory.
+        memory_recall - Replace the current number being input with the value
+        stored in memory.
         """
+
         self.current_input = self.memfrm.memval.get().replace(",", "")
         self.update_display()
 
-    def memStore(self) -> None:
+    def memory_store(self) -> None:
         """
-        memStore - Change the value stored in memory to be the same as the current
-        number being input.
+        memory_store - Change the value stored in memory to be the same as the
+        current number being input.
 
         Notes
         -----
-        As a side effect, will round the number currently being input to precision
-        in Decimal context.
+        Cannot do a simple set because we round and format the display.
+
+        As a side effect, will round the number currently being input to the
+        precision in the Decimal context.
         """
+
+        # get and reformat current value
         cur_val = +self.get_current_input()
         self.current_input = numtostr(cur_val)
         self.update_display()
+
+        # store it
         self.memfrm.memval.set(numtostr(cur_val, commas=True))
 
-    def memSwap(self) -> None:
+    def memory_swap(self) -> None:
         """
-        memSwap - Swap the value stored in memory with the current number being input.
+        memory_swap - Swap the value stored in memory with the current number
+        being input.
 
         Notes
         -----
-        As a side effect, will round the number currently being input to precision
-        in Decimal context.
+        Cannot do a simple swap like (a,b) = (b,a) because we need to cal .set
+        on the tk.StringVar that stores the memory value, and we round and
+        format the display.
+
+        As a side effect, will round the number currently being input to the
+        precision in the Decimal context.
         """
+
+        # get current value (formatted with commas)
         cur_num = numtostr(self.get_current_input(), commas=True)
+
+        # store memory in current value
         self.current_input = self.memfrm.memval.get().replace(",", "")
+
+        # store retrieved current value in memory
         self.memfrm.memval.set(cur_num)
+
         self.update_display()
 
-    def memAdd(self, addto: bool = True) -> None:
+    def memory_add(self, addto: bool = True) -> None:
         """
-        memAdd - Add or subtract the current number being input to or from the
-        value stored in memory.
+        memory_add - Add or subtract the current number being input to or from
+        the value stored in memory.
 
         Notes
         -----
-        If addto is passed in as false, will subtract the value being input from
-        memory by multiplying the value by -1 before adding.
+        If addto is passed in as false, will subtract the value being input
+        from memory by multiplying the value by -1 before adding.
 
-        As a side effect, will round the number currently being input to precision
-        in Decimal context.
+        As a side effect, will round the number currently being input to the
+        precision in the Decimal context.
 
         Parameters
         ----------
         addto : bool, optional
-            If true, performs addition. If false, performs subtraction. By default True.
+            If true, performs addition. If false, performs subtraction.
+            By default True.
         """
+
+        # adding or subtracting
         if addto:
             sign = Decimal(1)
         else:
             sign = Decimal(-1)
 
+        # get the current input number (and reformat it)
         cur_val = +self.get_current_input()
         self.current_input = numtostr(cur_val)
         self.update_display()
+
+        # get current memory
         cur_mem = self.get_current_memory()
 
+        # add (or subtract)
         mv = cur_mem + (cur_val * sign)
         self.memfrm.memval.set(numtostr(mv, commas=True))
 
-    def invertSign(self) -> None:
+    def invert_sign(self) -> None:
         """
-        invertSign - Convert the current number being input from
-        positive to negative or negative to positive: x * -1.
+        invert_sign - Convert the current number being input from positive to
+        negative or negative to positive: -x.
 
         Notes
         -----
-        As a side effect, will round the number currently being input to precision
-        in Decimal context.
+        As a side effect, will round the number currently being input to the
+        precision in the Decimal context.
         """
+
         if self.current_input:
-            self.current_input = numtostr(self.get_current_input() * -1)
+            self.current_input = numtostr(-self.get_current_input())
         self.update_display()
 
-    def inverseNumber(self) -> None:
+    def inverse_number(self) -> None:
         """
-        inverseNumber - Convert the current number being input to
-        it's mathematical inverse: 1/x.
+        inverse_number - Convert the current number being input to it's
+        mathematical inverse: 1/x.
 
         Notes
         -----
-        As a side effect, will round the number currently being input to precision
-        in Decimal context.
+        As a side effect, will round the number currently being input to the
+        precision in the Decimal context.
         """
         if self.current_input:
-            self.current_input = numtostr(1 / self.get_current_input())
+            inpt = self.get_current_input()
+            if inpt == Decimal(0):
+                self.bell()
+                return
+
+            self.current_input = numtostr(1 / inpt)
         self.update_display()
 
-    def squareNumber(self) -> None:
+    def square_number(self) -> None:
         """
-        squareNumber - Convert the current number being input to
-        it's square: x**2.
+        square_number - Convert the current number being input to its
+        square: x**2.
 
         Notes
         -----
-        As a side effect, will round the number currently being input to precision
-        in Decimal context.
+        As a side effect, will round the number currently being input to the
+        precision in the Decimal context.
         """
+
         if self.current_input:
             self.current_input = numtostr(self.get_current_input() ** 2)
         self.update_display()
 
-    def rootNumber(self) -> None:
+    def root_number(self) -> None:
         """
-        rootNumber - Convert the current number being input to
-        it's square root: Decimal.sqrt(x).
+        root_number - Convert the current number being input to its
+        square root: Decimal.sqrt(x).
 
         Notes
         -----
-        As a side effect, will round the number currently being input to precision
-        in Decimal context.
+        As a side effect, will round the number currently being input to the
+        precision in the Decimal context.
         """
+
         if self.current_input:
             self.current_input = numtostr(Decimal.sqrt(self.get_current_input()))
         self.update_display()
 
-    def varsPopup(self) -> None:
+    def vars_popup(self) -> None:
         """
         varsPopup - Display a popup window with currently defined variables.
         """
+
+        # get x and y location for popup
         x = self.winfo_toplevel().winfo_x() + 10
         x = max(x, 10)
         y = self.winfo_toplevel().winfo_y() + 175
         y = max(y, 10)
+
         self.varspopup = VarsPopup(calcfrm=self)
         self.varspopup.geometry("+%d+%d" % (x, y))
 
@@ -520,8 +590,10 @@ class CalcFrm(ttk.Frame):
         if self.current_eval_calc:
             try:
                 # run the current calculation
-                root_node = ast.parse(self.current_eval_calc, mode="eval")
-                val = self._eval(root_node)
+                val = evaluate_calculation(
+                    self.current_eval_calc,
+                    self.user_variables,
+                )
 
                 # clear current calc and set current input to result
                 self.current_display_calc = ""
@@ -538,102 +610,19 @@ class CalcFrm(ttk.Frame):
             except Exception as error:
                 # should probably use a logger
                 print(f"ERROR: {error}\n")
+
                 # clear the current calculation and print the error message
                 self.current_display_calc = ""
                 self.current_eval_calc = ""
                 self.current_input = ""
+
+                # show user error message
                 self.display.configure(state="normal")
                 self.display.insert("end", f"\n= ERROR\n\n")
                 self.display.configure(state="disabled")
 
-            # update the display with either the calculated value or the empty string
+            # update the display
             self.update_display()
-
-    def _eval(self, node: ast.AST) -> Decimal:
-        """
-        _eval - Attempt to safely perform the input calculation.
-
-        Works in combination with calculate, uses the ast package to restrict
-        what people can do.
-
-        Parameters
-        ----------
-        node : ast.AST
-            Current node being evaluated
-
-        Returns
-        -------
-        Decimal
-            The result of the current node evaluation. For the root node
-            this is the final answer.
-
-        Raises
-        ------
-        TypeError
-            Used for custom errors, message indicates what the specific error was.
-        """
-        match node:
-            case ast.Expression():
-                return self._eval(node.body)
-            # replaced with Decimal numbers, left in just in case something falls through
-            case ast.Constant():
-                if isinstance(node.value, (int, float)):  # probably overkill
-                    return Decimal(node.value)
-                else:
-                    raise TypeError(f"Unknown constant: ast.{ast.dump(node, indent=2)}")
-            case ast.BinOp():
-                left, right, op = node.left, node.right, node.op
-                method = OPERATOR_MAP[type(op)]
-                return method(
-                    self._eval(left),
-                    self._eval(right),
-                )
-            case ast.UnaryOp():
-                operand, uop = node.operand, node.op
-                method = OPERATOR_MAP[type(uop)]
-                return method(self._eval(operand))
-            case ast.Name():
-                # unary plus forces rounding to precision in Decimal context
-                if normalize("NFKC", node.id) in defaultVariables:
-                    return +defaultVariables[normalize("NFKC", node.id)]
-
-                elif normalize("NFKC", node.id) in self.userVariables:
-                    return +self.userVariables[normalize("NFKC", node.id)]
-
-                else:
-                    raise TypeError(
-                        f"Unknown variable: {node.id.encode('unicode_escape')!r}"
-                    )
-            case ast.Call():
-                # if I ever allow more function calls, will have to make another dict
-                if isinstance(node.func, ast.Attribute):  # package.procedure
-                    if isinstance(node.func.value, ast.Name):
-                        pkg = node.func.value.id
-                        func = node.func.attr
-                elif isinstance(node.func, ast.Name):  # procedure (without package.)
-                    pkg = ""
-                    func = node.func.id
-                else:
-                    raise TypeError(
-                        f"Unknown type of ast.Call: \nast.{ast.dump(node, indent=2)}"
-                    )
-
-                if isinstance(node.args[0], ast.Constant):
-                    parm = node.args[0].value
-                else:
-                    parm = ""
-
-                if (pkg == "decimal" and func == "Decimal") or (
-                    pkg == "" and func == "Decimal"
-                ):
-                    # unary plus forces rounding to precision in Decimal context
-                    return +Decimal(parm)
-                else:
-                    raise TypeError(
-                        f"Unknown function call: \nast.{ast.dump(node, indent=2)}"
-                    )
-            case _:
-                raise TypeError(f"Unknown ast node: \nast.{ast.dump(node, indent=2)}")
 
 
 class MemDispFrm(ttk.Frame):
@@ -665,55 +654,96 @@ class BtnDispFrm(ttk.Frame):
         super().__init__(*args, **kwargs)
 
         # each row with a different number of buttons is a different frame
-        # this dict keeps track of them all
-        self.btnfrms: Dict[int, ttk.Frame] = {}
+        # this dict keeps track of all the frames
+        self.button_frames: Dict[int, ttk.Frame] = {}
 
         # this frame contains only frames, so has only one column
         self.columnconfigure(0, weight=1)
 
-        for btnloc, btninfo in sorted(buttons.items()):
+        # the keys in buttons are tuples of frame, row, column
+        # sorting them ensures we process in the correct order
+        for btn_loc, btn_info in sorted(buttons.items()):
+            self.add_button(btn_loc, btn_info)
 
-            # if we have a new frame to add
-            if btnloc.btnfrm not in self.btnfrms:
-                self.btnfrms[btnloc.btnfrm] = ttk.Frame(self)
-                self.btnfrms[btnloc.btnfrm].grid(
-                    column=0, row=btnloc.btnfrm, sticky="news"
-                )
-                # self.rowconfigure(bframe, weight=1)
+    def add_button(self, btn_loc: ButtonLocation, btn_info: ButtonInfo) -> None:
+        """
+        add_button - add a button to BtnDispFrm
 
-            # add this button to this frame
-            if "command" in btninfo:
-                cmd = lambda x=btninfo["command"]: self.master.processbutton(x)  # type: ignore
-            else:
-                cmd = lambda x=btninfo["label"]: self.master.processbutton("button", x)  # type: ignore
+        Parameters
+        ----------
+        button_loc : ButtonLocation
+            Button location information
+        button_info : ButtonInfo
+            Button creation information
+        """
 
-            btnopts: dict = {"text": btninfo["label"], "command": cmd}
-            if "style" in btninfo:
-                btnopts["style"] = btninfo["style"]
+        """
+        at the paranoid level should proably validate that
+        everything in button_loc and button_info is what it
+        should be and not an injection attack
+        """
 
-            b = ttk.Button(self.btnfrms[btnloc.btnfrm], **btnopts)
+        # if we have a new frame to add
+        if btn_loc.btn_frame not in self.button_frames:
 
-            gridopts: dict = {
-                "row": btnloc.btnrow,
-                "column": btnloc.btncol,
-                "sticky": "news",
-            }
-            if "rowspan" in btninfo:
-                gridopts["rowspan"] = btninfo["rowspan"]
-            if "columnspan" in btninfo:
-                gridopts["columnspan"] = btninfo["columnspan"]
+            self.button_frames[btn_loc.btn_frame] = ttk.Frame(self)
 
-            b.grid(**gridopts)
+            self.button_frames[btn_loc.btn_frame].grid(
+                column=0,
+                row=btn_loc.btn_frame,
+                sticky="news",
+            )
 
-            # if this button is binding any events ...
-            if "events" in btninfo:
-                for be in btninfo["events"]:
-                    self.winfo_toplevel().bind(be, lambda _, c=b: c.invoke())  # type: ignore
+        # create the button
+        cf: CalcFrm = self.master  # type: ignore
+        if "command" in btn_info:
+            cmd = lambda x=btn_info["command"]: cf.process_button(x)
+        else:
+            cmd = lambda x=btn_info["label"]: cf.process_button("button", x)
 
-            # configure the weigts for the buttons
-            self.btnfrms[btnloc.btnfrm].rowconfigure(btnloc.btnrow, weight=1)
-            self.btnfrms[btnloc.btnfrm].columnconfigure(btnloc.btncol, weight=1)
-            self.rowconfigure(btnloc.btnfrm, weight=btnloc.btnrow + 1)
+        btnopts: dict = {"text": btn_info["label"], "command": cmd}
+        if "style" in btn_info:
+            btnopts["style"] = btn_info["style"]
+
+        cur_btn = ttk.Button(self.button_frames[btn_loc.btn_frame], **btnopts)
+
+        # add the button to the frame
+        gridopts: dict = {
+            "row": btn_loc.btn_row,
+            "column": btn_loc.btn_column,
+            "sticky": "news",
+        }
+
+        if "rowspan" in btn_info:
+            gridopts["rowspan"] = btn_info["rowspan"]
+
+        if "columnspan" in btn_info:
+            gridopts["columnspan"] = btn_info["columnspan"]
+
+        cur_btn.grid(**gridopts)
+
+        # if this button is binding any events ...
+
+        if "events" in btn_info:
+            for be in btn_info["events"]:
+                topwin = self.winfo_toplevel()
+                topwin.bind(be, lambda _, c=cur_btn: c.invoke())  # type: ignore
+
+        # configure the weigts for the buttons
+        self.button_frames[btn_loc.btn_frame].rowconfigure(
+            btn_loc.btn_row,
+            weight=1,
+        )
+        self.button_frames[btn_loc.btn_frame].columnconfigure(
+            btn_loc.btn_column,
+            weight=1,
+        )
+        # the weight of the subframe should be proportional to the
+        # number of rows in the subframe
+        self.rowconfigure(
+            btn_loc.btn_frame,
+            weight=btn_loc.btn_row + 1,
+        )
 
 
 class VarsPopup(tk.Toplevel):
@@ -732,11 +762,10 @@ class VarsPopup(tk.Toplevel):
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
 
-        if self.treefrm.vars_tree.get_children():
-            self.treefrm.vars_tree.focus(self.treefrm.vars_tree.get_children()[0])
-            self.treefrm.vars_tree.selection_set(
-                self.treefrm.vars_tree.get_children()[0]
-            )
+        vars_tree = self.treefrm.vars_tree
+        if vars_tree.get_children():
+            vars_tree.focus(vars_tree.get_children()[0])
+            vars_tree.selection_set(vars_tree.get_children()[0])
 
 
 class VarsPopupTreeFrm(ttk.Frame):
@@ -762,13 +791,6 @@ class VarsPopupTreeFrm(ttk.Frame):
         self.scrollbar.configure(command=self.vars_tree.yview)
         self.vars_tree.focus_set()
 
-        # our columns in the tree view
-        self.vars_tree.heading("#0", text="Variable")
-        self.vars_tree.column("#0", width=150, anchor="w")
-
-        self.vars_tree.heading("value", text="Value")
-        self.vars_tree.column("value", width=325, anchor="w")
-
         self.vars_tree.grid(row=0, column=0, sticky="news")
         self.scrollbar.grid(row=0, column=1, sticky="ns")
 
@@ -776,38 +798,62 @@ class VarsPopupTreeFrm(ttk.Frame):
         self.columnconfigure(1, weight=0)
         self.rowconfigure(0, weight=1)
 
-        # this loop iterates over the variables and adds them to the treeview
-        section_id = self.vars_tree.insert("", "end", text="default", values=([""]))
-        for v_key, v_value in defaultVariables.items():
-            self.vars_tree.insert(
-                section_id,
-                "end",
-                text=v_key,
-                values=([numtostr(v_value, commas=True)]),
-            )
-        self.vars_tree.item(section_id, open=True)
+        # our columns in the tree view
+        self.vars_tree.heading("#0", text="Variable")
+        self.vars_tree.column("#0", width=150, anchor="w")
 
-        section_id = self.vars_tree.insert(
-            "", "end", text="user variables", values=([""])
-        )
-        for v_key, v_value in self.calcfrm.userVariables.items():
-            self.vars_tree.insert(
-                section_id,
-                "end",
-                text=v_key,
-                values=([numtostr(v_value, commas=True)]),
-            )
-        self.vars_tree.item(section_id, open=True)
+        self.vars_tree.heading("value", text="Value")
+        self.vars_tree.column("value", width=325, anchor="w")
+
+        # this loop iterates over the default variables and adds
+        # them to the treeview
+        self.add_variable_section("default", DEFAULT_VARIABLES)
+
+        # this loop iterates over the user variables and adds
+        # them to the treeview
+        self.add_variable_section("user variables", self.calcfrm.user_variables)
 
         # add buttons to select or edit user variables
         self.buttonfrm = VarsPopupTreeFrmButtons(self, vptf=self)
         self.buttonfrm.grid(row=1, column=0, sticky="news")
         self.rowconfigure(1, weight=0)
 
+    def add_variable_section(
+        self,
+        section_name: str,
+        section_vars: dict[str, Decimal],
+    ):
+        """
+        add_variable_section - Add a variable dictionary to the tree frame
+
+        Parameters
+        ----------
+        section_name : str
+            Section Name
+        section_vars : dict[str, Decimal]
+            Variables
+        """
+
+        section_id = self.vars_tree.insert(
+            "",
+            "end",
+            text=section_name,
+            values=([""]),
+        )
+        for v_key, v_value in section_vars.items():
+            self.vars_tree.insert(
+                section_id,
+                "end",
+                text=v_key,
+                values=([numtostr(v_value, commas=True)]),
+            )
+        self.vars_tree.item(section_id, open=True)
+
 
 class VarsPopupTreeFrmButtons(ttk.Frame):
     """
-    VarsPopupTreeFrmButtons - The frame with the buttons in the variables popup window.
+    VarsPopupTreeFrmButtons - The frame with the buttons in the variables
+    popup window.
 
     """
 
@@ -824,11 +870,9 @@ class VarsPopupTreeFrmButtons(ttk.Frame):
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=0)
 
-        self.winfo_toplevel().bind("<Return>", lambda _: self.select_button.invoke())
-
-        self.winfo_toplevel().bind(
-            "<Escape>", lambda _: self.winfo_toplevel().destroy()
-        )
+        top_win = self.winfo_toplevel()
+        top_win.bind("<Return>", lambda _: self.select_button.invoke())
+        top_win.bind("<Escape>", lambda _: self.winfo_toplevel().destroy())
 
         self.edit_button = ttk.Button(
             self,
@@ -843,15 +887,18 @@ class VarsPopupTreeFrmButtons(ttk.Frame):
         user_vars_select - Return selected variable to the calculator.
         """
 
-        # if we have one of the variables selected (not on "default" or "user variables")
+        vars_tree = self.vptf.vars_tree
+
+        # if we have one of the variables selected
+        # not on "default" or "user variables"
         if (
-            self.vptf.vars_tree.selection()
-            and self.vptf.vars_tree.selection()[0]
-            not in self.vptf.vars_tree.get_children()
+            vars_tree.selection()
+            and vars_tree.selection()[0] not in vars_tree.get_children()
         ):
-            self.vptf.calcfrm.buttonPress(
-                self.vptf.vars_tree.item(self.vptf.vars_tree.selection()[0])["text"]
+            self.vptf.calcfrm.button_press(
+                vars_tree.item(vars_tree.selection()[0])["text"]
             )
+
         self.winfo_toplevel().destroy()
 
     def user_vars_edit(self):
@@ -884,6 +931,9 @@ class UserVarsEditPopup(tk.Toplevel):
 
 
 class UserVarsEditFrm(tk.Frame):
+    """
+    UserVarsEditFrm - The frame with the user variables edit widgets
+    """
 
     def __init__(self, *args, calcfrm: CalcFrm, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -902,27 +952,39 @@ class UserVarsEditFrm(tk.Frame):
         self.columnconfigure(1, weight=1)
 
         # validate functions for name/value
-        self.validvarname = (self.register(self.validate_varname), "%P")
-        self.validvalue = (self.register(self.validate_decimal), "%P")
+        self.validate_var_name = (self.register(self.validate_varname), "%P")
+        self.validate_value = (self.register(self.validate_decimal), "%P")
 
-        # variable name/value entry widgets
-        # this stores a dictionary of all the Text entry boxes for editing user variables
-        # the Tuple[int, int] index is the row and column of the entry widget
-        # column 0 is variable name
-        # column 1 is variable value
+        """
+        variable name/value entry widgets
+
+        This dictionary stores all the Text entry boxes for editing 
+        user variables.
+        
+        The tuple[int, int] index is the row and column of the entry widget
+
+        The frame row 0 is the header, so the first variable is row 1.
+
+        Column 0 is variable name.
+        Column 1 is variable value.
+
+        So the first variable name is the entry widget at uservars[1,0] 
+        not at uservars[0,0].
+        """
         self.uservars: dict[Tuple[int, int], ttk.Entry] = {}
 
-        for k, v in calcfrm.userVariables.items():
+        for k, v in calcfrm.user_variables.items():
             lastrow += 1
             self.addrow(lastrow, k, numtostr(v, commas=True))
 
+        # if we had no rows, add a blank one
         if not self.uservars:
             lastrow += 1
             self.addrow(lastrow)
 
         self.uservars[(1, 0)].focus_set()
 
-        # put these at row 1000 to allow for insertint more rows
+        # put these at row 1000 to allow for inserting more rows
         # add row button
         self.addbtn = ttk.Button(
             self,
@@ -932,14 +994,13 @@ class UserVarsEditFrm(tk.Frame):
         self.addbtn.grid(row=1000, column=0, columnspan=2)
         self.rowconfigure(1000, weight=0)
 
+        topwin = self.winfo_toplevel()
         # cancel button
-        self.cancelbtn = ttk.Button(
-            self, text="Cancel", command=self.winfo_toplevel().destroy
-        )
+        self.cancelbtn = ttk.Button(self, text="Cancel", command=topwin.destroy)
         self.cancelbtn.grid(row=1001, column=0)
         self.rowconfigure(1001, weight=0)
 
-        self.winfo_toplevel().bind("<Escape>", lambda _: self.cancelbtn.invoke())
+        topwin.bind("<Escape>", lambda _: self.cancelbtn.invoke())
 
         # ok button
         self.okbtn = ttk.Button(
@@ -949,7 +1010,7 @@ class UserVarsEditFrm(tk.Frame):
         )
         self.okbtn.grid(row=1001, column=1)
 
-        self.winfo_toplevel().bind("<Return>", lambda _: self.okbtn.invoke())
+        topwin.bind("<Return>", lambda _: self.okbtn.invoke())
 
         # error message display
         self.errmsg = tk.StringVar(self)
@@ -990,9 +1051,15 @@ class UserVarsEditFrm(tk.Frame):
 
         entopts: dict[str, Any]  # entry widget validation options
         if colnum == 0:
-            entopts = {"validate": "key", "validatecommand": self.validvarname}
+            entopts = {
+                "validate": "key",
+                "validatecommand": self.validate_var_name,
+            }
         elif colnum == 1:
-            entopts = {"validate": "key", "validatecommand": self.validvalue}
+            entopts = {
+                "validate": "key",
+                "validatecommand": self.validate_value,
+            }
         else:
             entopts = {}
 
@@ -1003,9 +1070,9 @@ class UserVarsEditFrm(tk.Frame):
         self.rowconfigure(rownum, weight=1)
 
         if colnum == 1:
-            tbox.bind("<KeyRelease>", self.formatnumber)
+            tbox.bind("<KeyRelease>", self.format_number)
 
-    def formatnumber(self, event: tk.Event) -> None:
+    def format_number(self, event: tk.Event) -> None:
         """
         formatnumber - Format the number input
 
@@ -1017,8 +1084,7 @@ class UserVarsEditFrm(tk.Frame):
 
         v = event.widget.get()
         if v:
-            # if we have an entry, get it, convert to decimal, then reconvert to string
-            # so that we can format it
+            # if we have an entry, get it and format it
             v_decimal = strtodecimal(v)
             v_str = numtostr(v_decimal, commas=True, removeZeroes=False)
             if v[-1] == ".":
@@ -1070,11 +1136,7 @@ class UserVarsEditFrm(tk.Frame):
 
         if newval:
             try:
-                d = strtodecimal(newval)
-                # self.winfo_toplevel().nametowidget(thiswidget).set(numtostr(newval, commas=True))
-                # with self.winfo_toplevel().nametowidget(thiswidget) as w:
-                #     w.delete(0, len(w.get()))
-                #     w.insert(0, numtostr(newval, commas=True))
+                _ = strtodecimal(newval)
             except:
                 self.bell()
                 return False
@@ -1083,7 +1145,7 @@ class UserVarsEditFrm(tk.Frame):
 
     def user_vars_edit_addrow(self):
         """
-        user_vars_edit_addrow - Add a row for a new user variable to the user_vars_edit window
+        user_vars_edit_addrow - Add a row for a new user variable
         """
 
         if self.uservars.keys():
@@ -1111,24 +1173,24 @@ class UserVarsEditFrm(tk.Frame):
             # user variable name
             nam = self.uservars[(i, 0)].get().strip()
 
+            # common parts of these error messages
+            # extracted for consistency in messaging
+            errmsg = f"ERROR on row {i}:"
+            varnam = f"variable name {nam!r}"
+
             # if we don't have a valid identifier, print an error
             if not nam.isidentifier():
-                self.bell()
-                self.errmsg.set(f"ERROR on row {i}: invalid variable name {nam!r}")
+                self.set_errmsg(f"{errmsg} invalid {varnam}")
                 return
 
             # if we have a keyword, print an error
             if keyword.iskeyword(nam):
-                self.bell()
-                self.errmsg.set(
-                    f"ERROR on row {i}: variable name {nam!r} is a reserved word"
-                )
+                self.set_errmsg(f"{errmsg} {varnam} is a reserved word")
                 return
 
             # if we  have a duplicate variable name, print an error
-            if nam in newuservars.keys() or nam in defaultVariables.keys():
-                self.bell()
-                self.errmsg.set(f"ERROR on row {i}, duplicate variable name {nam!r}")
+            if nam in newuservars.keys() or nam in DEFAULT_VARIABLES.keys():
+                self.set_errmsg(f"{errmsg} duplicate {varnam}")
                 return
 
             # new user variable value
@@ -1138,17 +1200,29 @@ class UserVarsEditFrm(tk.Frame):
             try:
                 val_decimal = +strtodecimal(val)
             except:
-                self.errmsg.set(f"ERROR on row {i}, invalid numeric value {val!r}")
+                self.set_errmsg(f"{errmsg} invalid numeric value {val!r}")
                 return
 
             newuservars[nam] = val_decimal
 
         # save the new variables
-        self.calcfrm.userVariables = newuservars
+        self.calcfrm.user_variables = newuservars
 
         # close this window
         self.winfo_toplevel().destroy()
 
         # rebuild the varspopup
         self.calcfrm.varspopup.destroy()
-        self.calcfrm.varsPopup()
+        self.calcfrm.vars_popup()
+
+    def set_errmsg(self, error_msg: str) -> None:
+        """
+        set_errmsg - Set the error message and ring a bell
+
+        Parameters
+        ----------
+        error_msg : str
+            Error message to display
+        """
+        self.bell()
+        self.errmsg.set(error_msg)

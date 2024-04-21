@@ -22,9 +22,9 @@ class ButtonLocation(NamedTuple):
             The first column of a new sub-frame is 0.
     """
 
-    btnfrm: int
-    btnrow: int
-    btncol: int
+    btn_frame: int
+    btn_row: int
+    btn_column: int
 
 
 class ButtonInfo(TypedDict):
