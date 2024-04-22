@@ -1090,7 +1090,6 @@ class UserVarsEditFrm(tk.Frame):
                 remaining_vars = list(self.uservars.keys())
                 if widget_num >= len(remaining_vars):
                     widget_num = -1
-                print(f"{widget_num = }")
                 self.uservars[remaining_vars[widget_num]].focus_set()
 
     def add_current(self) -> None:
@@ -1258,13 +1257,13 @@ class UserVarsEditFrm(tk.Frame):
 
         newuservars: VariablesType = VariablesType({})
 
-        if not self.uservars:
-            lastrow = 0
-
+        if self.uservars:
+            k = self.uservars.keys()
+            rows = set(list(zip(*k))[0]) 
         else:
-            lastrow = max(r for (r, _) in self.uservars.keys())
+            rows = set()
 
-        for i in range(1, lastrow + 1):
+        for i in rows:
             # user variable name
             nam = self.uservars[(i, 0)].get().strip()
 
