@@ -1,6 +1,5 @@
 import unittest
 from decimal import Decimal, DivisionByZero, InvalidOperation
-from xml.dom import SyntaxErr
 
 from guicalculator import supportfuncs as sf  # type: ignore
 
