@@ -4,7 +4,7 @@ from decimal import Decimal
 from typing import Callable, Type
 from unicodedata import normalize
 
-from . import DEFAULT_VARIABLES
+from . import DEFAULT_VARIABLES, VariablesType
 
 # map of ast operators to functions used by parser
 OPERATOR_MAP: dict[Type[ast.AST], Callable] = {
@@ -99,7 +99,7 @@ def strtodecimal(val: str) -> Decimal:
 
 
 def evaluate_calculation(
-    current_calculation: str, user_variables: dict[str, Decimal]
+    current_calculation: str, user_variables: VariablesType
 ) -> Decimal:
     """
     evaluate_calculation - Evaluate the provided calculation, returning the
@@ -109,8 +109,8 @@ def evaluate_calculation(
     ----------
     current_calculation : str
         The calculation
-    user_variables : dict[str, Decimal]
-        List of user defined variables
+    user_variables : VariablesType : dict[str, Decimal]
+        Dictionary of user defined variables
 
     Returns
     -------
@@ -231,7 +231,7 @@ def evaluate_calculation(
                 else:
                     node_fmtd = ast.dump(node, indent=2)
                     raise TypeError(f"Unknown function call: \nast.{node_fmtd}")
-            
+
             case _:
                 node_fmtd = ast.dump(node, indent=2)
                 raise TypeError(f"Unknown ast node: \nast.{node_fmtd}")

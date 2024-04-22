@@ -4,7 +4,7 @@ from decimal import Decimal
 from tkinter import scrolledtext, ttk
 from typing import Any, Dict, Tuple
 
-from . import DEFAULT_VARIABLES, FONT
+from . import DEFAULT_VARIABLES, FONT, VariablesType
 from .buttoncfg import ButtonInfo, ButtonLocation, buttons
 from .supportfuncs import evaluate_calculation, numtostr, strtodecimal
 
@@ -72,7 +72,7 @@ class CalcFrm(ttk.Frame):
     current_eval_calc: str = ""  # the current calculation to be evalueated
     current_input: str = ""  # the current number input
 
-    user_variables: dict[str, Decimal] = {}  # user defined variables
+    user_variables: VariablesType = VariablesType({})  # user defined variables
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -165,7 +165,7 @@ class CalcFrm(ttk.Frame):
         """
 
         if self.current_input:
-            i = +Decimal(self.current_input)
+            i = +self.get_current_input()
             inpt = f"Decimal({str(i)!r})"
         else:
             inpt = ""
@@ -819,10 +819,8 @@ class VarsPopupTreeFrm(ttk.Frame):
         self.rowconfigure(1, weight=0)
 
     def add_variable_section(
-        self,
-        section_name: str,
-        section_vars: dict[str, Decimal],
-    ):
+        self, section_name: str, section_vars: VariablesType
+    ) -> None:
         """
         add_variable_section - Add a variable dictionary to the tree frame
 
@@ -830,7 +828,7 @@ class VarsPopupTreeFrm(ttk.Frame):
         ----------
         section_name : str
             Section Name
-        section_vars : dict[str, Decimal]
+        section_vars : VariablesType : dict[str, Decimal]
             Variables
         """
 
@@ -882,7 +880,7 @@ class VarsPopupTreeFrmButtons(ttk.Frame):
         self.edit_button.grid(row=0, column=1)
         self.columnconfigure(1, weight=1)
 
-    def user_vars_select(self):
+    def user_vars_select(self) -> None:
         """
         user_vars_select - Return selected variable to the calculator.
         """
@@ -901,7 +899,7 @@ class VarsPopupTreeFrmButtons(ttk.Frame):
 
         self.winfo_toplevel().destroy()
 
-    def user_vars_edit(self):
+    def user_vars_edit(self) -> None:
         """
         user_vars_edit - Popup window to edit the user variables.
         """
@@ -1018,7 +1016,7 @@ class UserVarsEditFrm(tk.Frame):
         self.errmsg_lbl.grid(row=1002, column=0, columnspan=2, sticky="news")
         self.rowconfigure(1002, weight=0)
 
-    def addrow(self, rownum: int, var: str = "", val: str = ""):
+    def addrow(self, rownum: int, var: str = "", val: str = "") -> None:
         """
         addrow - Add a row for a new variable
 
@@ -1035,7 +1033,7 @@ class UserVarsEditFrm(tk.Frame):
         self.addtextbox(rownum, 0, var)
         self.addtextbox(rownum, 1, val)
 
-    def addtextbox(self, rownum: int, colnum: int, text: str = ""):
+    def addtextbox(self, rownum: int, colnum: int, text: str = "") -> None:
         """
         addtextbox - Add a text entry box for variable name or variable value
 
@@ -1143,7 +1141,7 @@ class UserVarsEditFrm(tk.Frame):
 
         return True
 
-    def user_vars_edit_addrow(self):
+    def user_vars_edit_addrow(self) -> None:
         """
         user_vars_edit_addrow - Add a row for a new user variable
         """
@@ -1156,12 +1154,12 @@ class UserVarsEditFrm(tk.Frame):
         self.addrow(nextrow)
         self.uservars[(nextrow, 0)].focus_set()
 
-    def user_vars_edit_ok(self):
+    def user_vars_edit_ok(self) -> None:
         """
         user_vars_edit_ok - Update the user variables from entered data
         """
 
-        newuservars: dict[str, Decimal] = {}  # type: ignore
+        newuservars: VariablesType = VariablesType({})
 
         if not self.uservars:
             lastrow = 0
