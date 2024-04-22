@@ -1,4 +1,5 @@
 import ast
+import keyword
 import operator
 from decimal import Decimal
 from typing import Callable, Type
@@ -124,48 +125,50 @@ def evaluate_calculation(
 
     """
 
+    # validate that nothing improper is in user_variables
+    # we should be able to trust DEFAULT_VARIABLES
+    for nam, val in user_variables.items():
+        if (
+            not nam
+            or type(nam) != str
+            or not nam.isidentifier()
+            or keyword.iskeyword(nam)
+        ):
+            raise TypeError("Invalid variable name {nam!r}")
+        if nam in DEFAULT_VARIABLES.keys():
+            raise TypeError("Attempt to overwrite default variable {nam!r}")
+        if not val or type(val) != Decimal:
+            raise TypeError("Invalid value for variable {nam!r}: {val!r}")
+
+    # validate we actually have a str in current_calculation
+    if not current_calculation or type(current_calculation) != str:
+        raise TypeError("Invalid calculation")
+
+    root_node = ast.parse(current_calculation, mode="eval")
+
+    # internal function, nested so it can't be called directly
+    # unnesting would require moving above validation inside the function
     def _eval(node: ast.AST) -> Decimal:
-        """
-        _eval - internal recursive function to evaluate the ast nodes
+        """_eval - Internal recursive function to evaluate the ast nodes"""
 
-        Parameters
-        ----------
-        node : ast.AST
-            ast node
-
-        Returns
-        -------
-        Decimal
-            result of evaluation
-
-        Raises
-        ------
-        TypeError
-            Used for custom errors, message indicates what the specific
-            error was.
-        """
+        # used in multiple error messages
+        node_fmtd = ast.dump(node, indent=2)
 
         match node:
             case ast.Expression():
                 return _eval(node.body)
 
-            # replaced with Decimal numbers, left in just in case something
-            # falls through
+            # replaced with Decimal numbers, left in just in case
             case ast.Constant():
-                # unary plus forces rounding to precision in Decimal context
                 if isinstance(node.value, (int, float)):
                     return +Decimal(node.value)
                 else:
-                    node_fmtd = ast.dump(node, indent=2)
                     raise TypeError(f"Unknown constant: ast.{node_fmtd}")
 
             case ast.BinOp():
                 left, right, op = node.left, node.right, node.op
                 method = OPERATOR_MAP[type(op)]
-                return method(
-                    _eval(left),
-                    _eval(right),
-                )
+                return method(_eval(left), _eval(right))
 
             case ast.UnaryOp():
                 operand, uop = node.operand, node.op
@@ -173,69 +176,60 @@ def evaluate_calculation(
                 return method(_eval(operand))
 
             case ast.Name():
-
-                # unary plus forces rounding to precision in Decimal context
                 if normalize("NFKC", node.id) in DEFAULT_VARIABLES:
-                    if type(DEFAULT_VARIABLES[normalize("NFKC", node.id)]) == Decimal:
-                        return +DEFAULT_VARIABLES[normalize("NFKC", node.id)]
-                    else:
-                        raise TypeError(
-                            f"Invalid data in DEFAULT_VARIABLES[{normalize('NFKC', node.id)}]"
-                        )
+                    return +DEFAULT_VARIABLES[normalize("NFKC", node.id)]
 
                 elif normalize("NFKC", node.id) in user_variables:
-                    if type(user_variables[normalize("NFKC", node.id)]) == Decimal:
-                        return +user_variables[normalize("NFKC", node.id)]
-                    else:
-                        raise TypeError(
-                            f"Invalid data in user_variables[{normalize('NFKC', node.id)}]"
-                        )
+                    return +user_variables[normalize("NFKC", node.id)]
 
                 else:
                     node_escpd = node.id.encode("unicode_escape")
                     raise TypeError(f"Unknown variable: {node_escpd!r}")
 
             case ast.Call():
+                pkg, func = _get_caller(node, node_fmtd)
+
                 # if I ever allow more function calls, will have to make another dict
-
-                if isinstance(node.func, ast.Attribute):  # package.procedure
-                    if isinstance(node.func.value, ast.Name):
-                        pkg = node.func.value.id
-                        func = node.func.attr
-                    else:  # ??? not sure if this can happen
-                        node_fmtd = ast.dump(node, indent=2)
-                        errmsg = f"Unknown type of ast.Call: \nast.{node_fmtd}"
-                        raise TypeError(errmsg)
-
-                elif isinstance(node.func, ast.Name):  # procedure
-                    pkg = ""
-                    func = node.func.id
-
-                else:  # ??? not sure if this can happen
-                    node_fmtd = ast.dump(node, indent=2)
-                    errmsg = f"Unknown type of ast.Call: \nast.{node_fmtd}"
-                    raise TypeError(errmsg)
-
-                if (pkg == "decimal" and func == "Decimal") or (
-                    pkg == "" and func == "Decimal"
-                ):
-                    # get parameter
-                    if len(node.args) == 1 and isinstance(node.args[0], ast.Constant):
-                        parm = node.args[0].value
-                    else:
-                        errmsg = "Decimal function accepts exactly one argument"
-                        raise TypeError(errmsg)
-                    # unary plus forces rounding to precision in Decimal context
+                if (pkg, func) in (("decimal", "Decimal"), ("", "Decimal")):
+                    parm = _get_str_parameter(node)
                     return +Decimal(parm)
-
                 else:
-                    node_fmtd = ast.dump(node, indent=2)
                     raise TypeError(f"Unknown function call: \nast.{node_fmtd}")
 
             case _:
-                node_fmtd = ast.dump(node, indent=2)
                 raise TypeError(f"Unknown ast node: \nast.{node_fmtd}")
 
-    root_node = ast.parse(current_calculation, mode="eval")
+    def _get_str_parameter(node):
+        """_get_str_parameter - Internal function to return a single str parameter"""
+
+        if len(node.args) == 1 and isinstance(node.args[0], ast.Constant):
+            parm = node.args[0].value
+        else:
+            raise TypeError("Decimal function accepts exactly one argument")
+        if type(parm) == str:
+            return parm
+        else:
+            raise TypeError("Decimal function should only have str parameter")
+
+    def _get_caller(node, node_fmtd):
+        """_get_caller - Internal function to get calling module/function name"""
+
+        if isinstance(node.func, ast.Attribute):  # package.procedure
+            if isinstance(node.func.value, ast.Name):
+                pkg = node.func.value.id
+                func = node.func.attr
+            else:  # ??? not sure if this can happen
+                errmsg = f"Unknown type of ast.Call: \nast.{node_fmtd}"
+                raise TypeError(errmsg)
+
+        elif isinstance(node.func, ast.Name):  # procedure
+            pkg = ""
+            func = node.func.id
+
+        else:  # ??? not sure if this can happen
+            errmsg = f"Unknown type of ast.Call: \nast.{node_fmtd}"
+            raise TypeError(errmsg)
+        return pkg, func
+
     val = _eval(root_node)
     return val

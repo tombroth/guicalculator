@@ -199,10 +199,10 @@ class SupportFuncsTest(unittest.TestCase):
             },
             {
                 "params": {
-                    "current_calculation": "Decimal('10') / ( Decimal('3') + Decimal('2') )",
+                    "current_calculation": "Decimal('9') / ( Decimal('1') + Decimal('2') )",
                     "user_variables": {},
                 },
-                "result": Decimal("2"),
+                "result": Decimal("3"),
             },
             {
                 "params": {
@@ -243,6 +243,30 @@ class SupportFuncsTest(unittest.TestCase):
 
         test_data = [
             {
+                "case": "Decimal with no parameter",
+                "params": {
+                    "current_calculation": "Decimal()",
+                    "user_variables": {},
+                },
+                "result": TypeError,
+            },
+            {
+                "case": "Decimal with two parameters",
+                "params": {
+                    "current_calculation": "Decimal(1,2)",
+                    "user_variables": {},
+                },
+                "result": TypeError,
+            },
+            {
+                "case": "Decimal with non-str parameter",
+                "params": {
+                    "current_calculation": "Decimal(1)",
+                    "user_variables": {},
+                },
+                "result": TypeError,
+            },
+            {
                 "case": "Divide by zero",
                 "params": {
                     "current_calculation": "1 / 0",
@@ -267,10 +291,58 @@ class SupportFuncsTest(unittest.TestCase):
                 "result": TypeError,
             },
             {
-                "case": "Decimal called with 2 parameters",
+                "case": "Invalid variable - not an identifier",
                 "params": {
-                    "current_calculation": "Decimal(1,2)",
-                    "user_variables": {},
+                    "current_calculation": "a-b",
+                    "user_variables": {"a-b": Decimal(2)},
+                },
+                "result": TypeError,
+            },
+            {
+                "case": "Invalid variable - keyword",
+                "params": {
+                    "current_calculation": "def",
+                    "user_variables": {"def": Decimal(2)},
+                },
+                "result": TypeError,
+            },
+            {
+                "case": "Invalid variable - attempt to replace default variable",
+                "params": {
+                    "current_calculation": "e",
+                    "user_variables": {"e": Decimal(2)},
+                },
+                "result": TypeError,
+            },
+            {
+                "case": "Invalid variable - not str",
+                "params": {
+                    "current_calculation": "e",
+                    "user_variables": {123: Decimal(2)},
+                },
+                "result": TypeError,
+            },
+            {
+                "case": "Invalid variable - None name",
+                "params": {
+                    "current_calculation": "e",
+                    "user_variables": {None: Decimal(2)},
+                },
+                "result": TypeError,
+            },
+            {
+                "case": "Invalid variable - not Decimal value",
+                "params": {
+                    "current_calculation": "a",
+                    "user_variables": {"a": 2},
+                },
+                "result": TypeError,
+            },
+            {
+                "case": "Invalid variable - None value",
+                "params": {
+                    "current_calculation": "a",
+                    "user_variables": {"a": None},
                 },
                 "result": TypeError,
             },
@@ -397,7 +469,23 @@ class SupportFuncsTest(unittest.TestCase):
             {
                 "case": "Injection attack 2",
                 "params": {
-                    "current_calculation": "__import__('os').system('dir')",
+                    "current_calculation": lambda: __import__("os").system("dir"),
+                    "user_variables": {},
+                },
+                "result": TypeError,
+            },
+            {
+                "case": "Empty calculation",
+                "params": {
+                    "current_calculation": None,
+                    "user_variables": {},
+                },
+                "result": TypeError,
+            },
+            {
+                "case": "Calculation not a str",
+                "params": {
+                    "current_calculation": (1, 2, 3),
                     "user_variables": {},
                 },
                 "result": TypeError,
@@ -423,7 +511,7 @@ class SupportFuncsTest(unittest.TestCase):
                 "params": {
                     "current_calculation": "a",
                     "user_variables": {
-                        "a": __import__("os").system("dir"),
+                        "a": lambda: __import__("os").system("dir"),
                     },
                 },
                 "result": TypeError,

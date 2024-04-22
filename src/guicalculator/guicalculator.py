@@ -818,6 +818,11 @@ class VarsPopupTreeFrm(ttk.Frame):
         self.buttonfrm.grid(row=1, column=0, sticky="news")
         self.rowconfigure(1, weight=0)
 
+        # double click to select
+        self.vars_tree.bind(
+            "<Double-Button-1>", lambda _: self.buttonfrm.select_button.invoke()
+        )
+
     def add_variable_section(
         self, section_name: str, section_vars: VariablesType
     ) -> None:
