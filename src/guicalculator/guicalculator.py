@@ -139,7 +139,10 @@ class CalcFrm(ttk.Frame):
             inpt = ""
 
         if func and inpt:
-            inpt = f"({func[0]}({inpt}))"
+            if func[0] == "1/":
+                inpt = f"({func[0]}{inpt})"
+            else:
+                inpt = f"{func[0]}({inpt})"
 
         return_value = " ".join(
             filter(None, [self.current_display_calc, inpt, symbol])
@@ -178,7 +181,10 @@ class CalcFrm(ttk.Frame):
             inpt = ""
 
         if func and inpt:
-            inpt = f"{func[1]}({inpt})"
+            if func[0] == "1/":
+                inpt = f"({func[1]}{inpt})"
+            else:
+                inpt = f"{func[1]}({inpt})"
 
         return_value = " ".join([self.current_eval_calc, inpt, symbol]).strip()
         return return_value
@@ -313,6 +319,8 @@ class CalcFrm(ttk.Frame):
             case "varsPopup":
                 self.vars_popup()
 
+            case "xToTheY":
+                self.button_press("**")
             case _:
                 self.bell()
                 print(f"Unknown command: {buttoncmd!r}")
@@ -879,26 +887,34 @@ class VarsPopupTreeFrmButtons(ttk.Frame):
         super().__init__(*args, **kwargs)
         self.vptf = vptf
 
-        self.select_button = ttk.Button(
-            self,
-            text="Select",
-            command=self.user_vars_select,
-        )
-        self.select_button.grid(row=0, column=0)
-        self.columnconfigure(0, weight=1)
-        self.rowconfigure(0, weight=0)
-
-        top_win = self.winfo_toplevel()
-        top_win.bind("<Return>", lambda _: self.select_button.invoke())
-        top_win.bind("<Escape>", lambda _: self.winfo_toplevel().destroy())
-
         self.edit_button = ttk.Button(
             self,
             text="Edit User Variables",
             command=self.user_vars_edit,
         )
-        self.edit_button.grid(row=0, column=1)
+        self.edit_button.grid(row=0, column=0, columnspan=2)
+        self.columnconfigure(0, weight=1)
+        self.rowconfigure(0, weight=0)
+
+        self.cancel_button = ttk.Button(
+            self,
+            text="Cancel",
+            command=self.winfo_toplevel().destroy,
+        )
+        self.cancel_button.grid(row=1, column=0)
+        self.rowconfigure(1, weight=0)
+
+        self.select_button = ttk.Button(
+            self,
+            text="Select",
+            command=self.user_vars_select,
+        )
+        self.select_button.grid(row=1, column=1)
         self.columnconfigure(1, weight=1)
+
+        top_win = self.winfo_toplevel()
+        top_win.bind("<Return>", lambda _: self.select_button.invoke())
+        top_win.bind("<Escape>", lambda _: self.winfo_toplevel().destroy())
 
     def user_vars_select(self) -> None:
         """
@@ -1009,14 +1025,32 @@ class UserVarsEditFrm(tk.Frame):
             text="Add Row",
             command=self.user_vars_edit_addrow,
         )
-        self.addbtn.grid(row=1000, column=0, columnspan=2)
+        self.addbtn.grid(row=1000, column=0)
         self.rowconfigure(1000, weight=0)
+
+        # add delete row nutton
+        self.delbtn = ttk.Button(
+            self,
+            text="Delete Row",
+            command=self.user_vars_edit_delrow,
+            takefocus=False,
+        )
+        self.delbtn.grid(row=1000, column=1)
+
+        # add current_calculation button
+        self.curcalcbtn = ttk.Button(
+            self,
+            text="Add current result as new variable",
+            command=self.add_current,
+        )
+        self.curcalcbtn.grid(row=1001, column=0, columnspan=2)
+        self.rowconfigure(1001, weight=0)
 
         topwin = self.winfo_toplevel()
         # cancel button
         self.cancelbtn = ttk.Button(self, text="Cancel", command=topwin.destroy)
-        self.cancelbtn.grid(row=1001, column=0)
-        self.rowconfigure(1001, weight=0)
+        self.cancelbtn.grid(row=1002, column=0)
+        self.rowconfigure(1002, weight=0)
 
         topwin.bind("<Escape>", lambda _: self.cancelbtn.invoke())
 
@@ -1026,15 +1060,56 @@ class UserVarsEditFrm(tk.Frame):
             text="Ok",
             command=self.user_vars_edit_ok,
         )
-        self.okbtn.grid(row=1001, column=1)
+        self.okbtn.grid(row=1002, column=1)
 
         topwin.bind("<Return>", lambda _: self.okbtn.invoke())
 
         # error message display
         self.errmsg = tk.StringVar(self)
         self.errmsg_lbl = ttk.Label(self, anchor="w", textvariable=self.errmsg)
-        self.errmsg_lbl.grid(row=1002, column=0, columnspan=2, sticky="news")
-        self.rowconfigure(1002, weight=0)
+        self.errmsg_lbl.grid(row=1003, column=0, columnspan=2, sticky="news")
+        self.rowconfigure(1003, weight=0)
+
+    def user_vars_edit_delrow(self) -> None:
+        """Delete the current row"""
+
+        # find the current row
+        cur_widget = self.winfo_toplevel().focus_get()
+        if cur_widget in list(self.uservars.values()):
+            widget_num = list(self.uservars.values()).index(cur_widget)  # type: ignore
+            row = list(self.uservars.keys())[widget_num][0]
+
+            # found it, now destroy entry widgets and remove from dictionary
+            self.uservars[(row, 0)].destroy()
+            self.uservars[(row, 1)].destroy()
+            self.uservars.pop((row, 0), None)
+            self.uservars.pop((row, 1), None)
+
+            # if we still have entry widgets, set focus to one of them
+            if self.uservars:
+                remaining_vars = list(self.uservars.keys())
+                if widget_num >= len(remaining_vars):
+                    widget_num = -1
+                print(f"{widget_num = }")
+                self.uservars[remaining_vars[widget_num]].focus_set()
+
+    def add_current(self) -> None:
+        """Add the current calculation result as a variable"""
+
+        currcalc = self.calcfrm.get_current_display_calc()
+        if currcalc:
+            # get the result
+            self.calcfrm.calculate()
+            result = self.calcfrm.get_current_input()
+
+            # add result to a new row
+            row = self.user_vars_edit_addrow()
+
+            self.uservars[(row, 0)].delete(0, tk.END)
+            self.uservars[(row, 0)].insert(0, "x")
+
+            self.uservars[(row, 1)].delete(0, tk.END)
+            self.uservars[(row, 1)].insert(0, numtostr(result, commas=True))
 
     def addrow(self, rownum: int, var: str = "", val: str = "") -> None:
         """
@@ -1161,9 +1236,9 @@ class UserVarsEditFrm(tk.Frame):
 
         return True
 
-    def user_vars_edit_addrow(self) -> None:
+    def user_vars_edit_addrow(self) -> int:
         """
-        user_vars_edit_addrow - Add a row for a new user variable
+        user_vars_edit_addrow - Add a row for a new user variable. Returns row number added
         """
 
         if self.uservars.keys():
@@ -1173,6 +1248,8 @@ class UserVarsEditFrm(tk.Frame):
 
         self.addrow(nextrow)
         self.uservars[(nextrow, 0)].focus_set()
+
+        return nextrow
 
     def user_vars_edit_ok(self) -> None:
         """

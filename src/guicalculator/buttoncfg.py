@@ -1,6 +1,6 @@
 from typing import List, NamedTuple, NotRequired, TypedDict
 
-from guicalculator import BACKSPACE, SQUAREROOTX, XSQUARED
+from guicalculator import BACKSPACE, SQUAREROOTX, XSQUARED, XTOTHEY
 
 
 class ButtonLocation(NamedTuple):
@@ -123,9 +123,8 @@ buttons: dict[ButtonLocation, ButtonInfo] = {
         "command": "rootNumber",
     },
     ButtonLocation(2, 0, 3): {
-        "label": "/",
-        "style": "mathop.TButton",
-        "events": ["<KeyPress-/>"],
+        "label": XTOTHEY,
+        "command": "xToTheY",
     },
     ButtonLocation(2, 1, 0): {
         "label": "vars...",
@@ -140,9 +139,9 @@ buttons: dict[ButtonLocation, ButtonInfo] = {
         "events": ["<KeyPress-)>"],
     },
     ButtonLocation(2, 1, 3): {
-        "label": "*",
+        "label": "/",
         "style": "mathop.TButton",
-        "events": ["<KeyPress-*>"],
+        "events": ["<KeyPress-/>"],
     },
     ButtonLocation(2, 2, 0): {
         "label": 7,
@@ -160,9 +159,9 @@ buttons: dict[ButtonLocation, ButtonInfo] = {
         "events": ["<KeyPress-9>"],
     },
     ButtonLocation(2, 2, 3): {
-        "label": "-",
+        "label": "*",
         "style": "mathop.TButton",
-        "events": ["<KeyPress-minus>"],
+        "events": ["<KeyPress-*>"],
     },
     ButtonLocation(2, 3, 0): {
         "label": 4,
@@ -180,9 +179,9 @@ buttons: dict[ButtonLocation, ButtonInfo] = {
         "events": ["<KeyPress-6>"],
     },
     ButtonLocation(2, 3, 3): {
-        "label": "+",
+        "label": "-",
         "style": "mathop.TButton",
-        "events": ["<KeyPress-+>"],
+        "events": ["<KeyPress-minus>"],
     },
     ButtonLocation(2, 4, 0): {
         "label": 1,
@@ -200,11 +199,9 @@ buttons: dict[ButtonLocation, ButtonInfo] = {
         "events": ["<KeyPress-3>"],
     },
     ButtonLocation(2, 4, 3): {
-        "label": "=",
-        "command": "calculate",
-        "style": "orange.TButton",
-        "rowspan": 2,
-        "events": ["<KeyPress-=>", "<Return>"],
+        "label": "+",
+        "style": "mathop.TButton",
+        "events": ["<KeyPress-+>"],
     },
     ButtonLocation(2, 5, 0): {
         "label": "+/-",
@@ -220,5 +217,11 @@ buttons: dict[ButtonLocation, ButtonInfo] = {
         "label": ".",
         "style": "number.TButton",
         "events": ["<KeyPress-.>"],
+    },
+    ButtonLocation(2, 5, 3): {
+        "label": "=",
+        "command": "calculate",
+        "style": "orange.TButton",
+        "events": ["<KeyPress-=>", "<Return>"],
     },
 }

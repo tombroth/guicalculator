@@ -5,6 +5,7 @@ from unicodedata import normalize
 BACKSPACE = "\u232B"
 XSQUARED = "x\u00b2"
 SQUAREROOTX = "\u221ax"
+XTOTHEY = "x ** y"
 PI = "\u03c0"
 
 FONT = ("TkDefaultFont", "12", "bold")
