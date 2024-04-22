@@ -185,6 +185,13 @@ class SupportFuncsTest(unittest.TestCase):
             },
             {
                 "params": {
+                    "current_calculation": "Decimal('3') ** Decimal('2')",
+                    "user_variables": {},
+                },
+                "result": Decimal("9"),
+            },
+            {
+                "params": {
                     "current_calculation": "- Decimal('2')",
                     "user_variables": {},
                 },
@@ -419,9 +426,9 @@ class SupportFuncsTest(unittest.TestCase):
                 "result": TypeError,
             },
             {
-                "case": "Binary operator **",
+                "case": "Binary operator & (bitwise and)",
                 "params": {
-                    "current_calculation": "2 ** 3",
+                    "current_calculation": "2 & 3",
                     "user_variables": {},
                 },
                 "result": KeyError,
