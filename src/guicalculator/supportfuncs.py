@@ -15,6 +15,7 @@ OPERATOR_MAP: dict[Type[ast.AST], Callable] = {
     ast.Add: operator.add,
     ast.USub: operator.neg,
     ast.UAdd: operator.pos,
+    ast.Pow: operator.pow,
 }
 
 
@@ -193,8 +194,13 @@ def evaluate_calculation(
                 if (pkg, func) in (("decimal", "Decimal"), ("", "Decimal")):
                     parm = _get_str_parameter(node)
                     return +Decimal(parm)
+                elif (pkg, func) == ("Decimal", "sqrt"):
+
+                    return Decimal.sqrt(_eval(node.args[0]))
                 else:
-                    raise TypeError(f"Unknown function call: \nast.{node_fmtd}")
+                    raise TypeError(
+                        f"Unknown function call: {pkg}.{func}: \nast.{node_fmtd}"
+                    )
 
             case _:
                 raise TypeError(f"Unknown ast node: \nast.{node_fmtd}")

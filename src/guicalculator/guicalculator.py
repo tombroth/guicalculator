@@ -106,7 +106,9 @@ class CalcFrm(ttk.Frame):
             "<Escape>", lambda _: self.winfo_toplevel().destroy()
         )
 
-    def get_current_display_calc(self, symbol: str = "") -> str:
+    def get_current_display_calc(
+        self, symbol: str = "", func: Tuple[str, str] = None  # type: ignore
+    ) -> str:
         """
         get_current_display_calc - Get the current displayed calculation.
 
@@ -136,12 +138,17 @@ class CalcFrm(ttk.Frame):
         else:
             inpt = ""
 
+        if func and inpt:
+            inpt = f"({func[0]}({inpt}))"
+
         return_value = " ".join(
             filter(None, [self.current_display_calc, inpt, symbol])
         ).strip()
         return return_value
 
-    def get_current_eval_calc(self, symbol: str = "") -> str:
+    def get_current_eval_calc(
+        self, symbol: str = "", func: Tuple[str, str] = None  # type: ignore
+    ) -> str:
         """
         get_current_eval_calc - Get the current calculation to be evaluated.
 
@@ -169,6 +176,9 @@ class CalcFrm(ttk.Frame):
             inpt = f"Decimal({str(i)!r})"
         else:
             inpt = ""
+
+        if func and inpt:
+            inpt = f"{func[1]}({inpt})"
 
         return_value = " ".join([self.current_eval_calc, inpt, symbol]).strip()
         return return_value
@@ -206,7 +216,9 @@ class CalcFrm(ttk.Frame):
         self.display.see(tk.END)
         self.display.configure(state="disabled")
 
-    def update_current_calc(self, symbol: str = "") -> None:
+    def update_current_calc(
+        self, symbol: str = "", func: Tuple[str, str] = None  # type: ignore
+    ) -> None:
         """
         update_current_calc - Update the current calculation being input.
 
@@ -231,8 +243,8 @@ class CalcFrm(ttk.Frame):
         if self.current_input:  # if we have a value, round it
             self.current_input = numtostr(self.get_current_input())
 
-        self.current_display_calc = self.get_current_display_calc(symbol)
-        self.current_eval_calc = self.get_current_eval_calc(symbol)
+        self.current_display_calc = self.get_current_display_calc(symbol, func)
+        self.current_eval_calc = self.get_current_eval_calc(symbol, func)
         self.current_input = ""
 
         self.update_display()
@@ -525,12 +537,13 @@ class CalcFrm(ttk.Frame):
         precision in the Decimal context.
         """
         if self.current_input:
-            inpt = self.get_current_input()
-            if inpt == Decimal(0):
-                self.bell()
-                return
+            # inpt = self.get_current_input()
+            # if inpt == Decimal(0):
+            #     self.bell()
+            #     return
 
-            self.current_input = numtostr(1 / inpt)
+            # self.current_input = numtostr(1 / inpt)
+            self.update_current_calc(func=("1/", "1/"))
         self.update_display()
 
     def square_number(self) -> None:
@@ -545,7 +558,8 @@ class CalcFrm(ttk.Frame):
         """
 
         if self.current_input:
-            self.current_input = numtostr(self.get_current_input() ** 2)
+            # self.current_input = numtostr(self.get_current_input() ** 2)
+            self.update_current_calc("** 2")
         self.update_display()
 
     def root_number(self) -> None:
@@ -560,7 +574,8 @@ class CalcFrm(ttk.Frame):
         """
 
         if self.current_input:
-            self.current_input = numtostr(Decimal.sqrt(self.get_current_input()))
+            self.update_current_calc(func=("sqrt", "Decimal.sqrt"))
+            # self.current_input = numtostr(Decimal.sqrt(self.get_current_input()))
         self.update_display()
 
     def vars_popup(self) -> None:
