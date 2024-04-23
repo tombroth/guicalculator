@@ -1,5 +1,5 @@
 """
-guicalculator - A calculator written with python and tkinter
+globals.py - Variables needed by more than one module.
 
 Copyright (c) 2024 Thomas Brotherton
 
@@ -22,6 +22,22 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-__all__ = ["GuiCalculator"]
+from decimal import Decimal
+from typing import NewType
+from unicodedata import normalize
 
-from .guicalculator import GuiCalculator
+PI = "\u03c0"
+
+
+VariablesType = NewType("VariablesType", dict[str, Decimal])
+"""Type to store varaibles and values for the parser: dict[str, Decimal]"""
+
+# stores default variables pi and e
+# including first 30 digits because default precision is 28 in Decimal
+# hard coding instead of using math.pi due to float to Decimal rounding issues
+DEFAULT_VARIABLES: VariablesType = VariablesType(
+    {
+        normalize("NFKC", PI): Decimal("3.141592653589793238462643383279"),
+        "e": Decimal("2.718281828459045235360287471352"),
+    }
+)
