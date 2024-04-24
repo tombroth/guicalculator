@@ -1,6 +1,11 @@
 """
-guicalculator.py - This is the gui calculator. For an example of how to run it, 
-see __main__.py.
+guicalculator.py - This is the gui calculator main window. 
+
+Can be exeecuted as a module:
+    python3 -m guicalculator
+
+Or it can be run directly:
+    guicalculator
 
 Copyright (c) 2024 Thomas Brotherton
 
@@ -25,212 +30,124 @@ SOFTWARE.
 
 import keyword
 import tkinter as tk
-from decimal import Decimal
-from tkinter import scrolledtext, ttk
+from tkinter import font, scrolledtext, ttk
 from typing import Any, Dict, Tuple
 
 from .buttoncfg import ButtonInfo, ButtonLocation, buttons
+from .calculatordata import CalculatorData
 from .globals import DEFAULT_VARIABLES, VariablesType
-from .supportfuncs import evaluate_calculation, numtostr, strtodecimal
-
-FONT = ("TkDefaultFont", "12", "bold")
+from .supportfuncs import numtostr, strtodecimal
 
 
-class GuiCalculator(tk.Tk):
-    """
-    GuiCalculator - The root calculator window
-    """
+class GuiCalculator:
+    """GuiCalculator - The root calculator window"""
 
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
+    def __init__(self) -> None:
+        self.root = tk.Tk()
+        self.root.title("Calculator")
 
-        self.title("Calculator")
-
+        # style info for buttons
         self.style = CalcStyle()
 
+        # set the font
+        self.default_font = font.nametofont("TkDefaultFont")
+        self.default_font.configure(size=12, weight=font.BOLD)
+        self.root.option_add("*Font", self.default_font)
+
         # frame that contains the calculator
-        self.calcfrm = CalcFrm(padding="5")
-        self.calcfrm.grid(column=0, row=0, sticky="news")
-        self.columnconfigure(0, weight=1)
-        self.rowconfigure(0, weight=1)
+        self.calcfrm = CalcFrm(master=self.root)
+        self.root.columnconfigure(0, weight=1)
+        self.root.rowconfigure(0, weight=1)
 
         # set size
-        self.geometry("400x500")
-        self.minsize(400, 500)
+        self.root.geometry("400x500")
+        self.root.minsize(400, 500)
+
+        # start tkinter
+        self.root.mainloop()
 
 
-class CalcStyle(ttk.Style):
-    """
-    CalcStyle - The ttk.Style object for the calculator
-    """
+class CalcStyle:
+    """CalcStyle - The ttk.Style object for the calculator"""
 
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
+    def __init__(self) -> None:
+        self.style = ttk.Style()
+        self.style.theme_use("alt")
 
-        self.theme_use("alt")
-
-        self.configure("TLabel", font=FONT)
-
-        self.configure("Treeview", font=FONT)
-        self.configure("Treeview.Heading", font=FONT)
-
-        self.configure("TButton", font=FONT)
-
-        self.map(
+        self.style.map(
             "number.TButton",
             foreground=[("active", "white"), ("!active", "white")],
             background=[("active", "gray45"), ("!active", "gray55")],
         )
 
-        self.configure("orange.TButton", background="darkorange2")
-        self.configure("red.TButton", background="orangered2")
-        self.configure("memory.TButton", background="lightcyan3")
-        self.configure("mathop.TButton", background="cornsilk3")
+        self.style.configure("orange.TButton", background="darkorange2")
+        self.style.configure("red.TButton", background="orangered2")
+        self.style.configure("memory.TButton", background="lightcyan3")
+        self.style.configure("mathop.TButton", background="cornsilk3")
 
 
-class CalcFrm(ttk.Frame):
+class CalcFrm:
     """
     CalcFrm - The main frame of the calculator root window. Everything is
     in this frame.
     """
 
-    # data used by the calculator
-    current_display_calc: str = ""  # the current caolculation to be displayed
-    current_eval_calc: str = ""  # the current calculation to be evalueated
-    current_input: str = ""  # the current number input
+    def __init__(self, master) -> None:
+        self.frm = ttk.Frame(master, padding=5)
 
-    user_variables: VariablesType = VariablesType({})  # user defined variables
-
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-
-        # self.buttons = bc.get_buttons(self)  # the list of calculator buttons
+        # the calculator data
+        self.calculator_data = CalculatorData(
+            update_display=self.update_display,
+            clear_display=self.clear_display,
+            write_to_display=self.write_to_display,
+            bell=self.frm.bell,
+            vars_popup=self.vars_popup,
+        )
 
         # scrolled text display
         self.display = scrolledtext.ScrolledText(
-            self,
+            self.frm,
             height=10,
             width=20,
-            font=FONT,
         )
         # display is only enabled when we write to it
         self.display.configure(state="disabled")
         self.display.grid(row=0, column=0, sticky="news")
-        self.columnconfigure(0, weight=1)
-        self.rowconfigure(0, weight=1)
+        self.frm.columnconfigure(0, weight=1)
+        self.frm.rowconfigure(0, weight=1)
 
         # frame to hold the memory display
-        self.memfrm = MemDispFrm(self)
-        self.memfrm.grid(column=0, row=1, sticky="news")
-        self.rowconfigure(1, weight=0)
+        self.memfrm = MemDispFrm(master=self.frm, calculator_data=self.calculator_data)
+        self.frm.rowconfigure(1, weight=0)
 
         # frame to hold the buttons
-        self.btnfrm = BtnDispFrm(self)
-        self.btnfrm.grid(column=0, row=2, sticky="news")
-        self.rowconfigure(2, weight=1)
+        self.btnfrm = BtnDispFrm(master=self.frm, calculator_data=self.calculator_data)
+        self.frm.rowconfigure(2, weight=1)
 
-        self.winfo_toplevel().bind(
-            "<Escape>", lambda _: self.winfo_toplevel().destroy()
+        self.frm.winfo_toplevel().bind(
+            "<Escape>", lambda _: self.frm.winfo_toplevel().destroy()
         )
 
-    def get_current_display_calc(
-        self, symbol: str = "", func: Tuple[str, str] = None  # type: ignore
-    ) -> str:
-        """
-        get_current_display_calc - Get the current displayed calculation.
+        self.frm.grid(column=0, row=0, sticky="news")
 
-        Get the current displayed calculation, including current number input
-        and optional mathematical operator.
+    def write_to_display(self, msg: str) -> None:
+        """
+        write_to_display - Write a message to the calculator display.
+
+        Unlike update_display, this does not erase the last line of text.
+        Text written will have newlines added before and after message.
 
         Parameters
         ----------
-        symbol : str, optional
-            Optional string to be added to the end of the calculation. Normally
-            will be blank or a mathematical operator, by default "".
-
-        Returns
-        -------
-        str
-            The current displayed calculation.
+        msg : str
+            Message to be written to the calculator display
         """
 
-        if self.current_input:
-            inpt = numtostr(
-                self.get_current_input(),
-                commas=True,
-                removeZeroes=False,
-            )
-            if self.current_input[-1] == ".":
-                inpt += "."
-        else:
-            inpt = ""
-
-        if func and inpt:
-            if func[0] == "1/":
-                inpt = f"({func[0]}{inpt})"
-            else:
-                inpt = f"{func[0]}({inpt})"
-
-        return_value = " ".join(
-            filter(None, [self.current_display_calc, inpt, symbol])
-        ).strip()
-        return return_value
-
-    def get_current_eval_calc(
-        self, symbol: str = "", func: Tuple[str, str] = None  # type: ignore
-    ) -> str:
-        """
-        get_current_eval_calc - Get the current calculation to be evaluated.
-
-        Get the current calculation to be evaluated, including current number
-        input and optional mathematical operator. The primary difference from
-        get_current_display_calc is that the number inputs are surrounded by
-        calls to Decimal to convert int and float inputs into Decimal to avoid
-        decimal to binary and back to decimal rounding errors. In other words
-        0.3 - 0.2 should be 0.1, not 0.09999999999999998.
-
-        Parameters
-        ----------
-        symbol : str, optional
-            Optional string to be added to the end of the calculation. Normally
-            will be blank or a mathematical operator, by default "".
-
-        Returns
-        -------
-        str
-            The calculation to be evaluated.
-        """
-
-        if self.current_input:
-            i = +self.get_current_input()
-            inpt = f"Decimal({str(i)!r})"
-        else:
-            inpt = ""
-
-        if func and inpt:
-            if func[0] == "1/":
-                inpt = f"({func[1]}{inpt})"
-            else:
-                inpt = f"{func[1]}({inpt})"
-
-        return_value = " ".join([self.current_eval_calc, inpt, symbol]).strip()
-        return return_value
-
-    def get_current_input(self) -> Decimal:
-        """
-        get_current_input - Get current number input as a Decimal.
-
-        Returns
-        -------
-        Decimal
-            Decimal version of the number currently being input. 0 if no
-            number is currently being input.
-        """
-
-        if self.current_input:
-            return Decimal(self.current_input)
-        else:
-            return Decimal(0)
+        self.display.configure(state="normal")
+        self.display.insert("end", f"\n{msg}\n")
+        # move to end
+        self.display.see(tk.END)
+        self.display.configure(state="disabled")
 
     def update_display(self) -> None:
         """
@@ -244,476 +161,71 @@ class CalcFrm(ttk.Frame):
         self.display.configure(state="normal")
         # replace last line
         self.display.delete("end-1l", "end")
-        self.display.insert("end", f"\n{self.get_current_display_calc()}")
+        self.display.insert(
+            "end", f"\n{self.calculator_data.get_current_display_calc()}"
+        )
         # move to end
         self.display.see(tk.END)
         self.display.configure(state="disabled")
 
-    def update_current_calc(
-        self, symbol: str = "", func: Tuple[str, str] = None  # type: ignore
-    ) -> None:
-        """
-        update_current_calc - Update the current calculation being input.
-
-        Uses get_current_display_calc and get_current_eval_calc to generate
-        the most recent versions of the calculation being input (including
-        the current number being input and the operator being input passed
-        in by symbol) and stores them in globals.current_display_calc and
-        globals.current_eval_calc. Then calls update_display.
-
-        Notes
-        -----
-        As a side effect, will round the number currently being input to the
-        precision in the Decimal context.
-
-        Parameters
-        ----------
-        symbol : str, optional
-            Optional string to be added to the end of the calculation. Normally
-            will be blank or a mathematical operator, by default "".
-        """
-
-        if self.current_input:  # if we have a value, round it
-            self.current_input = numtostr(self.get_current_input())
-
-        self.current_display_calc = self.get_current_display_calc(symbol, func)
-        self.current_eval_calc = self.get_current_eval_calc(symbol, func)
-        self.current_input = ""
-
-        self.update_display()
-
-    def process_button(self, buttoncmd: str, buttontxt: str | int = "") -> None:
-        """
-        process_button - Process a calculator button press.
-
-        Parameters
-        ----------
-        buttoncmd : str
-            The command string from the ButtonInfo dictionary in
-            buttoncfg.py buttons.
-        buttontxt : str | int, optional
-            For buttons in buttoncfg.py that don't have a command
-            (number and basic math symbols) this is the button label,
-            by default ""
-        """
-
-        match buttoncmd:
-            case "button":
-                self.button_press(buttontxt)
-
-            case "backspace":
-                self.backspace()
-
-            case "calculate":
-                self.calculate()
-
-            case "clearAll":
-                self.clear_all()
-
-            case "clearValue":
-                self.clear_value()
-
-            case "inverseNumber":
-                self.inverse_number()
-
-            case "invertSign":
-                self.invert_sign()
-
-            case "memAdd":
-                self.memory_add()
-
-            case "memClear":
-                self.memory_clear()
-
-            case "memRecall":
-                self.memory_recall()
-
-            case "memStore":
-                self.memory_store()
-
-            case "memSubtract":
-                self.memory_add(False)
-
-            case "memSwap":
-                self.memory_swap()
-
-            case "rootNumber":
-                self.root_number()
-
-            case "squareNumber":
-                self.square_number()
-
-            case "varsPopup":
-                self.vars_popup()
-
-            case "xToTheY":
-                self.button_press("**")
-            case _:
-                self.bell()
-                print(f"Unknown command: {buttoncmd!r}")
-
-    def button_press(self, symbol: str | int) -> None:
-        """
-        button_press - Handles simple button presses.
-
-        Handles simple button presses that just add to the current formula. For
-        example, a digit (passed as int, not str), ".", "+", "-", etc. Does not
-        handle complex things like computing the square root of the current
-        number being input.
-
-        Notes
-        -----
-        As a side effect, will round the number currently being input to the
-        precision in the Decimal context if symbol is not a digit or decimal
-        point.
-
-        Parameters
-        ----------
-        symbol : str | int
-            The digit or mathematical operator being processed.
-        """
-
-        if isinstance(symbol, int):
-            self.current_input += str(symbol)
-            self.update_display()
-
-        elif symbol == ".":
-            if symbol in self.current_input:
-                self.bell()
-                return
-
-            self.current_input = (self.current_input or "0") + symbol
-            self.update_display()
-
-        else:
-            self.update_current_calc(symbol)
-
-    def backspace(self) -> None:
-        """
-        backspace - Erase last character from number being input.
-        """
-
-        if self.current_input:
-            self.current_input = self.current_input[:-1]
-        self.update_display()
-
-    def clear_value(self) -> None:
-        """
-        clear_value - Clear the current number input, or if that is empty
-        then clear the current calculation.
-        """
-
-        if self.current_input:
-            self.current_input = ""
-        else:
-            self.current_display_calc = ""
-            self.current_eval_calc = ""
-
-        self.update_display()
-
-    def clear_all(self) -> None:
-        """
-        clear_all - Clear the current number being input, the current
-        calculation, and the display. Does not clear the value in memory.
-        """
+    def clear_display(self) -> None:
+        """clear_display - Clear the display"""
 
         self.display.configure(state="normal")
         self.display.delete(1.0, "end")
         self.display.configure(state="disabled")
 
-        self.current_display_calc = ""
-        self.current_eval_calc = ""
-        self.current_input = ""
-
-        self.update_display()
-
-    def get_current_memory(self) -> Decimal:
-        """
-        get_current_memory - Get the current value stored in memory as a
-        Decimal.
-
-        Returns
-        -------
-        Decimal
-            Decimal version of the value stored in memory. 0 if no value is
-            currently stored in memory.
-        """
-
-        mem = self.memfrm.memval.get().replace(",", "")
-        if mem:
-            return Decimal(mem)
-        else:
-            return Decimal(0)
-
-    def memory_clear(self) -> None:
-        """
-        memory_clear - Clear the value stored in memory
-        """
-
-        self.memfrm.memval.set("")
-
-    def memory_recall(self) -> None:
-        """
-        memory_recall - Replace the current number being input with the value
-        stored in memory.
-        """
-
-        self.current_input = self.memfrm.memval.get().replace(",", "")
-        self.update_display()
-
-    def memory_store(self) -> None:
-        """
-        memory_store - Change the value stored in memory to be the same as the
-        current number being input.
-
-        Notes
-        -----
-        Cannot do a simple set because we round and format the display.
-
-        As a side effect, will round the number currently being input to the
-        precision in the Decimal context.
-        """
-
-        # get and reformat current value
-        cur_val = +self.get_current_input()
-        self.current_input = numtostr(cur_val)
-        self.update_display()
-
-        # store it
-        self.memfrm.memval.set(numtostr(cur_val, commas=True))
-
-    def memory_swap(self) -> None:
-        """
-        memory_swap - Swap the value stored in memory with the current number
-        being input.
-
-        Notes
-        -----
-        Cannot do a simple swap like (a,b) = (b,a) because we need to cal .set
-        on the tk.StringVar that stores the memory value, and we round and
-        format the display.
-
-        As a side effect, will round the number currently being input to the
-        precision in the Decimal context.
-        """
-
-        # get current value (formatted with commas)
-        cur_num = numtostr(self.get_current_input(), commas=True)
-
-        # store memory in current value
-        self.current_input = self.memfrm.memval.get().replace(",", "")
-
-        # store retrieved current value in memory
-        self.memfrm.memval.set(cur_num)
-
-        self.update_display()
-
-    def memory_add(self, addto: bool = True) -> None:
-        """
-        memory_add - Add or subtract the current number being input to or from
-        the value stored in memory.
-
-        Notes
-        -----
-        If addto is passed in as false, will subtract the value being input
-        from memory by multiplying the value by -1 before adding.
-
-        As a side effect, will round the number currently being input to the
-        precision in the Decimal context.
-
-        Parameters
-        ----------
-        addto : bool, optional
-            If true, performs addition. If false, performs subtraction.
-            By default True.
-        """
-
-        # adding or subtracting
-        if addto:
-            sign = Decimal(1)
-        else:
-            sign = Decimal(-1)
-
-        # get the current input number (and reformat it)
-        cur_val = +self.get_current_input()
-        self.current_input = numtostr(cur_val)
-        self.update_display()
-
-        # get current memory
-        cur_mem = self.get_current_memory()
-
-        # add (or subtract)
-        mv = cur_mem + (cur_val * sign)
-        self.memfrm.memval.set(numtostr(mv, commas=True))
-
-    def invert_sign(self) -> None:
-        """
-        invert_sign - Convert the current number being input from positive to
-        negative or negative to positive: -x.
-
-        Notes
-        -----
-        As a side effect, will round the number currently being input to the
-        precision in the Decimal context.
-        """
-
-        if self.current_input:
-            self.current_input = numtostr(-self.get_current_input())
-        self.update_display()
-
-    def inverse_number(self) -> None:
-        """
-        inverse_number - Convert the current number being input to it's
-        mathematical inverse: 1/x.
-
-        Notes
-        -----
-        As a side effect, will round the number currently being input to the
-        precision in the Decimal context.
-        """
-        if self.current_input:
-            # inpt = self.get_current_input()
-            # if inpt == Decimal(0):
-            #     self.bell()
-            #     return
-
-            # self.current_input = numtostr(1 / inpt)
-            self.update_current_calc(func=("1/", "1/"))
-        self.update_display()
-
-    def square_number(self) -> None:
-        """
-        square_number - Convert the current number being input to its
-        square: x**2.
-
-        Notes
-        -----
-        As a side effect, will round the number currently being input to the
-        precision in the Decimal context.
-        """
-
-        if self.current_input:
-            # self.current_input = numtostr(self.get_current_input() ** 2)
-            self.update_current_calc("** 2")
-        self.update_display()
-
-    def root_number(self) -> None:
-        """
-        root_number - Convert the current number being input to its
-        square root: Decimal.sqrt(x).
-
-        Notes
-        -----
-        As a side effect, will round the number currently being input to the
-        precision in the Decimal context.
-        """
-
-        if self.current_input:
-            self.update_current_calc(func=("sqrt", "Decimal.sqrt"))
-            # self.current_input = numtostr(Decimal.sqrt(self.get_current_input()))
-        self.update_display()
-
     def vars_popup(self) -> None:
-        """
-        varsPopup - Display a popup window with currently defined variables.
-        """
+        """varsPopup - Display a popup window with currently defined variables."""
 
         # get x and y location for popup
-        x = self.winfo_toplevel().winfo_x() + 10
+        x = self.frm.winfo_toplevel().winfo_x() + 10
         x = max(x, 10)
-        y = self.winfo_toplevel().winfo_y() + 175
+        y = self.frm.winfo_toplevel().winfo_y() + 175
         y = max(y, 10)
 
-        self.varspopup = VarsPopup(calcfrm=self)
-        self.varspopup.geometry("+%d+%d" % (x, y))
-
-    def calculate(self) -> None:
-        """
-        calculate - Performs the current calculation and updates the display
-        with the results.
-        """
-
-        # update current calc and display
-        self.update_current_calc()
-
-        # if we have a calculation to perform
-        if self.current_eval_calc:
-            try:
-                # run the current calculation
-                val = evaluate_calculation(
-                    self.current_eval_calc,
-                    self.user_variables,
-                )
-
-                # clear current calc and set current input to result
-                self.current_display_calc = ""
-                self.current_eval_calc = ""
-                self.current_input = numtostr(val)
-
-                # show the result
-                self.display.configure(state="normal")
-                self.display.insert(
-                    "end", f" =\n{numtostr(val, commas=True)}\n{'=' * 30}\n\n"
-                )
-                self.display.configure(state="disabled")
-
-            except Exception as error:
-                # should probably use a logger
-                print(f"ERROR: {error}\n")
-
-                # clear the current calculation and print the error message
-                self.current_display_calc = ""
-                self.current_eval_calc = ""
-                self.current_input = ""
-
-                # show user error message
-                self.display.configure(state="normal")
-                self.display.insert("end", f"\n= ERROR\n\n")
-                self.display.configure(state="disabled")
-
-            # update the display
-            self.update_display()
+        self.varspopup = VarsPopup(x, y, self.calculator_data)
 
 
-class MemDispFrm(ttk.Frame):
-    """
-    MemDispFrm - The memory display frame.
-    """
+class MemDispFrm:
+    """MemDispFrm - The memory display frame."""
 
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
+    def __init__(self, master, calculator_data: CalculatorData) -> None:
+        self.frm = ttk.Frame(master)
 
-        self.memlbl = ttk.Label(self, text="Memory:")
+        self.memlbl = ttk.Label(self.frm, text="Memory:")
         self.memlbl.grid(row=0, column=0, sticky="e")
 
-        self.memval = tk.StringVar()
-        self.mem_txt = ttk.Label(self, textvariable=self.memval)
+        self.mem_txt = ttk.Label(self.frm, textvariable=calculator_data.memval)
         self.mem_txt.grid(row=0, column=1, sticky="w")
 
-        self.columnconfigure(0, weight=0)
-        self.columnconfigure(1, weight=1)
-        self.rowconfigure(0, weight=0)
+        self.frm.columnconfigure(0, weight=0)
+        self.frm.columnconfigure(1, weight=1)
+        self.frm.rowconfigure(0, weight=0)
+
+        self.frm.grid(column=0, row=1, sticky="news")
 
 
-class BtnDispFrm(ttk.Frame):
-    """
-    BtnDispFrm - The calculator button display frame.
-    """
+class BtnDispFrm:
+    """BtnDispFrm - The calculator button display frame."""
 
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
+    def __init__(self, master, calculator_data: CalculatorData) -> None:
+        self.frm = ttk.Frame(master)
+        self.calculator_data = calculator_data
 
         # each row with a different number of buttons is a different frame
         # this dict keeps track of all the frames
         self.button_frames: Dict[int, ttk.Frame] = {}
 
         # this frame contains only frames, so has only one column
-        self.columnconfigure(0, weight=1)
+        self.frm.columnconfigure(0, weight=1)
 
         # the keys in buttons are tuples of frame, row, column
         # sorting them ensures we process in the correct order
         for btn_loc, btn_info in sorted(buttons.items()):
             self.add_button(btn_loc, btn_info)
+
+        self.frm.grid(column=0, row=2, sticky="news")
 
     def add_button(self, btn_loc: ButtonLocation, btn_info: ButtonInfo) -> None:
         """
@@ -736,7 +248,7 @@ class BtnDispFrm(ttk.Frame):
         # if we have a new frame to add
         if btn_loc.btn_frame not in self.button_frames:
 
-            self.button_frames[btn_loc.btn_frame] = ttk.Frame(self)
+            self.button_frames[btn_loc.btn_frame] = ttk.Frame(self.frm)
 
             self.button_frames[btn_loc.btn_frame].grid(
                 column=0,
@@ -745,11 +257,12 @@ class BtnDispFrm(ttk.Frame):
             )
 
         # create the button
-        cf: CalcFrm = self.master  # type: ignore
         if "command" in btn_info:
-            cmd = lambda x=btn_info["command"]: cf.process_button(x)
+            cmd = lambda x=btn_info["command"]: self.calculator_data.process_button(x)
         else:
-            cmd = lambda x=btn_info["label"]: cf.process_button("button", x)
+            cmd = lambda x=btn_info["label"]: self.calculator_data.process_button(
+                "button", x
+            )
 
         btnopts: dict = {"text": btn_info["label"], "command": cmd}
         if "style" in btn_info:
@@ -773,10 +286,9 @@ class BtnDispFrm(ttk.Frame):
         cur_btn.grid(**gridopts)
 
         # if this button is binding any events ...
-
         if "events" in btn_info:
             for be in btn_info["events"]:
-                topwin = self.winfo_toplevel()
+                topwin = self.frm.winfo_toplevel()
                 topwin.bind(be, lambda _, c=cur_btn: c.invoke())  # type: ignore
 
         # configure the weigts for the buttons
@@ -790,49 +302,48 @@ class BtnDispFrm(ttk.Frame):
         )
         # the weight of the subframe should be proportional to the
         # number of rows in the subframe
-        self.rowconfigure(
+        self.frm.rowconfigure(
             btn_loc.btn_frame,
             weight=btn_loc.btn_row + 1,
         )
 
 
-class VarsPopup(tk.Toplevel):
-    """
-    VarsPopup - The popup window to display variables.
-    """
+class VarsPopup:
+    """VarsPopup - The popup window to display variables."""
 
-    def __init__(self, *args, calcfrm: CalcFrm, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
+    def __init__(self, x: int, y: int, calculator_data: CalculatorData) -> None:
+        self.win = tk.Toplevel()
 
-        self.focus_set()
-        self.wm_title("Variables")
+        self.win.focus_set()
+        self.win.wm_title("Variables")
 
-        self.treefrm = VarsPopupTreeFrm(self, calcfrm=calcfrm)
-        self.treefrm.grid(row=0, column=0, sticky="news")
-        self.rowconfigure(0, weight=1)
-        self.columnconfigure(0, weight=1)
+        self.treefrm = VarsPopupTreeFrm(
+            master=self.win, calculator_data=calculator_data
+        )
+        self.win.rowconfigure(0, weight=1)
+        self.win.columnconfigure(0, weight=1)
 
         vars_tree = self.treefrm.vars_tree
         if vars_tree.get_children():
             vars_tree.focus(vars_tree.get_children()[0])
             vars_tree.selection_set(vars_tree.get_children()[0])
 
+        self.win.geometry("+%d+%d" % (x, y))
 
-class VarsPopupTreeFrm(ttk.Frame):
-    """
-    VarsPopupTreeFrm - The frame with the variables displayed.
-    """
 
-    def __init__(self, *args, calcfrm: CalcFrm, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        self.calcfrm = calcfrm
+class VarsPopupTreeFrm:
+    """VarsPopupTreeFrm - The frame with the variables displayed."""
 
-        self.focus_set()
+    def __init__(self, master, calculator_data: CalculatorData) -> None:
+        self.frm = ttk.Frame(master)
+        self.calculator_data = calculator_data
+
+        self.frm.focus_set()
 
         # scrollbar and treeview
-        self.scrollbar = ttk.Scrollbar(self, orient="vertical")
+        self.scrollbar = ttk.Scrollbar(self.frm, orient="vertical")
         self.vars_tree = ttk.Treeview(
-            self,
+            self.frm,
             yscrollcommand=self.scrollbar.set,
             columns=("value"),
             height=7,
@@ -844,9 +355,9 @@ class VarsPopupTreeFrm(ttk.Frame):
         self.vars_tree.grid(row=0, column=0, sticky="news")
         self.scrollbar.grid(row=0, column=1, sticky="ns")
 
-        self.columnconfigure(0, weight=1)
-        self.columnconfigure(1, weight=0)
-        self.rowconfigure(0, weight=1)
+        self.frm.columnconfigure(0, weight=1)
+        self.frm.columnconfigure(1, weight=0)
+        self.frm.rowconfigure(0, weight=1)
 
         # our columns in the tree view
         self.vars_tree.heading("#0", text="Variable")
@@ -855,23 +366,22 @@ class VarsPopupTreeFrm(ttk.Frame):
         self.vars_tree.heading("value", text="Value")
         self.vars_tree.column("value", width=325, anchor="w")
 
-        # this loop iterates over the default variables and adds
-        # them to the treeview
+        # Add default variables
         self.add_variable_section("default", DEFAULT_VARIABLES)
 
-        # this loop iterates over the user variables and adds
-        # them to the treeview
-        self.add_variable_section("user variables", self.calcfrm.user_variables)
+        # Add user variables
+        self.add_variable_section("user variables", self.calculator_data.user_variables)
 
-        # add buttons to select or edit user variables
-        self.buttonfrm = VarsPopupTreeFrmButtons(self, vptf=self)
-        self.buttonfrm.grid(row=1, column=0, sticky="news")
-        self.rowconfigure(1, weight=0)
+        # add buttons
+        self.buttonfrm = VarsPopupTreeFrmButtons(master=self.frm, vptf=self)
+        self.frm.rowconfigure(1, weight=0)
 
-        # double click to select
+        # double click event to select a variable
         self.vars_tree.bind(
             "<Double-Button-1>", lambda _: self.buttonfrm.select_button.invoke()
         )
+
+        self.frm.grid(row=0, column=0, sticky="news")
 
     def add_variable_section(
         self, section_name: str, section_vars: VariablesType
@@ -903,50 +413,48 @@ class VarsPopupTreeFrm(ttk.Frame):
         self.vars_tree.item(section_id, open=True)
 
 
-class VarsPopupTreeFrmButtons(ttk.Frame):
+class VarsPopupTreeFrmButtons:
     """
     VarsPopupTreeFrmButtons - The frame with the buttons in the variables
     popup window.
-
     """
 
-    def __init__(self, *args, vptf: VarsPopupTreeFrm, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
+    def __init__(self, master, vptf: VarsPopupTreeFrm) -> None:
+        self.frm = ttk.Frame(master)
         self.vptf = vptf
 
         self.edit_button = ttk.Button(
-            self,
+            self.frm,
             text="Edit User Variables",
             command=self.user_vars_edit,
         )
         self.edit_button.grid(row=0, column=0, columnspan=2)
-        self.columnconfigure(0, weight=1)
-        self.rowconfigure(0, weight=0)
+        self.frm.columnconfigure(0, weight=1)
+        self.frm.rowconfigure(0, weight=0)
 
         self.cancel_button = ttk.Button(
-            self,
+            self.frm,
             text="Cancel",
-            command=self.winfo_toplevel().destroy,
+            command=self.frm.winfo_toplevel().destroy,
         )
         self.cancel_button.grid(row=1, column=0)
-        self.rowconfigure(1, weight=0)
+        self.frm.rowconfigure(1, weight=0)
 
         self.select_button = ttk.Button(
-            self,
+            self.frm,
             text="Select",
             command=self.user_vars_select,
         )
         self.select_button.grid(row=1, column=1)
-        self.columnconfigure(1, weight=1)
+        self.frm.columnconfigure(1, weight=1)
 
-        top_win = self.winfo_toplevel()
+        top_win = self.frm.winfo_toplevel()
         top_win.bind("<Return>", lambda _: self.select_button.invoke())
-        top_win.bind("<Escape>", lambda _: self.winfo_toplevel().destroy())
+        top_win.bind("<Escape>", lambda _: self.frm.winfo_toplevel().destroy())
+        self.frm.grid(row=1, column=0, sticky="news")
 
     def user_vars_select(self) -> None:
-        """
-        user_vars_select - Return selected variable to the calculator.
-        """
+        """user_vars_select - Return selected variable to the calculator."""
 
         vars_tree = self.vptf.vars_tree
 
@@ -956,71 +464,64 @@ class VarsPopupTreeFrmButtons(ttk.Frame):
             vars_tree.selection()
             and vars_tree.selection()[0] not in vars_tree.get_children()
         ):
-            self.vptf.calcfrm.button_press(
+            self.vptf.calculator_data.button_press(
                 vars_tree.item(vars_tree.selection()[0])["text"]
             )
 
-        self.winfo_toplevel().destroy()
+        self.frm.winfo_toplevel().destroy()
 
     def user_vars_edit(self) -> None:
-        """
-        user_vars_edit - Popup window to edit the user variables.
-        """
-        editvars_win = UserVarsEditPopup(calcfrm=self.vptf.calcfrm)
+        """user_vars_edit - Popup window to edit the user variables."""
 
-        x = self.winfo_toplevel().winfo_x()
-        y = self.winfo_toplevel().winfo_y()
-        editvars_win.geometry("+%d+%d" % (x + 10, y + 10))
+        x = self.frm.winfo_toplevel().winfo_x() + 10
+        y = self.frm.winfo_toplevel().winfo_y() + 10
+        self.editvars_win = UserVarsEditPopup(x, y, vptf=self.vptf)
 
 
-class UserVarsEditPopup(tk.Toplevel):
-    """
-    UserVarsEditPopup - Popup window to edit the user variables.
-    """
+class UserVarsEditPopup:
+    """UserVarsEditPopup - Popup window to edit the user variables."""
 
-    def __init__(self, *args, calcfrm: CalcFrm, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
+    def __init__(self, x: int, y: int, vptf: VarsPopupTreeFrm) -> None:
+        self.win = tk.Toplevel()
 
-        self.focus_set()
-        self.wm_title("Edit User Variables")
+        self.win.focus_set()
+        self.win.wm_title("Edit User Variables")
 
-        self.focus_set()
-        self.treefrm = UserVarsEditFrm(self, calcfrm=calcfrm)
-        self.treefrm.grid(row=0, column=0, sticky="news")
-        self.rowconfigure(0, weight=1)
-        self.columnconfigure(0, weight=1)
+        self.win.focus_set()
+        self.treefrm = UserVarsEditFrm(master=self.win, vptf=vptf)
+        self.win.rowconfigure(0, weight=1)
+        self.win.columnconfigure(0, weight=1)
+        self.win.geometry("+%d+%d" % (x, y))
 
 
-class UserVarsEditFrm(tk.Frame):
-    """
-    UserVarsEditFrm - The frame with the user variables edit widgets
-    """
+class UserVarsEditFrm:
+    """UserVarsEditFrm - The frame with the user variables edit widgets"""
 
-    def __init__(self, *args, calcfrm: CalcFrm, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        self.calcfrm = calcfrm
+    def __init__(self, master, vptf: VarsPopupTreeFrm) -> None:
+        self.frm = ttk.Frame(master)
+        self.vptf = vptf
 
         # column headers
-        self.var_lbl = ttk.Label(self, text="User Variable", width=16)
-        self.val_lbl = ttk.Label(self, text="Value", width=32)
+        self.var_lbl = ttk.Label(self.frm, text="User Variable", width=16)
+        self.val_lbl = ttk.Label(self.frm, text="Value", width=32)
 
         lastrow: int = 0
         self.var_lbl.grid(row=lastrow, column=0, sticky="we")
         self.val_lbl.grid(row=lastrow, column=1, sticky="we")
 
-        self.rowconfigure(lastrow, weight=0)
-        self.columnconfigure(0, weight=1)
-        self.columnconfigure(1, weight=1)
+        self.frm.rowconfigure(lastrow, weight=0)
+        self.frm.columnconfigure(0, weight=1)
+        self.frm.columnconfigure(1, weight=1)
 
         # validate functions for name/value
-        self.validate_var_name = (self.register(self.validate_varname), "%P")
-        self.validate_value = (self.register(self.validate_decimal), "%P")
+        self.validate_var_name = (self.frm.register(self.validate_varname), "%P")
+        self.validate_value = (self.frm.register(self.validate_decimal), "%P")
 
         """
         variable name/value entry widgets
 
-        This dictionary stores all the Text entry boxes for editing 
-        user variables.
+        This dictionary stores all the Text entry boxes for editing user 
+        variables.
         
         The tuple[int, int] index is the row and column of the entry widget
 
@@ -1034,7 +535,7 @@ class UserVarsEditFrm(tk.Frame):
         """
         self.uservars: dict[Tuple[int, int], ttk.Entry] = {}
 
-        for k, v in calcfrm.user_variables.items():
+        for k, v in self.vptf.calculator_data.user_variables.items():
             lastrow += 1
             self.addrow(lastrow, k, numtostr(v, commas=True))
 
@@ -1048,42 +549,42 @@ class UserVarsEditFrm(tk.Frame):
         # put these at row 1000 to allow for inserting more rows
         # add row button
         self.addbtn = ttk.Button(
-            self,
+            self.frm,
             text="Add Row",
             command=self.user_vars_edit_addrow,
         )
         self.addbtn.grid(row=1000, column=0)
-        self.rowconfigure(1000, weight=0)
+        self.frm.rowconfigure(1000, weight=0)
 
         # add delete row nutton
         self.delbtn = ttk.Button(
-            self,
+            self.frm,
             text="Delete Row",
             command=self.user_vars_edit_delrow,
-            takefocus=False,
+            takefocus=False,  # hack so I can see what edit row has focus
         )
         self.delbtn.grid(row=1000, column=1)
 
         # add current_calculation button
         self.curcalcbtn = ttk.Button(
-            self,
+            self.frm,
             text="Add current result as new variable",
             command=self.add_current,
         )
         self.curcalcbtn.grid(row=1001, column=0, columnspan=2)
-        self.rowconfigure(1001, weight=0)
+        self.frm.rowconfigure(1001, weight=0)
 
-        topwin = self.winfo_toplevel()
+        topwin = self.frm.winfo_toplevel()
         # cancel button
-        self.cancelbtn = ttk.Button(self, text="Cancel", command=topwin.destroy)
+        self.cancelbtn = ttk.Button(self.frm, text="Cancel", command=topwin.destroy)
         self.cancelbtn.grid(row=1002, column=0)
-        self.rowconfigure(1002, weight=0)
+        self.frm.rowconfigure(1002, weight=0)
 
         topwin.bind("<Escape>", lambda _: self.cancelbtn.invoke())
 
         # ok button
         self.okbtn = ttk.Button(
-            self,
+            self.frm,
             text="Ok",
             command=self.user_vars_edit_ok,
         )
@@ -1092,16 +593,18 @@ class UserVarsEditFrm(tk.Frame):
         topwin.bind("<Return>", lambda _: self.okbtn.invoke())
 
         # error message display
-        self.errmsg = tk.StringVar(self)
-        self.errmsg_lbl = ttk.Label(self, anchor="w", textvariable=self.errmsg)
+        self.errmsg = tk.StringVar(self.frm)
+        self.errmsg_lbl = ttk.Label(self.frm, anchor="w", textvariable=self.errmsg)
         self.errmsg_lbl.grid(row=1003, column=0, columnspan=2, sticky="news")
-        self.rowconfigure(1003, weight=0)
+        self.frm.rowconfigure(1003, weight=0)
+
+        self.frm.grid(row=0, column=0, sticky="news")
 
     def user_vars_edit_delrow(self) -> None:
         """Delete the current row"""
 
         # find the current row
-        cur_widget = self.winfo_toplevel().focus_get()
+        cur_widget = self.frm.winfo_toplevel().focus_get()
         if cur_widget in list(self.uservars.values()):
             widget_num = list(self.uservars.values()).index(cur_widget)  # type: ignore
             row = list(self.uservars.keys())[widget_num][0]
@@ -1122,11 +625,11 @@ class UserVarsEditFrm(tk.Frame):
     def add_current(self) -> None:
         """Add the current calculation result as a variable"""
 
-        currcalc = self.calcfrm.get_current_display_calc()
+        currcalc = self.vptf.calculator_data.get_current_display_calc()
         if currcalc:
             # get the result
-            self.calcfrm.calculate()
-            result = self.calcfrm.get_current_input()
+            self.vptf.calculator_data.calculate()
+            result = self.vptf.calculator_data.get_current_input()
 
             # add result to a new row
             row = self.user_vars_edit_addrow()
@@ -1182,18 +685,18 @@ class UserVarsEditFrm(tk.Frame):
         else:
             entopts = {}
 
-        tbox = ttk.Entry(self, width=(16 * (colnum + 1)), font=FONT, **entopts)
+        tbox = ttk.Entry(self.frm, width=(16 * (colnum + 1)), **entopts)
         tbox.insert(tk.INSERT, text)
         tbox.grid(row=rownum, column=colnum, sticky="news")
         self.uservars[(rownum, colnum)] = tbox
-        self.rowconfigure(rownum, weight=1)
+        self.frm.rowconfigure(rownum, weight=1)
 
         if colnum == 1:
             tbox.bind("<KeyRelease>", self.format_number)
 
     def format_number(self, event: tk.Event) -> None:
         """
-        formatnumber - Format the number input
+        format_number - Format the number input
 
         Parameters
         ----------
@@ -1232,7 +735,7 @@ class UserVarsEditFrm(tk.Frame):
         """
 
         if newnam and not newnam.isidentifier():
-            self.bell()
+            self.frm.bell()
             return False
 
         return True
@@ -1257,14 +760,15 @@ class UserVarsEditFrm(tk.Frame):
             try:
                 _ = strtodecimal(newval)
             except:
-                self.bell()
+                self.frm.bell()
                 return False
 
         return True
 
     def user_vars_edit_addrow(self) -> int:
         """
-        user_vars_edit_addrow - Add a row for a new user variable. Returns row number added
+        user_vars_edit_addrow - Add a row for a new user variable. Returns row
+        number added
         """
 
         if self.uservars.keys():
@@ -1278,15 +782,15 @@ class UserVarsEditFrm(tk.Frame):
         return nextrow
 
     def user_vars_edit_ok(self) -> None:
-        """
-        user_vars_edit_ok - Update the user variables from entered data
-        """
+        """user_vars_edit_ok - Update the user variables from entered data"""
 
         newuservars: VariablesType = VariablesType({})
 
         if self.uservars:
             k = self.uservars.keys()
-            rows = set(list(zip(*k))[0])
+            rows = set(
+                list(zip(*k))[0]
+            )  # unique set of rows that haven't been deleted yet
         else:
             rows = set()
 
@@ -1298,6 +802,9 @@ class UserVarsEditFrm(tk.Frame):
             # extracted for consistency in messaging
             errmsg = f"ERROR:"
             varnam = f"variable name {nam!r}"
+
+            # need to combine the validation here and in the parser
+            # into one function somewhere
 
             # if we don't have a valid identifier, print an error
             if not nam.isidentifier():
@@ -1337,14 +844,14 @@ class UserVarsEditFrm(tk.Frame):
             newuservars[nam] = val_decimal
 
         # save the new variables
-        self.calcfrm.user_variables = newuservars
+        self.vptf.calculator_data.user_variables = newuservars
 
         # close this window
-        self.winfo_toplevel().destroy()
+        self.frm.winfo_toplevel().destroy()
 
         # rebuild the varspopup
-        self.calcfrm.varspopup.destroy()
-        self.calcfrm.vars_popup()
+        self.vptf.frm.winfo_toplevel().destroy()
+        self.vptf.calculator_data.vars_popup()
 
     def set_errmsg(self, error_msg: str) -> None:
         """
@@ -1355,5 +862,5 @@ class UserVarsEditFrm(tk.Frame):
         error_msg : str
             Error message to display
         """
-        self.bell()
+        self.frm.bell()
         self.errmsg.set(error_msg)

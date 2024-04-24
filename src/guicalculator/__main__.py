@@ -22,13 +22,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from guicalculator import GuiCalculator
+from . import GuiCalculator
 
 
 # poetry build system seems to run better having a target function to run
 def main():
-    app = GuiCalculator()
-    app.mainloop()
+    _ = GuiCalculator()
 
 
 if __name__ == "__main__":
