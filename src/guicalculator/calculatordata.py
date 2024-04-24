@@ -65,7 +65,46 @@ class CalculatorData:
 
         self.memval = StringVar()  # the value stored in memory
 
-    def get_current_display_calc(self, symbol: str = "", func: str = "") -> str:
+    def validate_symbol_and_func(self, symbol: str, func: tuple[str, str]) -> None:
+        """
+        validate_symbol_and_func - Validate that symbol and func are valid.
+
+        Parameters
+        ----------
+        symbol : str
+            String to be added to the end of the calculation.
+        func : tuple[str, str]
+            Tuple containing function to be added.
+            [0] is for the display version of the calculation
+            [1] is for the evaluation version of the calculation
+
+        Raises
+        ------
+        ValueError
+            Used for custom errors, message indicates what the specific error was.
+        """
+
+        if symbol:
+            if type(symbol) != str:
+                raise ValueError(f"Symbol is not str type: {symbol!r}")
+            if symbol not in ["(", ")", "/", "*", "-", "+", "** 2", "**"]:
+                raise ValueError(f"Invalid symbol: {symbol!r}")
+
+        if func:
+            if type(func) != tuple:
+                raise ValueError(
+                    f"Function is not tuple[str, str]: {func!r}: {type(func)}"
+                )
+            if func not in [("", ""), ("1/", "1/"), ("sqrt", "Decimal.sqrt")]:
+                raise ValueError(f"Invalid function: {func!r}")
+            if symbol and func != ("", ""):
+                raise ValueError(
+                    f"Cannot specify both symbol and function: {symbol}, {func}"
+                )
+
+    def get_current_display_calc(
+        self, symbol: str = "", func: tuple[str, str] = ("", "")
+    ) -> str:
         """
         get_current_display_calc - Get the current displayed calculation.
 
@@ -77,14 +116,18 @@ class CalculatorData:
         symbol : str, optional
             Optional string to be added to the end of the calculation. Normally
             will be blank or a mathematical operator, by default "".
-        func : str, optional
-            Optional string for adding function calls, by default "".
+        func : tuple[str, str], optional
+            Optional tuple containing function to be added, by default ("", "").
+            [0] is for the display version of the calculation
+            [1] is for the evaluation version of the calculation
 
         Returns
         -------
         str
             The current displayed calculation.
         """
+
+        self.validate_symbol_and_func(symbol, func)
 
         if self.current_input:
             inpt = numtostr(
@@ -97,18 +140,20 @@ class CalculatorData:
         else:
             inpt = ""
 
-        if func and inpt:
-            if func == "1/":
-                inpt = f"({func}{inpt})"
+        if func and func[0] and inpt:
+            if func[0] == "1/":
+                inpt = f"({func[0]}{inpt})"
             else:
-                inpt = f"{func}({inpt})"
+                inpt = f"{func[0]}({inpt})"
 
         return_value = " ".join(
             filter(None, [self.current_display_calc, inpt, symbol])
         ).strip()
         return return_value
 
-    def get_current_eval_calc(self, symbol: str = "", func: str = "") -> str:
+    def get_current_eval_calc(
+        self, symbol: str = "", func: tuple[str, str] = ("", "")
+    ) -> str:
         """
         get_current_eval_calc - Get the current calculation to be evaluated.
 
@@ -124,8 +169,10 @@ class CalculatorData:
         symbol : str, optional
             Optional string to be added to the end of the calculation. Normally
             will be blank or a mathematical operator, by default "".
-        func : str, optional
-            Optional string for adding function calls, by default "".
+        func : tuple[str, str], optional
+            Optional tuple containing function to be added, by default ("", "").
+            [0] is for the display version of the calculation
+            [1] is for the evaluation version of the calculation
 
         Returns
         -------
@@ -133,17 +180,19 @@ class CalculatorData:
             The calculation to be evaluated.
         """
 
+        self.validate_symbol_and_func(symbol, func)
+
         if self.current_input:
             i = +self.get_current_input()
             inpt = f"Decimal({str(i)!r})"
         else:
             inpt = ""
 
-        if func and inpt:
-            if func == "1/":
-                inpt = f"({func}{inpt})"
+        if func and func[1] and inpt:
+            if func[1] == "1/":
+                inpt = f"({func[1]}{inpt})"
             else:
-                inpt = f"{func}({inpt})"
+                inpt = f"{func[1]}({inpt})"
 
         return_value = " ".join([self.current_eval_calc, inpt, symbol]).strip()
         return return_value
@@ -187,16 +236,18 @@ class CalculatorData:
             Optional string to be added to the end of the calculation. Normally
             will be blank or a mathematical operator, by default "".
         func : tuple[str, str], optional
-            Optional tuple containing function to be added, by default None.
+            Optional tuple containing function to be added, by default ("", "").
             [0] is for the display version of the calculation
             [1] is for the evaluation version of the calculation
         """
 
+        self.validate_symbol_and_func(symbol, func)
+
         if self.current_input:  # if we have a value, round it
             self.current_input = numtostr(self.get_current_input())
 
-        self.current_display_calc = self.get_current_display_calc(symbol, func[0])
-        self.current_eval_calc = self.get_current_eval_calc(symbol, func[1])
+        self.current_display_calc = self.get_current_display_calc(symbol, func)
+        self.current_eval_calc = self.get_current_eval_calc(symbol, func)
         self.current_input = ""
 
         self.update_display()
@@ -369,7 +420,8 @@ class CalculatorData:
         stored in memory.
         """
 
-        self.current_input = self.memval.get().replace(",", "")
+        cur_mem = numtostr(self.get_current_memory())
+        self.current_input = cur_mem
         self.update_display()
 
     def memory_store(self) -> None:
@@ -412,7 +464,7 @@ class CalculatorData:
         cur_num = numtostr(self.get_current_input(), commas=True)
 
         # store memory in current value
-        self.current_input = self.memval.get().replace(",", "")
+        self.current_input = numtostr(self.get_current_memory())
 
         # store retrieved current value in memory
         self.memval.set(cur_num)
@@ -484,12 +536,6 @@ class CalculatorData:
         """
 
         if self.current_input:
-            # inpt = self.get_current_input()
-            # if inpt == Decimal(0):
-            #     self.bell()
-            #     return
-
-            # self.current_input = numtostr(1 / inpt)
             self.update_current_calc(func=("1/", "1/"))
         self.update_display()
 
@@ -504,9 +550,7 @@ class CalculatorData:
         precision in the Decimal context.
         """
 
-        if self.current_input:
-            # self.current_input = numtostr(self.get_current_input() ** 2)
-            self.update_current_calc("** 2")
+        self.update_current_calc("** 2")
         self.update_display()
 
     def root_number(self) -> None:
@@ -562,5 +606,5 @@ class CalculatorData:
                 self.current_eval_calc = ""
                 self.current_input = ""
 
-            # update the display
-            self.update_display()
+        # update the display
+        self.update_display()
