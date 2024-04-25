@@ -35,7 +35,7 @@ from decimal import Decimal
 from tkinter import StringVar
 from typing import Callable
 
-from .globals import VariablesType
+from .globals import DEFAULT_VARIABLES, VariablesType
 from .supportfuncs import evaluate_calculation, numtostr
 
 
@@ -84,10 +84,37 @@ class CalculatorData:
             Used for custom errors, message indicates what the specific error was.
         """
 
+        valid_symbols = [
+            "(",
+            ")",
+            "/",
+            "*",
+            "-",
+            "+",
+            "** 2",
+            "**",
+            *DEFAULT_VARIABLES.keys(), 
+        ]
+
+        # double checking that variable names are str
+        # default variables are defined in code so should be safe
+        for v in self.user_variables.keys():
+            if type(v) == str:
+                valid_symbols.append(v)
+            else:
+                raise ValueError(f"User variable name is not str: {v!r}")
+
+        valid_funcs = [
+            ("", ""),
+            ("1/", "1/"),
+            ("sqrt", "Decimal.sqrt"),
+        ]
+
         if symbol:
             if type(symbol) != str:
                 raise ValueError(f"Symbol is not str type: {symbol!r}")
-            if symbol not in ["(", ")", "/", "*", "-", "+", "** 2", "**"]:
+
+            if symbol not in valid_symbols:
                 raise ValueError(f"Invalid symbol: {symbol!r}")
 
         if func:
@@ -95,8 +122,10 @@ class CalculatorData:
                 raise ValueError(
                     f"Function is not tuple[str, str]: {func!r}: {type(func)}"
                 )
-            if func not in [("", ""), ("1/", "1/"), ("sqrt", "Decimal.sqrt")]:
+
+            if func not in valid_funcs:
                 raise ValueError(f"Invalid function: {func!r}")
+
             if symbol and func != ("", ""):
                 raise ValueError(
                     f"Cannot specify both symbol and function: {symbol}, {func}"
