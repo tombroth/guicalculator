@@ -77,6 +77,7 @@ def numtostr(
     str
         The string representation of the number
     """
+
     v: int | float | Decimal
     if commas:
         c = ","
@@ -120,10 +121,48 @@ def strtodecimal(val: str) -> Decimal:
     Decimal
         Converted value
     """
+
     if val:
         return Decimal(val.replace(",", ""))
     else:
         return Decimal(0)
+
+
+def validate_user_var(nam: str, val: Decimal) -> None:
+    """
+    validate_user_vars - Validate that nothing improper is in user_variables
+
+    Parameters
+    ----------
+    user_variables : VariablesType
+        The user variables to validate
+
+    Raises
+    ------
+    TypeError
+        Used for custom errors, message indicates what the specific error was.
+    """
+
+    if not nam:
+        raise TypeError(f"Variable has no name")
+
+    if type(nam) != str:
+        raise TypeError(f"Variable name is wrong data type: {nam!r}")
+
+    if not nam.isidentifier():
+        raise TypeError(f"Invalid variable name: {nam!r}")
+
+    if keyword.iskeyword(nam):
+        raise TypeError(f"Variable name is a reserved word: {nam!r}")
+
+    if nam in DEFAULT_VARIABLES.keys():
+        raise TypeError(f"Attempt to overwrite default variable: {nam!r}")
+
+    if val is None:
+        raise TypeError(f"No value for variable: {nam!r}")
+
+    if type(val) != Decimal:
+        raise TypeError(f"Invalid value for variable: {nam!r}: {val!r}")
 
 
 def evaluate_calculation(
@@ -155,17 +194,7 @@ def evaluate_calculation(
     # validate that nothing improper is in user_variables
     # we should be able to trust DEFAULT_VARIABLES
     for nam, val in user_variables.items():
-        if (
-            not nam
-            or type(nam) != str
-            or not nam.isidentifier()
-            or keyword.iskeyword(nam)
-        ):
-            raise TypeError("Invalid variable name {nam!r}")
-        if nam in DEFAULT_VARIABLES.keys():
-            raise TypeError("Attempt to overwrite default variable {nam!r}")
-        if not val or type(val) != Decimal:
-            raise TypeError("Invalid value for variable {nam!r}: {val!r}")
+        validate_user_var(nam, val)
 
     # validate we actually have a str in current_calculation
     if not current_calculation or type(current_calculation) != str:

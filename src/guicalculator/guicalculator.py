@@ -28,7 +28,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import keyword
 import tkinter as tk
 from tkinter import font, scrolledtext, ttk
 from typing import Any, Dict, Tuple
@@ -36,7 +35,7 @@ from typing import Any, Dict, Tuple
 from .buttoncfg import ButtonInfo, ButtonLocation, buttons
 from .calculatordata import CalculatorData
 from .globals import DEFAULT_VARIABLES, VariablesType
-from .supportfuncs import numtostr, strtodecimal
+from .supportfuncs import numtostr, strtodecimal, validate_user_var
 
 
 class GuiCalculator:
@@ -798,47 +797,40 @@ class UserVarsEditFrm:
             # user variable name
             nam = self.uservars[(i, 0)].get().strip()
 
+            # new user variable value
+            val = self.uservars[(i, 1)].get().strip()
+
             # common parts of these error messages
             # extracted for consistency in messaging
             errmsg = f"ERROR:"
             varnam = f"variable name {nam!r}"
 
-            # need to combine the validation here and in the parser
-            # into one function somewhere
-
-            # if we don't have a valid identifier, print an error
-            if not nam.isidentifier():
-                self.set_errmsg(f"{errmsg} invalid {varnam}")
-                self.uservars[(i, 0)].focus_set()
-                return
-
-            # if we have a keyword, print an error
-            if keyword.iskeyword(nam):
-                self.set_errmsg(f"{errmsg} {varnam} is a reserved word")
-                self.uservars[(i, 0)].focus_set()
-                return
-
-            # if we  have a duplicate variable name, print an error
-            if nam in newuservars.keys() or nam in DEFAULT_VARIABLES.keys():
-                self.set_errmsg(f"{errmsg} duplicate {varnam}")
-                self.uservars[(i, 0)].focus_set()
-                return
-
-            # new user variable value
-            val = self.uservars[(i, 1)].get().strip()
-
-            # if we don't have a value, print an error
-            if not val:
+            # get the decimal value of variable
+            if val:
+                try:
+                    val_decimal = +strtodecimal(val)
+                except:
+                    self.set_errmsg(f"{errmsg} invalid numeric value {val!r}")
+                    self.uservars[(i, 1)].focus_set()
+                    return
+            else:
                 self.set_errmsg(f"{errmsg} value not set")
                 self.uservars[(i, 1)].focus_set()
                 return
 
-            # if we don't have a valid Decimal value, print an error
+            # validate nam and val_decimal
             try:
-                val_decimal = +strtodecimal(val)
-            except:
-                self.set_errmsg(f"{errmsg} invalid numeric value {val!r}")
-                self.uservars[(i, 1)].focus_set()
+                validate_user_var(nam, val_decimal)
+            except Exception as e:
+                self.set_errmsg(f"{errmsg} {str(e)}")
+                self.uservars[(i, 0)].focus_set()
+                return
+
+            # above doesn't check for duplicate in enterred variable list
+            # if we  have a duplicate variable name, print an error
+            if nam in newuservars.keys():
+                self.set_errmsg(f"{errmsg} duplicate {varnam}")
+                self.uservars[(i, 0)].focus_set()
                 return
 
             newuservars[nam] = val_decimal
