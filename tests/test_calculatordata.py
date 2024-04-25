@@ -5,7 +5,8 @@ from io import StringIO
 from typing import Any, Callable
 from unittest.mock import MagicMock, patch
 
-from guicalculator.calculatordata import CalculatorData  # type:ignore
+from guicalculator.calculatordata import CalculatorData  # type: ignore
+from guicalculator.globals import PI  # type: ignore
 
 
 class CalculatorDataTest(unittest.TestCase):
@@ -566,6 +567,29 @@ class CalculatorDataTest(unittest.TestCase):
                 "params": {"func": ("1/", "1/")},
                 "ending": {"disp": "(1/3)", "eval": "(1/Decimal('3'))", "inpt": ""},
             },
+            {
+                "case": "Default variable e",
+                "current": {"disp": "", "eval": "", "inpt": ""},
+                "params": {"symbol": "e"},
+                "ending": {"disp": "e", "eval": "e", "inpt": ""},
+            },
+            {
+                "case": "Default variable PI",
+                "current": {"disp": "", "eval": "", "inpt": ""},
+                "params": {"symbol": PI},
+                "ending": {"disp": PI, "eval": PI, "inpt": ""},
+            },
+            {
+                "case": "User variable x",
+                "current": {
+                    "disp": "", 
+                    "eval": "", 
+                    "inpt": "", 
+                    "vars": {"x": Decimal("1234.56")},
+                },
+                "params": {"symbol": "x"},
+                "ending": {"disp": "x", "eval": "x", "inpt": ""},
+            },
         ]
 
         for data in test_data:
@@ -592,6 +616,22 @@ class CalculatorDataTest(unittest.TestCase):
                 "params": {
                     "symbol": "+",
                     "func": ("1/", "1/"),
+                },
+                "result": ValueError,
+            },
+            {
+                "case": "Unknown symbol",
+                "current": {"disp": "", "eval": "", "inpt": "123", "vars": {}},
+                "params": {
+                    "symbol": "abcde",
+                },
+                "result": ValueError,
+            },
+            {
+                "case": "Keyword",
+                "current": {"disp": "", "eval": "", "inpt": "123"},
+                "params": {
+                    "symbol": "def",
                 },
                 "result": ValueError,
             },
@@ -1494,6 +1534,26 @@ class CalculatorDataTest(unittest.TestCase):
                 "case": "No input value",
                 "current": {"disp": "", "eval": "", "inpt": ""},
                 "ending": {"disp": "", "eval": "", "inpt": ""},
+            },
+            {
+                "case": "Default variable e",
+                "current": {"disp": "e", "eval": "e", "inpt": ""},
+                "ending": {"disp": "", "eval": "", "inpt": "2.718281828459045235360287471"},
+            },
+            {
+                "case": "Default Variable PI",
+                "current": {"disp": PI, "eval": PI, "inpt": ""},
+                "ending": {"disp": "", "eval": "", "inpt": "3.141592653589793238462643383"},
+            },
+            {
+                "case": "User variable x",
+                "current": {
+                    "disp": "x", 
+                    "eval": "x", 
+                    "inpt": "", 
+                    "vars": {"x": Decimal("1234.56")},
+                },
+                "ending": {"disp": "", "eval": "", "inpt": "1234.56"},
             },
         ]
 
