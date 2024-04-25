@@ -1,8 +1,9 @@
 import tkinter
 import unittest
 from decimal import Decimal, InvalidOperation
+from io import StringIO
 from typing import Any, Callable
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 from guicalculator.calculatordata import CalculatorData  # type:ignore
 
@@ -82,17 +83,27 @@ class CalculatorDataTest(unittest.TestCase):
             )
         if "eval" in cur_vals:
             self.assertEqual(
-                self.calc_data.current_eval_calc, cur_vals["eval"], "current_eval_calc"
+                self.calc_data.current_eval_calc,
+                cur_vals["eval"],
+                "current_eval_calc",
             )
         if "inpt" in cur_vals:
             self.assertEqual(
-                self.calc_data.current_input, cur_vals["inpt"], "current_input"
+                self.calc_data.current_input,
+                cur_vals["inpt"],
+                "current_input",
             )
         if "mem" in cur_vals:
-            self.assertEqual(self.calc_data.memval.get(), cur_vals["mem"], "memval")
+            self.assertEqual(
+                self.calc_data.memval.get(),
+                cur_vals["mem"],
+                "memval",
+            )
         if "vars" in cur_vals:
             self.assertEqual(
-                self.calc_data.user_variables, cur_vals["vars"], "user_variables"
+                self.calc_data.user_variables,
+                cur_vals["vars"],
+                "user_variables",
             )
 
     def run_basic_test(
@@ -598,6 +609,51 @@ class CalculatorDataTest(unittest.TestCase):
     # skipping this for now, it's just a big match/case statement to call other functions
     # def test_process_button(self):
     #     pass
+
+    def test_process_button_invalid_input(self):
+        """Test the process_button function with invalid input."""
+
+        """
+        passing invalid buttontxt with the "button" command 
+        get passed through process_button and button_press
+        but get caught in update_current_calc when it 
+        calls validate_symbol_and_func, and it raises an
+        error. We already have tests to catch that
+        condition in validate_symbol_and_func.
+        """
+        test_data = [
+            {
+                "case": "Unknown function Call",
+                "current": {"disp": "", "eval": "", "inpt": ""},
+                "params": {"buttoncmd": "UnknownFunctionCall"},
+            },
+            {
+                "case": "Passing int instead of str",
+                "current": {"disp": "", "eval": "", "inpt": ""},
+                "params": {"buttoncmd": 123},
+            },
+            {
+                "case": "Passing empty string",
+                "current": {"disp": "", "eval": "", "inpt": ""},
+                "params": {"buttoncmd": ""},
+            },
+            {
+                "case": "Passing None",
+                "current": {"disp": "", "eval": "", "inpt": ""},
+                "params": {"buttoncmd": None},
+            },
+        ]
+
+        for data in test_data:
+            with self.subTest(msg="process_button: " + data["case"]):
+                with patch("sys.stdout", new=StringIO()) as fake_out:
+                    self.run_basic_test(
+                        func=self.calc_data.process_button,
+                        cur_vals=data["current"],
+                        params=data["params"],
+                    )
+                    expected_out = f"Unknown command: {data["params"]["buttoncmd"]!r}\n"
+                    self.assertEqual(fake_out.getvalue(), expected_out)
 
     def test_button_press(self):
         """Test the button_press function."""
@@ -1449,11 +1505,47 @@ class CalculatorDataTest(unittest.TestCase):
                     end_vals=data["ending"],
                 )
 
-    # currently the calculate function is grabbing parser errors and displaying an unhelpful error message.
-    # not sure how to test at this level, but we already have extensive parser error testing.
-    # may want to add a test after setting up logging.
-    # def test_calculate_invalid_input(self):
-    #     pass
+    def test_calculate_invalid_input(self):
+        """Test the calculate function with invalid data."""
+
+        """
+        We have already extensively tested the parser in test_supportfuncs.py
+        so this test just checks that basic functionality is working. On error 
+        the calculate function should clear the current_input (inpt), 
+        current_display_calc (disp), and current_eval_calc (eval) variables
+        and print an error message to stdout.
+        """
+        test_data = [
+            {
+                "case": "1 + 1",
+                "current": {"disp": "1 +", "eval": "Decimal(1) +", "inpt": "1"},
+                "ending": {"disp": "", "eval": "", "inpt": ""},
+                "result": "ERROR: Decimal function should only have str parameter",
+            },
+            {
+                "case": "Code injection",
+                "current": {
+                    "disp": "",
+                    "eval": "__import__('os').system('dir')",
+                    "inpt": "",
+                },
+                "ending": {"disp": "", "eval": "", "inpt": ""},
+                "result": "ERROR: Unknown type of ast.Call",
+            },
+        ]
+
+        for data in test_data:
+            with self.subTest(msg="calculate: " + data["case"]):
+                with patch("sys.stdout", new=StringIO()) as fake_out:
+                    self.run_basic_test(
+                        func=self.calc_data.calculate,
+                        cur_vals=data["current"],
+                        end_vals=data["ending"],
+                    )
+                    # assertStartsWith would be nice
+                    self.assertEqual(
+                        fake_out.getvalue()[: len(data["result"])], data["result"]
+                    )
 
 
 if __name__ == "__main__":
