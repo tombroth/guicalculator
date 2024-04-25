@@ -1,6 +1,14 @@
 # Change Log
 
 
+## [unreleased] - 
+
+- Several minor improvements
+- Changed classes to not inherit from Tk objects but to contain a Tk object ([#7](https://github.com/tombroth/guicalculator/issues/7))
+- Created new module calculatordata.py to contain calculator data and functions ([#7](https://github.com/tombroth/guicalculator/issues/7))
+- Created unit tests for calculatordata.py ([#7](https://github.com/tombroth/guicalculator/issues/7))
+
+
 ## [0.1.2] - 2024-04-23
 
 - Several minor improvements
