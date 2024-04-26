@@ -41,7 +41,12 @@ from .globals import (
     TkEvents,
     VariablesType,
 )
-from .supportfuncs import numtostr, strtodecimal, validate_user_var
+from .supportfuncs import (
+    evaluate_calculation,
+    numtostr,
+    strtodecimal,
+    validate_user_var,
+)
 
 
 class GuiCalculator:
@@ -632,11 +637,21 @@ class UserVarsEditFrm:
     def add_current(self) -> None:
         """Add the current calculation result as a variable"""
 
-        currcalc = self.vptf.calculator_data.get_current_display_calc()
+        currcalc = self.vptf.calculator_data.get_current_eval_calc()
         if currcalc:
             # get the result
-            self.vptf.calculator_data.calculate()
-            result = self.vptf.calculator_data.get_current_input()
+            try:
+                # calling the parser directly so we don't mess with the current display
+                result = evaluate_calculation(
+                    currcalc, self.vptf.calculator_data.user_variables
+                )
+            except:
+                s = self.vptf.calculator_data.get_current_display_calc()
+                trimlen = 35
+                if len(s) > trimlen:
+                    s = s[: (trimlen - 4)] + " ..."
+                self.set_errmsg(f"Invalid calculation: {s}")
+                return
 
             # add result to a new row
             row = self.user_vars_edit_addrow()
