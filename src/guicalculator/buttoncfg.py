@@ -23,12 +23,45 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import List, NamedTuple, NotRequired, TypedDict
+from dataclasses import dataclass
+from enum import StrEnum, unique
+from typing import List, NamedTuple, Optional
 
-BACKSPACE = "\u232B"
-XSQUARED = "x\u00b2"
-SQUAREROOTX = "\u221ax"
-XTOTHEY = "x ** y"
+from .globals import ButtonStyles, CalculatorCommands, CalculatorSymbols, TkEvents
+
+
+@unique
+class ButtonLabels(StrEnum):
+    """Enum that represent the button labels"""
+
+    NOLABEL = ""
+    BACKSPACE = "\u232B"
+    CLEARENTRY = "CE"
+    ALLCLEAR = "AC"
+
+    MEMORYCLEAR = "MClr"
+    MEMORYRECALL = "MRcl"
+    MEMORYSTORE = "MSto"
+    MEMORYSWAP = "MSwp"
+    MEMORYADD = "M+"
+    MEMORYSUBTRACT = "M-"
+
+    INVERSION = "1/x"
+    XSQUARED = "x\u00b2"
+    SQUAREROOTX = "\u221ax"
+    XTOTHEY = "x ** y"
+
+    VARIABLESPOPUP = "vars..."
+    OPENPAREN = CalculatorSymbols.OPENPAREN.value
+    CLOSEPAREN = CalculatorSymbols.CLOSEPAREN.value
+    DIVISION = CalculatorSymbols.DIVISION.value
+    MULTIPLICATION = CalculatorSymbols.MULTIPLICATION.value
+    SUBTRACTION = CalculatorSymbols.SUBTRACTION.value
+    ADDITION = CalculatorSymbols.ADDITION.value
+
+    INVERTSIGN = "+/-"
+    DECIMALPOINT = "."
+    EQUALS = "="
 
 
 class ButtonLocation(NamedTuple):
@@ -39,9 +72,9 @@ class ButtonLocation(NamedTuple):
     ----------
     NamedTuple : A tuple consisting of:
         btnfrm : int
-            This indicates which sub-frame of BtnDispFrm to put the button
-            into. Subframes are used to group rows with the same number of
-            buttons. The first subframe is 0.
+            This indicates which sub-frame of the button frame to place the
+            button into. Subframes are used to group rows with the same
+            number of buttons. The first subframe is 0.
         btnrow : int
             This indicates which row in the sub-frame the button is placed
             on. The first row of a new sub-frame is 0.
@@ -55,201 +88,202 @@ class ButtonLocation(NamedTuple):
     btn_column: int
 
 
-class ButtonInfo(TypedDict):
+@dataclass
+class ButtonInfo:
     """
     ButtonInfo - Information needed to create a button on the calculator.
 
     Parameters
     ----------
     TypedDict : A dictionary consisting of:
-        label : str | int
+        label : ButtonLabels | int
             Mandatory. The button text. Number buttons should be int,
-            everything else a str.
-        command : NotRequired[str]
+            everything else ButtonLabels.
+        command : Optional[CalculatorCommands]
             Optional. Which command to execute. No command is needed for
             basic number and math operators. Commands are decoded by the
-            processbutton funciton in CalcFrm in guicalculator.py.
-        style : NotRequired[str]
+            processbutton funciton in calculatordata.py.
+        style : Optional[ButtonStyles]
             Optional. Style information for the button. Styles are found
             in CalcStyle in guicalculator.py.
-        rowspan : NotRequired[int]
+        rowspan : Optional[int]
             Optional. This is the rowspan parameter of the grid call.
-        columnspan : NotRequired[int]
+        columnspan : Optional[int]
             Optional. This is the columnspan parameter of the grid call.
-        events : NotRequired[List[str]]
+        events : Optional[List[TkEvents]]
             Optional. This is a list of events bound to this button.invoke,
             bound at winfo_toplevel.
     """
 
-    label: str | int
-    command: NotRequired[str]
-    style: NotRequired[str]
-    rowspan: NotRequired[int]
-    columnspan: NotRequired[int]
-    events: NotRequired[List[str]]
+    label: ButtonLabels | int
+    command: Optional[CalculatorCommands] = CalculatorCommands.NOCOMMAND
+    style: Optional[ButtonStyles] = ButtonStyles.NOSTYLE
+    rowspan: Optional[int] = None
+    columnspan: Optional[int] = None
+    events: Optional[List[TkEvents]] = None
 
 
 # The calculator buttons
 buttons: dict[ButtonLocation, ButtonInfo] = {
-    ButtonLocation(0, 0, 0): {
-        "label": BACKSPACE,
-        "command": "backspace",
-        "style": "red.TButton",
-        "events": ["<BackSpace>"],
-    },
-    ButtonLocation(0, 0, 1): {
-        "label": "CE",
-        "command": "clearValue",
-        "style": "red.TButton",
-        "events": ["<KeyPress-C>", "<KeyPress-c>"],
-    },
-    ButtonLocation(0, 0, 2): {
-        "label": "AC",
-        "command": "clearAll",
-        "style": "red.TButton",
-    },
-    ButtonLocation(1, 0, 0): {
-        "label": "MClr",
-        "command": "memClear",
-        "style": "memory.TButton",
-    },
-    ButtonLocation(1, 0, 1): {
-        "label": "MRcl",
-        "command": "memRecall",
-        "style": "memory.TButton",
-    },
-    ButtonLocation(1, 0, 2): {
-        "label": "MSto",
-        "command": "memStore",
-        "style": "memory.TButton",
-    },
-    ButtonLocation(1, 0, 3): {
-        "label": "MSwp",
-        "command": "memSwap",
-        "style": "memory.TButton",
-    },
-    ButtonLocation(1, 0, 4): {
-        "label": "M+",
-        "command": "memAdd",
-        "style": "memory.TButton",
-    },
-    ButtonLocation(1, 0, 5): {
-        "label": "M-",
-        "command": "memSubtract",
-        "style": "memory.TButton",
-    },
-    ButtonLocation(2, 0, 0): {
-        "label": "1/x",
-        "command": "inverseNumber",
-    },
-    ButtonLocation(2, 0, 1): {
-        "label": XSQUARED,
-        "command": "squareNumber",
-    },
-    ButtonLocation(2, 0, 2): {
-        "label": SQUAREROOTX,
-        "command": "rootNumber",
-    },
-    ButtonLocation(2, 0, 3): {
-        "label": XTOTHEY,
-        "command": "xToTheY",
-    },
-    ButtonLocation(2, 1, 0): {
-        "label": "vars...",
-        "command": "varsPopup",
-    },
-    ButtonLocation(2, 1, 1): {
-        "label": "(",
-        "events": ["<KeyPress-(>"],
-    },
-    ButtonLocation(2, 1, 2): {
-        "label": ")",
-        "events": ["<KeyPress-)>"],
-    },
-    ButtonLocation(2, 1, 3): {
-        "label": "/",
-        "style": "mathop.TButton",
-        "events": ["<KeyPress-/>"],
-    },
-    ButtonLocation(2, 2, 0): {
-        "label": 7,
-        "style": "number.TButton",
-        "events": ["<KeyPress-7>"],
-    },
-    ButtonLocation(2, 2, 1): {
-        "label": 8,
-        "style": "number.TButton",
-        "events": ["<KeyPress-8>"],
-    },
-    ButtonLocation(2, 2, 2): {
-        "label": 9,
-        "style": "number.TButton",
-        "events": ["<KeyPress-9>"],
-    },
-    ButtonLocation(2, 2, 3): {
-        "label": "*",
-        "style": "mathop.TButton",
-        "events": ["<KeyPress-*>"],
-    },
-    ButtonLocation(2, 3, 0): {
-        "label": 4,
-        "style": "number.TButton",
-        "events": ["<KeyPress-4>"],
-    },
-    ButtonLocation(2, 3, 1): {
-        "label": 5,
-        "style": "number.TButton",
-        "events": ["<KeyPress-5>"],
-    },
-    ButtonLocation(2, 3, 2): {
-        "label": 6,
-        "style": "number.TButton",
-        "events": ["<KeyPress-6>"],
-    },
-    ButtonLocation(2, 3, 3): {
-        "label": "-",
-        "style": "mathop.TButton",
-        "events": ["<KeyPress-minus>"],
-    },
-    ButtonLocation(2, 4, 0): {
-        "label": 1,
-        "style": "number.TButton",
-        "events": ["<KeyPress-1>"],
-    },
-    ButtonLocation(2, 4, 1): {
-        "label": 2,
-        "style": "number.TButton",
-        "events": ["<KeyPress-2>"],
-    },
-    ButtonLocation(2, 4, 2): {
-        "label": 3,
-        "style": "number.TButton",
-        "events": ["<KeyPress-3>"],
-    },
-    ButtonLocation(2, 4, 3): {
-        "label": "+",
-        "style": "mathop.TButton",
-        "events": ["<KeyPress-+>"],
-    },
-    ButtonLocation(2, 5, 0): {
-        "label": "+/-",
-        "command": "invertSign",
-        "style": "number.TButton",
-    },
-    ButtonLocation(2, 5, 1): {
-        "label": 0,
-        "style": "number.TButton",
-        "events": ["<KeyPress-0>"],
-    },
-    ButtonLocation(2, 5, 2): {
-        "label": ".",
-        "style": "number.TButton",
-        "events": ["<KeyPress-.>"],
-    },
-    ButtonLocation(2, 5, 3): {
-        "label": "=",
-        "command": "calculate",
-        "style": "orange.TButton",
-        "events": ["<KeyPress-=>", "<Return>"],
-    },
+    ButtonLocation(0, 0, 0): ButtonInfo(
+        label=ButtonLabels.BACKSPACE,
+        command=CalculatorCommands.BACKSPACE,
+        style=ButtonStyles.RED,
+        events=[TkEvents.BACKSPACE],
+    ),
+    ButtonLocation(0, 0, 1): ButtonInfo(
+        label=ButtonLabels.CLEARENTRY,
+        command=CalculatorCommands.CLEARVALUE,
+        style=ButtonStyles.RED,
+        events=[TkEvents.UPPER_C, TkEvents.LOWER_C],
+    ),
+    ButtonLocation(0, 0, 2): ButtonInfo(
+        label=ButtonLabels.ALLCLEAR,
+        command=CalculatorCommands.CLEARALL,
+        style=ButtonStyles.RED,
+    ),
+    ButtonLocation(1, 0, 0): ButtonInfo(
+        label=ButtonLabels.MEMORYCLEAR,
+        command=CalculatorCommands.MEMCLEAR,
+        style=ButtonStyles.MEMORY,
+    ),
+    ButtonLocation(1, 0, 1): ButtonInfo(
+        label=ButtonLabels.MEMORYRECALL,
+        command=CalculatorCommands.MEMRECALL,
+        style=ButtonStyles.MEMORY,
+    ),
+    ButtonLocation(1, 0, 2): ButtonInfo(
+        label=ButtonLabels.MEMORYSTORE,
+        command=CalculatorCommands.MEMSTORE,
+        style=ButtonStyles.MEMORY,
+    ),
+    ButtonLocation(1, 0, 3): ButtonInfo(
+        label=ButtonLabels.MEMORYSWAP,
+        command=CalculatorCommands.MEMSWAP,
+        style=ButtonStyles.MEMORY,
+    ),
+    ButtonLocation(1, 0, 4): ButtonInfo(
+        label=ButtonLabels.MEMORYADD,
+        command=CalculatorCommands.MEMADD,
+        style=ButtonStyles.MEMORY,
+    ),
+    ButtonLocation(1, 0, 5): ButtonInfo(
+        label=ButtonLabels.MEMORYSUBTRACT,
+        command=CalculatorCommands.MEMSUBTRACT,
+        style=ButtonStyles.MEMORY,
+    ),
+    ButtonLocation(2, 0, 0): ButtonInfo(
+        label=ButtonLabels.INVERSION,
+        command=CalculatorCommands.INVERSENUMBER,
+    ),
+    ButtonLocation(2, 0, 1): ButtonInfo(
+        label=ButtonLabels.XSQUARED,
+        command=CalculatorCommands.SQUARENUMBER,
+    ),
+    ButtonLocation(2, 0, 2): ButtonInfo(
+        label=ButtonLabels.SQUAREROOTX,
+        command=CalculatorCommands.ROOTNUMBER,
+    ),
+    ButtonLocation(2, 0, 3): ButtonInfo(
+        label=ButtonLabels.XTOTHEY,
+        command=CalculatorCommands.XTOTHEY,
+    ),
+    ButtonLocation(2, 1, 0): ButtonInfo(
+        label=ButtonLabels.VARIABLESPOPUP,
+        command=CalculatorCommands.VARSPOPUP,
+    ),
+    ButtonLocation(2, 1, 1): ButtonInfo(
+        label=ButtonLabels.OPENPAREN,
+        events=[TkEvents.OPENPAREN],
+    ),
+    ButtonLocation(2, 1, 2): ButtonInfo(
+        label=ButtonLabels.CLOSEPAREN,
+        events=[TkEvents.CLOSEPAREN],
+    ),
+    ButtonLocation(2, 1, 3): ButtonInfo(
+        label=ButtonLabels.DIVISION,
+        style=ButtonStyles.MATHOP,
+        events=[TkEvents.DIVISION],
+    ),
+    ButtonLocation(2, 2, 0): ButtonInfo(
+        label=7,
+        style=ButtonStyles.NUMBER,
+        events=[TkEvents.NUM_7],
+    ),
+    ButtonLocation(2, 2, 1): ButtonInfo(
+        label=8,
+        style=ButtonStyles.NUMBER,
+        events=[TkEvents.NUM_8],
+    ),
+    ButtonLocation(2, 2, 2): ButtonInfo(
+        label=9,
+        style=ButtonStyles.NUMBER,
+        events=[TkEvents.NUM_9],
+    ),
+    ButtonLocation(2, 2, 3): ButtonInfo(
+        label=ButtonLabels.MULTIPLICATION,
+        style=ButtonStyles.MATHOP,
+        events=[TkEvents.MULTIPLICATION],
+    ),
+    ButtonLocation(2, 3, 0): ButtonInfo(
+        label=4,
+        style=ButtonStyles.NUMBER,
+        events=[TkEvents.NUM_4],
+    ),
+    ButtonLocation(2, 3, 1): ButtonInfo(
+        label=5,
+        style=ButtonStyles.NUMBER,
+        events=[TkEvents.NUM_5],
+    ),
+    ButtonLocation(2, 3, 2): ButtonInfo(
+        label=6,
+        style=ButtonStyles.NUMBER,
+        events=[TkEvents.NUM_6],
+    ),
+    ButtonLocation(2, 3, 3): ButtonInfo(
+        label=ButtonLabels.SUBTRACTION,
+        style=ButtonStyles.MATHOP,
+        events=[TkEvents.SUBTRACTION],
+    ),
+    ButtonLocation(2, 4, 0): ButtonInfo(
+        label=1,
+        style=ButtonStyles.NUMBER,
+        events=[TkEvents.NUM_1],
+    ),
+    ButtonLocation(2, 4, 1): ButtonInfo(
+        label=2,
+        style=ButtonStyles.NUMBER,
+        events=[TkEvents.NUM_2],
+    ),
+    ButtonLocation(2, 4, 2): ButtonInfo(
+        label=3,
+        style=ButtonStyles.NUMBER,
+        events=[TkEvents.NUM_3],
+    ),
+    ButtonLocation(2, 4, 3): ButtonInfo(
+        label=ButtonLabels.ADDITION,
+        style=ButtonStyles.MATHOP,
+        events=[TkEvents.ADDITION],
+    ),
+    ButtonLocation(2, 5, 0): ButtonInfo(
+        label=ButtonLabels.INVERTSIGN,
+        command=CalculatorCommands.INVERTSIGN,
+        style=ButtonStyles.NUMBER,
+    ),
+    ButtonLocation(2, 5, 1): ButtonInfo(
+        label=0,
+        style=ButtonStyles.NUMBER,
+        events=[TkEvents.NUM_0],
+    ),
+    ButtonLocation(2, 5, 2): ButtonInfo(
+        label=ButtonLabels.DECIMALPOINT,
+        style=ButtonStyles.NUMBER,
+        events=[TkEvents.DECIMALPOINT],
+    ),
+    ButtonLocation(2, 5, 3): ButtonInfo(
+        label=ButtonLabels.EQUALS,
+        command=CalculatorCommands.CALCULATE,
+        style=ButtonStyles.ORANGE,
+        events=[TkEvents.EQUALS, TkEvents.RETURN],
+    ),
 }

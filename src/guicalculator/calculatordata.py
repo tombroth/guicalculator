@@ -35,7 +35,14 @@ from decimal import Decimal
 from tkinter import StringVar
 from typing import Callable
 
-from .globals import DEFAULT_VARIABLES, VariablesType
+from .globals import (
+    DEFAULT_VARIABLES,
+    CalculatorCommands,
+    CalculatorFunctions,
+    CalculatorSymbols,
+    FunctionsType,
+    VariablesType,
+)
 from .supportfuncs import evaluate_calculation, numtostr
 
 
@@ -65,7 +72,7 @@ class CalculatorData:
 
         self.memval = StringVar()  # the value stored in memory
 
-    def validate_symbol_and_func(self, symbol: str, func: tuple[str, str]) -> None:
+    def validate_symbol_and_func(self, symbol: str, func: FunctionsType) -> None:
         """
         validate_symbol_and_func - Validate that symbol and func are valid.
 
@@ -73,10 +80,8 @@ class CalculatorData:
         ----------
         symbol : str
             String to be added to the end of the calculation.
-        func : tuple[str, str]
-            Tuple containing function to be added.
-            [0] is for the display version of the calculation
-            [1] is for the evaluation version of the calculation
+        func : FunctionsType
+            Dataclass containing function to be added.
 
         Raises
         ------
@@ -85,54 +90,56 @@ class CalculatorData:
         """
 
         valid_symbols = [
-            "(",
-            ")",
-            "/",
-            "*",
-            "-",
-            "+",
-            "** 2",
-            "**",
-            *DEFAULT_VARIABLES.keys(), 
+            CalculatorSymbols.OPENPAREN,
+            CalculatorSymbols.CLOSEPAREN,
+            CalculatorSymbols.DIVISION,
+            CalculatorSymbols.MULTIPLICATION,
+            CalculatorSymbols.SUBTRACTION,
+            CalculatorSymbols.ADDITION,
+            CalculatorSymbols.SQUARE,
+            CalculatorSymbols.EXPONENTIATION,
+            *DEFAULT_VARIABLES.keys(),
         ]
 
         # double checking that variable names are str
         # default variables are defined in code so should be safe
         for v in self.user_variables.keys():
-            if type(v) == str:
+            if isinstance(v, str):
                 valid_symbols.append(v)
             else:
                 raise ValueError(f"User variable name is not str: {v!r}")
 
         valid_funcs = [
-            ("", ""),
-            ("1/", "1/"),
-            ("sqrt", "Decimal.sqrt"),
+            CalculatorFunctions.NOFUNCTION,
+            CalculatorFunctions.INVERSION,
+            CalculatorFunctions.SQUAREROOT,
         ]
 
         if symbol:
-            if type(symbol) != str:
-                raise ValueError(f"Symbol is not str type: {symbol!r}")
+            if not isinstance(symbol, str):
+                raise ValueError(f"Symbol is wrong data type: {symbol!r}")
 
             if symbol not in valid_symbols:
                 raise ValueError(f"Invalid symbol: {symbol!r}")
 
         if func:
-            if type(func) != tuple:
+            if not isinstance(func, FunctionsType):
                 raise ValueError(
-                    f"Function is not tuple[str, str]: {func!r}: {type(func)}"
+                    f"Function is not FunctionsType: {func!r}: {type(func)}"
                 )
 
             if func not in valid_funcs:
                 raise ValueError(f"Invalid function: {func!r}")
 
-            if symbol and func != ("", ""):
+            if symbol and func != CalculatorFunctions.NOFUNCTION:
                 raise ValueError(
                     f"Cannot specify both symbol and function: {symbol}, {func}"
                 )
 
     def get_current_display_calc(
-        self, symbol: str = "", func: tuple[str, str] = ("", "")
+        self,
+        symbol: str = "",
+        func: FunctionsType = CalculatorFunctions.NOFUNCTION,
     ) -> str:
         """
         get_current_display_calc - Get the current displayed calculation.
@@ -145,10 +152,8 @@ class CalculatorData:
         symbol : str, optional
             Optional string to be added to the end of the calculation. Normally
             will be blank or a mathematical operator, by default "".
-        func : tuple[str, str], optional
-            Optional tuple containing function to be added, by default ("", "").
-            [0] is for the display version of the calculation
-            [1] is for the evaluation version of the calculation
+        func : FunctionsType, optional
+            Optional dataclass containing function to be added, by default NOFUNCTION.
 
         Returns
         -------
@@ -169,11 +174,11 @@ class CalculatorData:
         else:
             inpt = ""
 
-        if func and func[0] and inpt:
-            if func[0] == "1/":
-                inpt = f"({func[0]}{inpt})"
+        if func and func.display_func and inpt:
+            if func == CalculatorFunctions.INVERSION:
+                inpt = f"({func.display_func}{inpt})"
             else:
-                inpt = f"{func[0]}({inpt})"
+                inpt = f"{func.display_func}({inpt})"
 
         return_value = " ".join(
             filter(None, [self.current_display_calc, inpt, symbol])
@@ -181,7 +186,9 @@ class CalculatorData:
         return return_value
 
     def get_current_eval_calc(
-        self, symbol: str = "", func: tuple[str, str] = ("", "")
+        self,
+        symbol: str = "",
+        func: FunctionsType = CalculatorFunctions.NOFUNCTION,
     ) -> str:
         """
         get_current_eval_calc - Get the current calculation to be evaluated.
@@ -198,10 +205,8 @@ class CalculatorData:
         symbol : str, optional
             Optional string to be added to the end of the calculation. Normally
             will be blank or a mathematical operator, by default "".
-        func : tuple[str, str], optional
-            Optional tuple containing function to be added, by default ("", "").
-            [0] is for the display version of the calculation
-            [1] is for the evaluation version of the calculation
+        func : FunctionsType, optional
+            Optional dataclass containing function to be added, by default NOFUNCTION.
 
         Returns
         -------
@@ -217,11 +222,11 @@ class CalculatorData:
         else:
             inpt = ""
 
-        if func and func[1] and inpt:
-            if func[1] == "1/":
-                inpt = f"({func[1]}{inpt})"
+        if func and func.eval_func and inpt:
+            if func == CalculatorFunctions.INVERSION:
+                inpt = f"({func.eval_func}{inpt})"
             else:
-                inpt = f"{func[1]}({inpt})"
+                inpt = f"{func.eval_func}({inpt})"
 
         return_value = " ".join([self.current_eval_calc, inpt, symbol]).strip()
         return return_value
@@ -243,7 +248,9 @@ class CalculatorData:
             return Decimal(0)
 
     def update_current_calc(
-        self, symbol: str = "", func: tuple[str, str] = ("", "")
+        self,
+        symbol: str = "",
+        func: FunctionsType = CalculatorFunctions.NOFUNCTION,
     ) -> None:
         """
         update_current_calc - Update the current calculation being input.
@@ -264,10 +271,8 @@ class CalculatorData:
         symbol : str, optional
             Optional string to be added to the end of the calculation. Normally
             will be blank or a mathematical operator, by default "".
-        func : tuple[str, str], optional
-            Optional tuple containing function to be added, by default ("", "").
-            [0] is for the display version of the calculation
-            [1] is for the evaluation version of the calculation
+        func : FunctionsType, optional
+            Optional dataclass containing function to be added, by default NOFUNCTION.
         """
 
         self.validate_symbol_and_func(symbol, func)
@@ -281,7 +286,11 @@ class CalculatorData:
 
         self.update_display()
 
-    def process_button(self, buttoncmd: str, buttontxt: str | int = "") -> None:
+    def process_button(
+        self,
+        buttoncmd: CalculatorCommands,
+        buttontxt: str | int = "",
+    ) -> None:
         """
         process_button - Process a calculator button press.
 
@@ -293,60 +302,63 @@ class CalculatorData:
         buttontxt : str | int, optional
             For buttons in buttoncfg.py that don't have a command
             (number and basic math symbols) this is the button label,
+            can also be used to pass default or user variables, or 
+            calculator symbols like ** that aren't necessarily labels,
             by default ""
         """
 
         match buttoncmd:
-            case "button":
+            case CalculatorCommands.BASICBUTTON:
                 self.button_press(buttontxt)
 
-            case "backspace":
+            case CalculatorCommands.BACKSPACE:
                 self.backspace()
 
-            case "calculate":
+            case CalculatorCommands.CALCULATE:
                 self.calculate()
 
-            case "clearAll":
+            case CalculatorCommands.CLEARALL:
                 self.clear_all()
 
-            case "clearValue":
+            case CalculatorCommands.CLEARVALUE:
                 self.clear_value()
 
-            case "inverseNumber":
+            case CalculatorCommands.INVERSENUMBER:
                 self.inverse_number()
 
-            case "invertSign":
+            case CalculatorCommands.INVERTSIGN:
                 self.invert_sign()
 
-            case "memAdd":
+            case CalculatorCommands.MEMADD:
                 self.memory_add()
 
-            case "memClear":
+            case CalculatorCommands.MEMCLEAR:
                 self.memory_clear()
 
-            case "memRecall":
+            case CalculatorCommands.MEMRECALL:
                 self.memory_recall()
 
-            case "memStore":
+            case CalculatorCommands.MEMSTORE:
                 self.memory_store()
 
-            case "memSubtract":
+            case CalculatorCommands.MEMSUBTRACT:
                 self.memory_add(False)
 
-            case "memSwap":
+            case CalculatorCommands.MEMSWAP:
                 self.memory_swap()
 
-            case "rootNumber":
+            case CalculatorCommands.ROOTNUMBER:
                 self.root_number()
 
-            case "squareNumber":
+            case CalculatorCommands.SQUARENUMBER:
                 self.square_number()
 
-            case "varsPopup":
+            case CalculatorCommands.VARSPOPUP:
                 self.vars_popup()
 
-            case "xToTheY":
-                self.button_press("**")
+            case CalculatorCommands.XTOTHEY:
+                self.button_press(CalculatorSymbols.EXPONENTIATION)
+
             case _:
                 self.bell()
                 print(f"Unknown command: {buttoncmd!r}")
@@ -565,7 +577,7 @@ class CalculatorData:
         """
 
         if self.current_input:
-            self.update_current_calc(func=("1/", "1/"))
+            self.update_current_calc(func=CalculatorFunctions.INVERSION)
         self.update_display()
 
     def square_number(self) -> None:
@@ -579,7 +591,7 @@ class CalculatorData:
         precision in the Decimal context.
         """
 
-        self.update_current_calc("** 2")
+        self.update_current_calc(CalculatorSymbols.SQUARE)
         self.update_display()
 
     def root_number(self) -> None:
@@ -594,7 +606,7 @@ class CalculatorData:
         """
 
         if self.current_input:
-            self.update_current_calc(func=("sqrt", "Decimal.sqrt"))
+            self.update_current_calc(func=CalculatorFunctions.SQUAREROOT)
             # self.current_input = numtostr(Decimal.sqrt(self.get_current_input()))
         self.update_display()
 
@@ -617,7 +629,7 @@ class CalculatorData:
                 )
 
                 # show the result
-                self.write_to_display(f" ={numtostr(val, commas=True)}\n{'=' * 30}\n")
+                self.write_to_display(f" = {numtostr(val, commas=True)}\n{'=' * 30}\n")
 
                 # clear current calc and set current input to result
                 self.current_display_calc = ""

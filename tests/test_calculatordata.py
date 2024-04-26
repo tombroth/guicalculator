@@ -5,8 +5,8 @@ from io import StringIO
 from typing import Any, Callable
 from unittest.mock import MagicMock, patch
 
-from guicalculator.calculatordata import CalculatorData  # type: ignore
-from guicalculator.globals import PI  # type: ignore
+from guicalculator.calculatordata import CalculatorData
+from guicalculator.globals import PI, CalculatorFunctions 
 
 
 class CalculatorDataTest(unittest.TestCase):
@@ -152,77 +152,77 @@ class CalculatorDataTest(unittest.TestCase):
                 "case": "Both parameters empty",
                 "params": {
                     "symbol": "",
-                    "func": ("", ""),
+                    "func": CalculatorFunctions.NOFUNCTION,
                 },
             },
             {
                 "case": "(",
                 "params": {
                     "symbol": "(",
-                    "func": ("", ""),
+                    "func": CalculatorFunctions.NOFUNCTION,
                 },
             },
             {
                 "case": ")",
                 "params": {
                     "symbol": ")",
-                    "func": ("", ""),
+                    "func": CalculatorFunctions.NOFUNCTION,
                 },
             },
             {
                 "case": "/",
                 "params": {
                     "symbol": "/",
-                    "func": ("", ""),
+                    "func": CalculatorFunctions.NOFUNCTION,
                 },
             },
             {
                 "case": "*",
                 "params": {
                     "symbol": "*",
-                    "func": ("", ""),
+                    "func": CalculatorFunctions.NOFUNCTION,
                 },
             },
             {
                 "case": "-",
                 "params": {
                     "symbol": "-",
-                    "func": ("", ""),
+                    "func": CalculatorFunctions.NOFUNCTION,
                 },
             },
             {
                 "case": "+",
                 "params": {
                     "symbol": "+",
-                    "func": ("", ""),
+                    "func": CalculatorFunctions.NOFUNCTION,
                 },
             },
             {
                 "case": "** 2",
                 "params": {
                     "symbol": "** 2",
-                    "func": ("", ""),
+                    "func": CalculatorFunctions.NOFUNCTION,
                 },
             },
             {
                 "case": "**",
                 "params": {
                     "symbol": "**",
-                    "func": ("", ""),
+                    "func": CalculatorFunctions.NOFUNCTION,
                 },
             },
             {
                 "case": "1/",
                 "params": {
                     "symbol": "",
-                    "func": ("1/", "1/"),
+                    "func": CalculatorFunctions.INVERSION,
                 },
             },
             {
                 "case": "sqrt",
                 "params": {
                     "symbol": "",
-                    "func": ("sqrt", "Decimal.sqrt"),
+                    "func": CalculatorFunctions.SQUAREROOT,
                 },
             },
         ]
@@ -239,7 +239,7 @@ class CalculatorDataTest(unittest.TestCase):
                 "case": "Both parameters used",
                 "params": {
                     "symbol": "+",
-                    "func": ("1/", "1/"),
+                    "func": CalculatorFunctions.INVERSION,
                 },
                 "result": ValueError,
             },
@@ -247,7 +247,7 @@ class CalculatorDataTest(unittest.TestCase):
                 "case": "Symbol not a str",
                 "params": {
                     "symbol": ["+", "-"],
-                    "func": ("", ""),
+                    "func": CalculatorFunctions.NOFUNCTION,
                 },
                 "result": ValueError,
             },
@@ -255,12 +255,12 @@ class CalculatorDataTest(unittest.TestCase):
                 "case": "Symbol not valid",
                 "params": {
                     "symbol": "+-*/",
-                    "func": ("", ""),
+                    "func": CalculatorFunctions.NOFUNCTION,
                 },
                 "result": ValueError,
             },
             {
-                "case": "More than two elements in func tuple",
+                "case": "More than two elements in func tuple", # test from when func was a tuple[str, str]
                 "params": {
                     "symbol": "",
                     "func": ("1/", "1/", "1/"),
@@ -268,7 +268,7 @@ class CalculatorDataTest(unittest.TestCase):
                 "result": ValueError,
             },
             {
-                "case": "Only one element in func tuple",
+                "case": "Only one element in func tuple", # test from when func was a tuple[str, str]
                 "params": {
                     "symbol": "",
                     "func": ("1/"),
@@ -276,7 +276,7 @@ class CalculatorDataTest(unittest.TestCase):
                 "result": ValueError,
             },
             {
-                "case": "Elements in func tuple not str",
+                "case": "Elements in func tuple not str", # test from when func was a tuple[str, str]
                 "params": {
                     "symbol": "",
                     "func": (1, 1),
@@ -284,7 +284,7 @@ class CalculatorDataTest(unittest.TestCase):
                 "result": ValueError,
             },
             {
-                "case": "Invalid func tuple #1",
+                "case": "Invalid func tuple #1", # test from when func was a tuple[str, str]
                 "params": {
                     "symbol": "",
                     "func": ("1/", "sqrt"),
@@ -292,10 +292,18 @@ class CalculatorDataTest(unittest.TestCase):
                 "result": ValueError,
             },
             {
-                "case": "Invalid func tuple #2",
+                "case": "Invalid func tuple #2", # test from when func was a tuple[str, str]
                 "params": {
                     "symbol": "",
                     "func": ("print", "print"),
+                },
+                "result": ValueError,
+            },
+            {
+                "case": "Func not a CalculatorFunctions",
+                "params": {
+                    "symbol": "",
+                    "func": 42,
                 },
                 "result": ValueError,
             },
@@ -330,13 +338,13 @@ class CalculatorDataTest(unittest.TestCase):
             {
                 "case": "sqrt(123)",
                 "current": {"disp": "", "eval": "", "inpt": "123"},
-                "params": {"func": ("sqrt", "Decimal.sqrt")},
+                "params": {"func": CalculatorFunctions.SQUAREROOT},
                 "result": "sqrt(123)",
             },
             {
                 "case": "Inversion: (1/3)",
                 "current": {"disp": "", "eval": "", "inpt": "3"},
-                "params": {"func": ("1/", "1/")},
+                "params": {"func": CalculatorFunctions.INVERSION},
                 "result": "(1/3)",
             },
         ]
@@ -365,7 +373,7 @@ class CalculatorDataTest(unittest.TestCase):
                 "current": {"disp": "", "eval": "", "inpt": "123"},
                 "params": {
                     "symbol": "+",
-                    "func": ("1/", "1/"),
+                    "func": CalculatorFunctions.INVERSION,
                 },
                 "result": ValueError,
             },
@@ -404,13 +412,13 @@ class CalculatorDataTest(unittest.TestCase):
             {
                 "case": "sqrt(123)",
                 "current": {"disp": "", "eval": "", "inpt": "123"},
-                "params": {"func": ("sqrt", "Decimal.sqrt")},
+                "params": {"func": CalculatorFunctions.SQUAREROOT},
                 "result": "Decimal.sqrt(Decimal('123'))",
             },
             {
                 "case": "Inversion: (1/3)",
                 "current": {"disp": "", "eval": "", "inpt": "3"},
-                "params": {"func": ("1/", "1/")},
+                "params": {"func": CalculatorFunctions.INVERSION},
                 "result": "(1/Decimal('3'))",
             },
         ]
@@ -439,7 +447,7 @@ class CalculatorDataTest(unittest.TestCase):
                 "current": {"disp": "", "eval": "", "inpt": "123"},
                 "params": {
                     "symbol": "+",
-                    "func": ("1/", "1/"),
+                    "func": CalculatorFunctions.INVERSION,
                 },
                 "result": ValueError,
             },
@@ -554,7 +562,7 @@ class CalculatorDataTest(unittest.TestCase):
             {
                 "case": "sqrt(123)",
                 "current": {"disp": "", "eval": "", "inpt": "123"},
-                "params": {"func": ("sqrt", "Decimal.sqrt")},
+                "params": {"func": CalculatorFunctions.SQUAREROOT},
                 "ending": {
                     "disp": "sqrt(123)",
                     "eval": "Decimal.sqrt(Decimal('123'))",
@@ -564,7 +572,7 @@ class CalculatorDataTest(unittest.TestCase):
             {
                 "case": "Inversion: (1/3)",
                 "current": {"disp": "", "eval": "", "inpt": "3"},
-                "params": {"func": ("1/", "1/")},
+                "params": {"func": CalculatorFunctions.INVERSION},
                 "ending": {"disp": "(1/3)", "eval": "(1/Decimal('3'))", "inpt": ""},
             },
             {
@@ -615,7 +623,7 @@ class CalculatorDataTest(unittest.TestCase):
                 "current": {"disp": "", "eval": "", "inpt": "123"},
                 "params": {
                     "symbol": "+",
-                    "func": ("1/", "1/"),
+                    "func": CalculatorFunctions.INVERSION,
                 },
                 "result": ValueError,
             },

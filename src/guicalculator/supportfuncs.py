@@ -31,7 +31,7 @@ from decimal import Decimal
 from typing import Callable, Type
 from unicodedata import normalize
 
-from .globals import DEFAULT_VARIABLES, VariablesType
+from .globals import DEFAULT_VARIABLES, NORMALIZE_FORM, VariablesType
 
 # map of ast operators to functions used by parser
 OPERATOR_MAP: dict[Type[ast.AST], Callable] = {
@@ -232,11 +232,12 @@ def evaluate_calculation(
                 return method(_eval(operand))
 
             case ast.Name():
-                if normalize("NFKC", node.id) in DEFAULT_VARIABLES:
-                    return +DEFAULT_VARIABLES[normalize("NFKC", node.id)]
 
-                elif normalize("NFKC", node.id) in user_variables:
-                    return +user_variables[normalize("NFKC", node.id)]
+                if normalize(NORMALIZE_FORM, node.id) in DEFAULT_VARIABLES:
+                    return +DEFAULT_VARIABLES[normalize(NORMALIZE_FORM, node.id)]
+
+                elif normalize(NORMALIZE_FORM, node.id) in user_variables:
+                    return +user_variables[normalize(NORMALIZE_FORM, node.id)]
 
                 else:
                     node_escpd = node.id.encode("unicode_escape")

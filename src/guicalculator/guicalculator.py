@@ -34,7 +34,13 @@ from typing import Any, Dict, Tuple
 
 from .buttoncfg import ButtonInfo, ButtonLocation, buttons
 from .calculatordata import CalculatorData
-from .globals import DEFAULT_VARIABLES, VariablesType
+from .globals import (
+    DEFAULT_VARIABLES,
+    ButtonStyles,
+    CalculatorCommands,
+    TkEvents,
+    VariablesType,
+)
 from .supportfuncs import numtostr, strtodecimal, validate_user_var
 
 
@@ -74,15 +80,15 @@ class CalcStyle:
         self.style.theme_use("alt")
 
         self.style.map(
-            "number.TButton",
+            ButtonStyles.NUMBER,
             foreground=[("active", "white"), ("!active", "white")],
             background=[("active", "gray45"), ("!active", "gray55")],
         )
 
-        self.style.configure("orange.TButton", background="darkorange2")
-        self.style.configure("red.TButton", background="orangered2")
-        self.style.configure("memory.TButton", background="lightcyan3")
-        self.style.configure("mathop.TButton", background="cornsilk3")
+        self.style.configure(ButtonStyles.ORANGE, background="darkorange2")
+        self.style.configure(ButtonStyles.RED, background="orangered2")
+        self.style.configure(ButtonStyles.MEMORY, background="lightcyan3")
+        self.style.configure(ButtonStyles.MATHOP, background="cornsilk3")
 
 
 class CalcFrm:
@@ -124,7 +130,7 @@ class CalcFrm:
         self.frm.rowconfigure(2, weight=1)
 
         self.frm.winfo_toplevel().bind(
-            "<Escape>", lambda _: self.frm.winfo_toplevel().destroy()
+            TkEvents.ESCAPE, lambda _: self.frm.winfo_toplevel().destroy()
         )
 
         self.frm.grid(column=0, row=0, sticky="news")
@@ -256,16 +262,17 @@ class BtnDispFrm:
             )
 
         # create the button
-        if "command" in btn_info:
-            cmd = lambda x=btn_info["command"]: self.calculator_data.process_button(x)
+        if btn_info.command:
+            cmd = lambda x=btn_info.command: self.calculator_data.process_button(x)
         else:
-            cmd = lambda x=btn_info["label"]: self.calculator_data.process_button(
-                "button", x
+            cmd = lambda x=btn_info.label: self.calculator_data.process_button(
+                CalculatorCommands.BASICBUTTON, x
             )
 
-        btnopts: dict = {"text": btn_info["label"], "command": cmd}
-        if "style" in btn_info:
-            btnopts["style"] = btn_info["style"]
+        btnopts: dict = {"text": btn_info.label, "command": cmd}
+
+        if btn_info.style:
+            btnopts["style"] = btn_info.style
 
         cur_btn = ttk.Button(self.button_frames[btn_loc.btn_frame], **btnopts)
 
@@ -276,17 +283,17 @@ class BtnDispFrm:
             "sticky": "news",
         }
 
-        if "rowspan" in btn_info:
-            gridopts["rowspan"] = btn_info["rowspan"]
+        if btn_info.rowspan:
+            gridopts["rowspan"] = btn_info.rowspan
 
-        if "columnspan" in btn_info:
-            gridopts["columnspan"] = btn_info["columnspan"]
+        if btn_info.columnspan:
+            gridopts["columnspan"] = btn_info.columnspan
 
         cur_btn.grid(**gridopts)
 
         # if this button is binding any events ...
-        if "events" in btn_info:
-            for be in btn_info["events"]:
+        if btn_info.events:
+            for be in btn_info.events:
                 topwin = self.frm.winfo_toplevel()
                 topwin.bind(be, lambda _, c=cur_btn: c.invoke())  # type: ignore
 
@@ -377,7 +384,7 @@ class VarsPopupTreeFrm:
 
         # double click event to select a variable
         self.vars_tree.bind(
-            "<Double-Button-1>", lambda _: self.buttonfrm.select_button.invoke()
+            TkEvents.DOUBLECLICK, lambda _: self.buttonfrm.select_button.invoke()
         )
 
         self.frm.grid(row=0, column=0, sticky="news")
@@ -431,25 +438,25 @@ class VarsPopupTreeFrmButtons:
         self.frm.columnconfigure(0, weight=1)
         self.frm.rowconfigure(0, weight=0)
 
-        self.cancel_button = ttk.Button(
-            self.frm,
-            text="Cancel",
-            command=self.frm.winfo_toplevel().destroy,
-        )
-        self.cancel_button.grid(row=1, column=0)
-        self.frm.rowconfigure(1, weight=0)
-
         self.select_button = ttk.Button(
             self.frm,
             text="Select",
             command=self.user_vars_select,
         )
-        self.select_button.grid(row=1, column=1)
+        self.select_button.grid(row=1, column=0)
+        self.frm.rowconfigure(1, weight=0)
+
+        self.cancel_button = ttk.Button(
+            self.frm,
+            text="Cancel",
+            command=self.frm.winfo_toplevel().destroy,
+        )
+        self.cancel_button.grid(row=1, column=1)
         self.frm.columnconfigure(1, weight=1)
 
         top_win = self.frm.winfo_toplevel()
-        top_win.bind("<Return>", lambda _: self.select_button.invoke())
-        top_win.bind("<Escape>", lambda _: self.frm.winfo_toplevel().destroy())
+        top_win.bind(TkEvents.RETURN, lambda _: self.select_button.invoke())
+        top_win.bind(TkEvents.ESCAPE, lambda _: self.frm.winfo_toplevel().destroy())
         self.frm.grid(row=1, column=0, sticky="news")
 
     def user_vars_select(self) -> None:
@@ -574,12 +581,6 @@ class UserVarsEditFrm:
         self.frm.rowconfigure(1001, weight=0)
 
         topwin = self.frm.winfo_toplevel()
-        # cancel button
-        self.cancelbtn = ttk.Button(self.frm, text="Cancel", command=topwin.destroy)
-        self.cancelbtn.grid(row=1002, column=0)
-        self.frm.rowconfigure(1002, weight=0)
-
-        topwin.bind("<Escape>", lambda _: self.cancelbtn.invoke())
 
         # ok button
         self.okbtn = ttk.Button(
@@ -587,9 +588,16 @@ class UserVarsEditFrm:
             text="Ok",
             command=self.user_vars_edit_ok,
         )
-        self.okbtn.grid(row=1002, column=1)
+        self.okbtn.grid(row=1002, column=0)
+        self.frm.rowconfigure(1002, weight=0)
 
-        topwin.bind("<Return>", lambda _: self.okbtn.invoke())
+        topwin.bind(TkEvents.RETURN, lambda _: self.okbtn.invoke())
+
+        # cancel button
+        self.cancelbtn = ttk.Button(self.frm, text="Cancel", command=topwin.destroy)
+        self.cancelbtn.grid(row=1002, column=1)
+
+        topwin.bind(TkEvents.ESCAPE, lambda _: self.cancelbtn.invoke())
 
         # error message display
         self.errmsg = tk.StringVar(self.frm)
@@ -691,7 +699,7 @@ class UserVarsEditFrm:
         self.frm.rowconfigure(rownum, weight=1)
 
         if colnum == 1:
-            tbox.bind("<KeyRelease>", self.format_number)
+            tbox.bind(TkEvents.KEYRELEASE, self.format_number)
 
     def format_number(self, event: tk.Event) -> None:
         """
