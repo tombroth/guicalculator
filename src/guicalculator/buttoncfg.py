@@ -1,7 +1,9 @@
 """
 buttoncfg.py - This file contains the buttons dictionary that defines the 
 calculator buttons.
+"""
 
+"""
 Copyright (c) 2024 Thomas Brotherton
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,105 +25,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from dataclasses import dataclass
-from enum import StrEnum, unique
-from typing import List, NamedTuple, Optional
 
-from .globals import ButtonStyles, CalculatorCommands, CalculatorSymbols, TkEvents
-
-
-@unique
-class ButtonLabels(StrEnum):
-    """Enum that represent the button labels"""
-
-    NOLABEL = ""
-    BACKSPACE = "\u232B"
-    CLEARENTRY = "CE"
-    ALLCLEAR = "AC"
-
-    MEMORYCLEAR = "MClr"
-    MEMORYRECALL = "MRcl"
-    MEMORYSTORE = "MSto"
-    MEMORYSWAP = "MSwp"
-    MEMORYADD = "M+"
-    MEMORYSUBTRACT = "M-"
-
-    INVERSION = "1/x"
-    XSQUARED = "x\u00b2"
-    SQUAREROOTX = "\u221ax"
-    XTOTHEY = "x ** y"
-
-    VARIABLESPOPUP = "vars..."
-    OPENPAREN = CalculatorSymbols.OPENPAREN.value
-    CLOSEPAREN = CalculatorSymbols.CLOSEPAREN.value
-    DIVISION = CalculatorSymbols.DIVISION.value
-    MULTIPLICATION = CalculatorSymbols.MULTIPLICATION.value
-    SUBTRACTION = CalculatorSymbols.SUBTRACTION.value
-    ADDITION = CalculatorSymbols.ADDITION.value
-
-    INVERTSIGN = "+/-"
-    DECIMALPOINT = "."
-    EQUALS = "="
-
-
-class ButtonLocation(NamedTuple):
-    """
-    ButtonLocation - Where to locate a button on the calculator
-
-    Parameters
-    ----------
-    NamedTuple : A tuple consisting of:
-        btnfrm : int
-            This indicates which sub-frame of the button frame to place the
-            button into. Subframes are used to group rows with the same
-            number of buttons. The first subframe is 0.
-        btnrow : int
-            This indicates which row in the sub-frame the button is placed
-            on. The first row of a new sub-frame is 0.
-        btncol : int
-            This indicates which column in the row the button is placed on.
-            The first column of a new sub-frame is 0.
-    """
-
-    btn_frame: int
-    btn_row: int
-    btn_column: int
-
-
-@dataclass
-class ButtonInfo:
-    """
-    ButtonInfo - Information needed to create a button on the calculator.
-
-    Parameters
-    ----------
-    TypedDict : A dictionary consisting of:
-        label : ButtonLabels | int
-            Mandatory. The button text. Number buttons should be int,
-            everything else ButtonLabels.
-        command : Optional[CalculatorCommands]
-            Optional. Which command to execute. No command is needed for
-            basic number and math operators. Commands are decoded by the
-            processbutton funciton in calculatordata.py.
-        style : Optional[ButtonStyles]
-            Optional. Style information for the button. Styles are found
-            in CalcStyle in guicalculator.py.
-        rowspan : Optional[int]
-            Optional. This is the rowspan parameter of the grid call.
-        columnspan : Optional[int]
-            Optional. This is the columnspan parameter of the grid call.
-        events : Optional[List[TkEvents]]
-            Optional. This is a list of events bound to this button.invoke,
-            bound at winfo_toplevel.
-    """
-
-    label: ButtonLabels | int
-    command: Optional[CalculatorCommands] = CalculatorCommands.NOCOMMAND
-    style: Optional[ButtonStyles] = ButtonStyles.NOSTYLE
-    rowspan: Optional[int] = None
-    columnspan: Optional[int] = None
-    events: Optional[List[TkEvents]] = None
-
+from .globals import (
+    ButtonInfo,
+    ButtonLabels,
+    ButtonLocation,
+    ButtonStyles,
+    CalculatorCommands,
+    TkEvents,
+)
 
 # The calculator buttons
 buttons: dict[ButtonLocation, ButtonInfo] = {

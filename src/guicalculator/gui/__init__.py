@@ -1,5 +1,27 @@
-""""
-__main__.py - To make the module executable.
+"""guicalculator/gui - This is the directory with all the tkinter widgets for the calculator
+
+
+The files in this directory:
+
+    guicalculator.py - This is the root Tk window. It contains:
+
+        calcstyle.py - The calculator ttk.Style object
+
+        calcfrm.py - The calculator top level frame. It contains:
+
+            memdispfrm.py - The memory display frame.
+
+            btndispfrm.py - The top level calculator button display frame. 
+
+            varspopup.py - The variable selector popup window (called from the vars... button). It contains:
+
+                varspopuptreefrm.py - The variable selector frame.
+
+                varspopuptreefrmbuttons.py - The frame with buttons for the variable selector popup. It contains:
+
+                    uservarseditpopup.py - The user variables editor popup (called from the edit button). It contains:
+
+                        uservarseditfrm.py - The user variables editor popup top level frame.
 """
 
 """
@@ -24,13 +46,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from . import GuiCalculator
+from .guicalculator import GuiCalculator
 
-
-# poetry build system seems to run better having a target function to run
-def main():
-    _ = GuiCalculator()
-
-
-if __name__ == "__main__":
-    main()
+__all__ = ["GuiCalculator"]

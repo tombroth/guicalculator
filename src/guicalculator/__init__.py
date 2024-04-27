@@ -1,6 +1,22 @@
 """
 guicalculator - A calculator written with python and tkinter
 
+The files in this directory:
+
+    buttoncfg.py - The config file with the calculator buttons
+
+    py.typed - Empty file to hint to mypy that we have type info
+
+The subdirectories in this directory:
+
+    calculator - The directory containing the calculator functions
+
+    globals - The directory containing constants, classes, enumerations, etc. used by modules in multiple subdirectories
+
+    gui - The directory containing all the tkinter widgets
+"""
+
+"""
 Copyright (c) 2024 Thomas Brotherton
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,4 +40,4 @@ SOFTWARE.
 
 __all__ = ["GuiCalculator"]
 
-from .guicalculator import GuiCalculator
+from .gui.guicalculator import GuiCalculator

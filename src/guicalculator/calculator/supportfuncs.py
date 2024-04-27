@@ -2,7 +2,9 @@
 supportfuncs.py - Support functions needed by guicalculator. These functions do 
 not depend on the calculator interface or data, other than data passed in to and
 back from the function.
+"""
 
+"""
 Copyright (c) 2024 Thomas Brotherton
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -31,7 +33,7 @@ from decimal import Decimal
 from typing import Callable, Type
 from unicodedata import normalize
 
-from .globals import DEFAULT_VARIABLES, NORMALIZE_FORM, VariablesType
+from ..globals import DEFAULT_VARIABLES, NORMALIZE_FORM, VariablesType
 
 # map of ast operators to functions used by parser
 OPERATOR_MAP: dict[Type[ast.AST], Callable] = {

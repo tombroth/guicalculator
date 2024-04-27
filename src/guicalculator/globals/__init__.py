@@ -1,5 +1,17 @@
-""""
-__main__.py - To make the module executable.
+"""guicalculator/gui - This is the directory with all the tkinter widgets for the calculator
+
+
+The files in this directory:
+
+    buttoninfo.py - dataclass ButtonInfo
+
+    constants.py - Constants
+
+    enums.py - Enumerations
+
+    functionstype.py - dataclass FunctionsType
+
+    types.py - Types
 """
 
 """
@@ -24,13 +36,31 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from . import GuiCalculator
+from .buttoninfo import ButtonInfo
+from .constants import DEFAULT_VARIABLES, NORMALIZE_FORM, PI
+from .enums import (
+    ButtonLabels,
+    ButtonStyles,
+    CalculatorCommands,
+    CalculatorFunctions,
+    CalculatorSymbols,
+    TkEvents,
+)
+from .functionstype import FunctionsType
+from .types import ButtonLocation, VariablesType
 
-
-# poetry build system seems to run better having a target function to run
-def main():
-    _ = GuiCalculator()
-
-
-if __name__ == "__main__":
-    main()
+__all__ = [
+    "ButtonInfo",
+    "ButtonLabels",
+    "ButtonLocation",
+    "ButtonStyles",
+    "CalculatorCommands",
+    "CalculatorFunctions",
+    "CalculatorSymbols",
+    "DEFAULT_VARIABLES",
+    "FunctionsType",
+    "NORMALIZE_FORM",
+    "PI",
+    "TkEvents",
+    "VariablesType",
+]

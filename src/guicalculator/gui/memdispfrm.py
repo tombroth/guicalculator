@@ -1,5 +1,5 @@
-""""
-__main__.py - To make the module executable.
+"""
+memdispfrm.py - This is the gui calculator memory display frame.
 """
 
 """
@@ -24,13 +24,25 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from . import GuiCalculator
+from tkinter import ttk
+
+from ..calculator import CalculatorData
 
 
-# poetry build system seems to run better having a target function to run
-def main():
-    _ = GuiCalculator()
+class MemDispFrm:
+    """MemDispFrm - The memory display frame."""
 
+    def __init__(self, master, calculator_data: CalculatorData) -> None:
+        self.frm = ttk.Frame(master)
 
-if __name__ == "__main__":
-    main()
+        self.memlbl = ttk.Label(self.frm, text="Memory:")
+        self.memlbl.grid(row=0, column=0, sticky="e")
+
+        self.mem_txt = ttk.Label(self.frm, textvariable=calculator_data.memval)
+        self.mem_txt.grid(row=0, column=1, sticky="w")
+
+        self.frm.columnconfigure(0, weight=0)
+        self.frm.columnconfigure(1, weight=1)
+        self.frm.rowconfigure(0, weight=0)
+
+        self.frm.grid(column=0, row=1, sticky="news")

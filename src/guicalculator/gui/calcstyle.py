@@ -1,5 +1,5 @@
-""""
-__main__.py - To make the module executable.
+"""
+calcstyle.py - This is the gui calculator ttk.Style object. 
 """
 
 """
@@ -24,13 +24,25 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from . import GuiCalculator
+from tkinter import ttk
+
+from ..globals import ButtonStyles
 
 
-# poetry build system seems to run better having a target function to run
-def main():
-    _ = GuiCalculator()
+class CalcStyle:
+    """CalcStyle - The ttk.Style object for the calculator"""
 
+    def __init__(self) -> None:
+        self.style = ttk.Style()
+        self.style.theme_use("alt")
 
-if __name__ == "__main__":
-    main()
+        self.style.map(
+            ButtonStyles.NUMBER,
+            foreground=[("active", "white"), ("!active", "white")],
+            background=[("active", "gray45"), ("!active", "gray55")],
+        )
+
+        self.style.configure(ButtonStyles.ORANGE, background="darkorange2")
+        self.style.configure(ButtonStyles.RED, background="orangered2")
+        self.style.configure(ButtonStyles.MEMORY, background="lightcyan3")
+        self.style.configure(ButtonStyles.MATHOP, background="cornsilk3")

@@ -1,5 +1,5 @@
-""""
-__main__.py - To make the module executable.
+"""
+constants.py - Constants needed by more than one module.
 """
 
 """
@@ -24,13 +24,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from . import GuiCalculator
+from decimal import Decimal
+from unicodedata import normalize
 
+from .types import VariablesType
 
-# poetry build system seems to run better having a target function to run
-def main():
-    _ = GuiCalculator()
+PI = "\u03c0"
 
+NORMALIZE_FORM = "NFKC"  # for unicode comparison
 
-if __name__ == "__main__":
-    main()
+# stores default variables pi and e
+# including first 30 digits because default precision is 28 in Decimal
+# hard coding instead of using math.pi due to float to Decimal rounding issues
+DEFAULT_VARIABLES: VariablesType = VariablesType(
+    {
+        normalize(NORMALIZE_FORM, PI): Decimal("3.141592653589793238462643383279"),
+        "e": Decimal("2.718281828459045235360287471352"),
+    }
+)

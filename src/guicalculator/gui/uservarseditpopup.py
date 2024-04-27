@@ -1,5 +1,6 @@
-""""
-__main__.py - To make the module executable.
+"""
+uservarseditpopup.py - This is the gui calculator user variables editor popup 
+window.
 """
 
 """
@@ -24,13 +25,35 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from . import GuiCalculator
+from tkinter import Tk, Toplevel
+
+from ..calculator import CalculatorData
+from .uservarseditfrm import UserVarsEditFrm
 
 
-# poetry build system seems to run better having a target function to run
-def main():
-    _ = GuiCalculator()
+class UserVarsEditPopup:
+    """UserVarsEditPopup - Popup window to edit the user variables."""
 
+    def __init__(
+        self,
+        x: int,
+        y: int,
+        calculator_data: CalculatorData,
+        vptf_topwin: Tk | Toplevel,
+    ) -> None:
+        self.win = Toplevel()
+        self.calculator_data = calculator_data
+        self.topwin = vptf_topwin
 
-if __name__ == "__main__":
-    main()
+        self.win.focus_set()
+        self.win.wm_title("Edit User Variables")
+
+        self.win.focus_set()
+        self.treefrm = UserVarsEditFrm(
+            master=self.win,
+            calculator_data=self.calculator_data,
+            vptf_topwin=vptf_topwin,
+        )
+        self.win.rowconfigure(0, weight=1)
+        self.win.columnconfigure(0, weight=1)
+        self.win.geometry("+%d+%d" % (x, y))

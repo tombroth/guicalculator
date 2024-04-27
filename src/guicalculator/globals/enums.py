@@ -1,6 +1,8 @@
 """
-globals.py - Variables needed by more than one module.
+enums.py - Enumerations needed by more than one module.
+"""
 
+"""
 Copyright (c) 2024 Thomas Brotherton
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,34 +24,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from dataclasses import dataclass
-from decimal import Decimal
+
 from enum import Enum, StrEnum, unique
-from typing import NewType
-from unicodedata import normalize
 
-PI = "\u03c0"
-
-NORMALIZE_FORM = "NFKC"  # for unicode comparison
-
-VariablesType = NewType("VariablesType", dict[str, Decimal])
-"""Type to store varaibles and values for the parser: dict[str, Decimal]"""
-
-@dataclass
-class FunctionsType :
-    """Type to store functions used by the calculator, like square root"""    
-    display_func: str 
-    eval_func: str
-
-# stores default variables pi and e
-# including first 30 digits because default precision is 28 in Decimal
-# hard coding instead of using math.pi due to float to Decimal rounding issues
-DEFAULT_VARIABLES: VariablesType = VariablesType(
-    {
-        normalize(NORMALIZE_FORM, PI): Decimal("3.141592653589793238462643383279"),
-        "e": Decimal("2.718281828459045235360287471352"),
-    }
-)
+from .functionstype import FunctionsType
 
 
 @unique
@@ -142,3 +120,37 @@ class TkEvents(StrEnum):
     ESCAPE = "<Escape>"
     DOUBLECLICK = "<Double-Button-1>"
     KEYRELEASE = "<KeyRelease>"
+
+
+@unique
+class ButtonLabels(StrEnum):
+    """Enum that represent the button labels"""
+
+    NOLABEL = ""
+    BACKSPACE = "\u232B"
+    CLEARENTRY = "CE"
+    ALLCLEAR = "AC"
+
+    MEMORYCLEAR = "MClr"
+    MEMORYRECALL = "MRcl"
+    MEMORYSTORE = "MSto"
+    MEMORYSWAP = "MSwp"
+    MEMORYADD = "M+"
+    MEMORYSUBTRACT = "M-"
+
+    INVERSION = "1/x"
+    XSQUARED = "x\u00b2"
+    SQUAREROOTX = "\u221ax"
+    XTOTHEY = "x ** y"
+
+    VARIABLESPOPUP = "vars..."
+    OPENPAREN = CalculatorSymbols.OPENPAREN.value
+    CLOSEPAREN = CalculatorSymbols.CLOSEPAREN.value
+    DIVISION = CalculatorSymbols.DIVISION.value
+    MULTIPLICATION = CalculatorSymbols.MULTIPLICATION.value
+    SUBTRACTION = CalculatorSymbols.SUBTRACTION.value
+    ADDITION = CalculatorSymbols.ADDITION.value
+
+    INVERTSIGN = "+/-"
+    DECIMALPOINT = "."
+    EQUALS = "="

@@ -1,236 +1,10 @@
 import unittest
-from decimal import Decimal, DivisionByZero, InvalidOperation
+from decimal import Decimal, DivisionByZero
 
-from guicalculator import supportfuncs as sf  
+from guicalculator.calculator import evaluate_calculation
 
 
-class SupportFuncsTest(unittest.TestCase):
-
-    def test_numtostr(self):
-        """Tests the numtostr function."""
-
-        test_data = [
-            {
-                "case": "int, default options (commas=False, removeZeroes=True)",
-                "params": {"val": 12345},
-                "result": "12345",
-            },
-            {
-                "case": "int, commas=True",
-                "params": {"val": 12345, "commas": True},
-                "result": "12,345",
-            },
-            {
-                "case": "int, removeZeroes=False",
-                "params": {"val": 12345, "removeZeroes": False},
-                "result": "12345",
-            },
-            {
-                "case": "int, commas=True, removeZeroes=False",
-                "params": {"val": 12345, "commas": True, "removeZeroes": False},
-                "result": "12,345",
-            },
-            {
-                "case": "float, default options (commas=False, removeZeroes=True)",
-                "params": {"val": 12345.50},
-                "result": "12345.5",
-            },
-            {
-                "case": "float, commas=True",
-                "params": {"val": 12345.50, "commas": True},
-                "result": "12,345.5",
-            },
-            {
-                "case": "float, removeZeroes=False",
-                "params": {"val": 12345.50, "removeZeroes": False},
-                "result": "12345.5",
-            },
-            {
-                "case": "float, commas=True, removeZeroes=False",
-                "params": {"val": 12345.50, "commas": True, "removeZeroes": False},
-                "result": "12,345.5",
-            },
-            {
-                "case": "Decimal, default options (commas=False, removeZeroes=True)",
-                "params": {"val": Decimal("12345.50")},
-                "result": "12345.5",
-            },
-            {
-                "case": "Decimal, commas=True",
-                "params": {"val": Decimal("12345.50"), "commas": True},
-                "result": "12,345.5",
-            },
-            {
-                "case": "Decimal, removeZeroes=False",
-                "params": {"val": Decimal("12345.50"), "removeZeroes": False},
-                "result": "12345.50",
-            },
-            {
-                "case": "Decimal, commas=True, removeZeroes=False",
-                "params": {
-                    "val": Decimal("12345.50"),
-                    "commas": True,
-                    "removeZeroes": False,
-                },
-                "result": "12,345.50",
-            },
-        ]
-
-        for data in test_data:
-            with self.subTest(msg="numtostr: " + data["case"]):
-                self.assertEqual(sf.numtostr(**data["params"]), data["result"])
-
-    def test_numtostr_invalid_input(self):
-        """Tests the numtostr function with invalid input."""
-
-        test_data = [
-            {
-                "case": "Invalid input",
-                "params": {"val": "abc"},
-                "result": ValueError,
-            },
-        ]
-
-        for data in test_data:
-            with self.subTest(msg="numtostr: " + data["case"]):
-                with self.assertRaises(data["result"]):
-                    sf.numtostr(**data["params"])
-
-    def test_strtodecimal(self):
-        """Tests the strtodecimal function."""
-
-        test_data = [
-            {
-                "case": "With commas",
-                "params": {"val": "12,345.67800"},
-                "result": Decimal("12345.678"),
-            },
-            {
-                "case": "Without commas",
-                "params": {"val": "12345.67800"},
-                "result": Decimal("12345.678"),
-            },
-            {
-                "case": "No input",
-                "params": {"val": ""},
-                "result": Decimal("0"),
-            },
-        ]
-
-        for data in test_data:
-            with self.subTest(msg="strtodecimal: " + data["case"]):
-                self.assertEqual(sf.strtodecimal(**data["params"]), data["result"])
-
-    def test_strtodecimal_invalid_input(self):
-        """Tests the strtodecimal function with invalid input."""
-
-        test_data = [
-            {
-                "case": "Invalid input",
-                "params": {"val": "abc"},
-                "result": InvalidOperation,
-            },
-        ]
-
-        for data in test_data:
-            with self.subTest(msg="strtodecimal: " + data["case"]):
-                with self.assertRaises(data["result"]):
-                    sf.strtodecimal(**data["params"])
-
-    def test_validate_user_var(self):
-        """Tests the validate_user_var function."""
-
-        test_data = [
-            {
-                "case": "Variable > 0",
-                "params": {"nam": "x", "val": Decimal("1234.56")},
-            },
-            {
-                "case": "Variable = 0",
-                "params": {"nam": "x", "val": Decimal("0")},
-            },
-            {
-                "case": "Variable < 0",
-                "params": {"nam": "x", "val": Decimal("-1234.56")},
-            },
-        ]
-
-        for data in test_data:
-            with self.subTest(msg="validate_user_var: " + data["case"]):
-                sf.validate_user_var(**data["params"])
-
-    def test_validate_user_var_invalid_input(self):
-        """Tests the validate_user_var function with invalid input."""
-
-        test_data = [
-            {
-                "case": "No data input",
-                "params": {"nam": None, "val": None},
-                "result": TypeError,
-            },
-            {
-                "case": "Variable name not str",
-                "params": {"nam": 123, "val": None},
-                "result": TypeError,
-            },
-            {
-                "case": "Invalid identifier",
-                "params": {"nam": "x-y", "val": None},
-                "result": TypeError,
-            },
-            {
-                "case": "Reserved word",
-                "params": {"nam": "def", "val": None},
-                "result": TypeError,
-            },
-            {
-                "case": "Replace default variable",
-                "params": {"nam": "e", "val": None},
-                "result": TypeError,
-            },
-            {
-                "case": "Replace default variable",
-                "params": {"nam": "e", "val": None},
-                "result": TypeError,
-            },
-            {
-                "case": "Valid name, no value",
-                "params": {"nam": "x", "val": None},
-                "result": TypeError,
-            },
-            {
-                "case": "Valid name, non-Decimal value",
-                "params": {"nam": "x", "val": 123.45},
-                "result": TypeError,
-            },
-            {
-                "case": "Injection attack 1",
-                "params": {"nam": "x", "val": "__import__('os').system('dir')"},
-                "result": TypeError,
-            },
-            {
-                "case": "Injection attack 2",
-                "params": {"nam": "x", "val": lambda: __import__("os").system("dir")},
-                "result": TypeError,
-            },
-            {
-                "case": "Injection attack 3",
-                "params": {"nam": "__import__('os').system('dir')", "val": Decimal(1)},
-                "result": TypeError,
-            },
-            {
-                "case": "Injection attack 4",
-                "params": {"nam": lambda: __import__("os").system("dir")},
-                "val": Decimal(1),
-                "result": TypeError,
-            },
-        ]
-
-        for data in test_data:
-            with self.subTest(msg="validate_user_var: " + data["case"]):
-                with self.assertRaises(data["result"]):
-                    sf.validate_user_var(**data["params"])
-
+class EvaluateCalculationTest(unittest.TestCase):
     def test_evaluate_calculation(self):
         """Tests the evaluate_calculation function."""
 
@@ -335,9 +109,7 @@ class SupportFuncsTest(unittest.TestCase):
             with self.subTest(
                 msg="evaluate_calculation: " + data["params"]["current_calculation"]
             ):
-                self.assertEqual(
-                    sf.evaluate_calculation(**data["params"]), data["result"]
-                )
+                self.assertEqual(evaluate_calculation(**data["params"]), data["result"])
 
     def test_evaluate_calculation_invalid_input(self):
         """Tests the evaluate_calculation function with invalid input."""
@@ -622,7 +394,7 @@ class SupportFuncsTest(unittest.TestCase):
         for data in test_data:
             with self.subTest(msg="evaluate_calculation: " + data["case"]):
                 with self.assertRaises(data["result"]):
-                    sf.evaluate_calculation(**data["params"])
+                    evaluate_calculation(**data["params"])
 
 
 if __name__ == "__main__":

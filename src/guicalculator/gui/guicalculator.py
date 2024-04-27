@@ -1,5 +1,5 @@
-""""
-__main__.py - To make the module executable.
+"""
+guicalculator.py - This is the gui calculator main window. 
 """
 
 """
@@ -24,13 +24,35 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from . import GuiCalculator
+from tkinter import Tk, font
+
+from .calcfrm import CalcFrm
+from .calcstyle import CalcStyle
 
 
-# poetry build system seems to run better having a target function to run
-def main():
-    _ = GuiCalculator()
+class GuiCalculator:
+    """GuiCalculator - The root calculator window"""
 
+    def __init__(self) -> None:
+        self.root = Tk()
+        self.root.title("Calculator")
 
-if __name__ == "__main__":
-    main()
+        # style info for buttons
+        self.style = CalcStyle()
+
+        # set the font
+        self.default_font = font.nametofont("TkDefaultFont")
+        self.default_font.configure(size=12, weight=font.BOLD)
+        self.root.option_add("*Font", self.default_font)
+
+        # frame that contains the calculator
+        self.calcfrm = CalcFrm(master=self.root)
+        self.root.columnconfigure(0, weight=1)
+        self.root.rowconfigure(0, weight=1)
+
+        # set size
+        self.root.geometry("400x500")
+        self.root.minsize(400, 500)
+
+        # start tkinter
+        self.root.mainloop()

@@ -8,8 +8,9 @@ Interface back to the gui is through passed in function calls:
     write_to_display  - Writes a message to the display
     bell              - Rings the bell for an error condition
     vars_popup        - Opens the variable popup window
+"""
 
-
+"""
 Copyright (c) 2024 Thomas Brotherton
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -35,7 +36,7 @@ from decimal import Decimal
 from tkinter import StringVar
 from typing import Callable
 
-from .globals import (
+from ..globals import (
     DEFAULT_VARIABLES,
     CalculatorCommands,
     CalculatorFunctions,
@@ -302,7 +303,7 @@ class CalculatorData:
         buttontxt : str | int, optional
             For buttons in buttoncfg.py that don't have a command
             (number and basic math symbols) this is the button label,
-            can also be used to pass default or user variables, or 
+            can also be used to pass default or user variables, or
             calculator symbols like ** that aren't necessarily labels,
             by default ""
         """

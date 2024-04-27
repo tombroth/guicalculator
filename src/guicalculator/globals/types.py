@@ -1,5 +1,5 @@
-""""
-__main__.py - To make the module executable.
+"""
+types.py - Types needed by more than one module.
 """
 
 """
@@ -24,13 +24,32 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from . import GuiCalculator
+from decimal import Decimal
+from typing import NamedTuple, NewType
+
+VariablesType = NewType("VariablesType", dict[str, Decimal])
+"""Type to store varaibles and values for the parser: dict[str, Decimal]"""
 
 
-# poetry build system seems to run better having a target function to run
-def main():
-    _ = GuiCalculator()
+class ButtonLocation(NamedTuple):
+    """
+    ButtonLocation - Where to locate a button on the calculator
 
+    Parameters
+    ----------
+    NamedTuple : A tuple consisting of:
+        btnfrm : int
+            This indicates which sub-frame of the button frame to place the
+            button into. Subframes are used to group rows with the same
+            number of buttons. The first subframe is 0.
+        btnrow : int
+            This indicates which row in the sub-frame the button is placed
+            on. The first row of a new sub-frame is 0.
+        btncol : int
+            This indicates which column in the row the button is placed on.
+            The first column of a new sub-frame is 0.
+    """
 
-if __name__ == "__main__":
-    main()
+    btn_frame: int
+    btn_row: int
+    btn_column: int

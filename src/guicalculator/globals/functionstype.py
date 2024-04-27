@@ -1,5 +1,6 @@
-""""
-__main__.py - To make the module executable.
+"""
+functionstype.py - Class FunctionsType, stores functions used by the 
+calculator.
 """
 
 """
@@ -24,13 +25,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from . import GuiCalculator
+
+from dataclasses import dataclass
 
 
-# poetry build system seems to run better having a target function to run
-def main():
-    _ = GuiCalculator()
+@dataclass
+class FunctionsType:
+    """Type to store functions used by the calculator, like square root"""
 
-
-if __name__ == "__main__":
-    main()
+    display_func: str
+    eval_func: str

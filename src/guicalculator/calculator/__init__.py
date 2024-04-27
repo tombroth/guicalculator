@@ -1,5 +1,9 @@
-""""
-__main__.py - To make the module executable.
+"""guicalculator/gui - This is the directory with all the tkinter widgets for the calculator
+
+
+The files in this directory:
+
+
 """
 
 """
@@ -24,13 +28,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from . import GuiCalculator
+from .calculatordata import CalculatorData
+from .supportfuncs import (
+    evaluate_calculation,
+    numtostr,
+    strtodecimal,
+    validate_user_var,
+)
 
-
-# poetry build system seems to run better having a target function to run
-def main():
-    _ = GuiCalculator()
-
-
-if __name__ == "__main__":
-    main()
+__all__ = [
+    "CalculatorData",
+    "numtostr",
+    "strtodecimal",
+    "validate_user_var",
+    "evaluate_calculation",
+]
