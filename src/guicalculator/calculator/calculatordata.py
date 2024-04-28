@@ -34,7 +34,7 @@ SOFTWARE.
 
 from copy import deepcopy
 from decimal import Decimal
-from tkinter import StringVar
+from tkinter import StringVar, ttk
 from typing import Callable
 
 from ..globals import (
@@ -461,18 +461,22 @@ class CalculatorData:
 
         self.update_display()
 
-    def get_memval(self) -> StringVar:
+    def get_memory_label(self, master) -> ttk.Label:
         """
-        get_memval - Returns the _memval variable. Needed for attaching to the
-        ttk.Label in memdispfrm.py.
+        get_memory_label - Creates a ttk.Label tied to _memval
+
+        Parameters
+        ----------
+        master : any valid tk widget that can contain a label
+            The parent widget that will have this label, normally a Frame
 
         Returns
         -------
-        StringVar
-            _memval variable
-        """
-        return self._memval
-
+        ttk.Label
+            The label with _memval providing data
+        """        
+        return ttk.Label(master, textvariable=self._memval)
+    
     def get_current_memory(self) -> Decimal:
         """
         get_current_memory - Get the current value stored in memory as a Decimal.
