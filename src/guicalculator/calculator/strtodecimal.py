@@ -1,9 +1,5 @@
-"""guicalculator/gui - This is the directory with all the tkinter widgets for the calculator
-
-
-The files in this directory:
-
-
+"""
+strtodecimal.py - Convert string value to Decimal.
 """
 
 """
@@ -28,16 +24,26 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from .calculatordata import CalculatorData
-from .evaluate_calculation import evaluate_calculation
-from .numtostr import numtostr
-from .strtodecimal import strtodecimal
-from .validate_user_var import validate_user_var
 
-__all__ = [
-    "CalculatorData",
-    "numtostr",
-    "strtodecimal",
-    "validate_user_var",
-    "evaluate_calculation",
-]
+from decimal import Decimal
+
+
+def strtodecimal(val: str) -> Decimal:
+    """
+    strtodecimal  - convert string value to Decimal.
+
+    Parameters
+    ----------
+    val : str
+        Value to be converted
+
+    Returns
+    -------
+    Decimal
+        Converted value
+    """
+
+    if val:
+        return Decimal(val.replace(",", ""))
+    else:
+        return Decimal(0)

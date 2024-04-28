@@ -1,7 +1,6 @@
 """
-supportfuncs.py - Support functions needed by guicalculator. These functions do 
-not depend on the calculator interface or data, other than data passed in to and
-back from the function.
+evaluate_calculation.py - Evaluate the provided calculation, returning the
+    result as Decimal. This is  the parser.
 """
 
 """
@@ -27,13 +26,13 @@ SOFTWARE.
 """
 
 import ast
-import keyword
 import operator
 from decimal import Decimal
-from typing import Callable, Type
+from typing import Any, Callable, Type
 from unicodedata import normalize
 
 from ..globals import DEFAULT_VARIABLES, NORMALIZE_FORM, VariablesType
+from .validate_user_var import validate_user_var
 
 # map of ast operators to functions used by parser
 OPERATOR_MAP: dict[Type[ast.AST], Callable] = {
@@ -47,124 +46,43 @@ OPERATOR_MAP: dict[Type[ast.AST], Callable] = {
 }
 
 
-def numtostr(
-    val: int | float | Decimal,
-    commas: bool = False,
-    removeZeroes: bool = True,
-) -> str:
+def _get_str_parameter(node: ast.Call) -> str:
     """
-    numtostr - Convert number to string.
-
-    Converts an int or float or Decimal to a string representation. Can
-    add thousand separators and/or remove trailing zeroes after a decimal
-    point.
-
-    Notes
-    -----
-    As a side effect, will round the number currently being input to the
-    precision in the Decimal context if removeZeroes is True.
-
-    Parameters
-    ----------
-    val : int | float | Decimal
-        Number to be converted
-    commas : bool, optional
-        True means add thosands separators (commas). By default False.
-    removeZeroes : bool, optional
-        True means remove trailing zeroes after the decimal point.
-        By default True.
-
-    Returns
-    -------
-    str
-        The string representation of the number
+    _get_str_parameter - Internal function to return a single str
+    parameter of an ast Call.
     """
 
-    v: int | float | Decimal
-    if commas:
-        c = ","
+    if len(node.args) == 1 and isinstance(node.args[0], ast.Constant):
+        parm = node.args[0].value
     else:
-        c = ""
-
-    if isinstance(val, Decimal):
-        if val == val.to_integral_value() and removeZeroes:
-            v = val.to_integral_value()
-        else:
-            if removeZeroes:
-                v = (
-                    val.quantize(Decimal(1))
-                    if val == val.to_integral()
-                    else val.normalize()
-                )
-            else:
-                v = val
-        fmt = "{0:" + c + "f}"
-    elif val == int(val) and removeZeroes:
-        v = int(val)
-        fmt = "{0:" + c + "d}"
+        raise TypeError("Decimal function accepts exactly one argument")
+    if type(parm) == str:
+        return parm
     else:
-        v = val
-        fmt = "{0:" + c + ".28g}"
-
-    return fmt.format(v)
+        raise TypeError("Decimal function should only have str parameter")
 
 
-def strtodecimal(val: str) -> Decimal:
+def _get_caller(node: ast.Call, node_fmtd: str) -> tuple[Any, Any]:
     """
-    strtodecimal  - convert string value to Decimal.
-
-    Parameters
-    ----------
-    val : str
-        Value to be converted
-
-    Returns
-    -------
-    Decimal
-        Converted value
+    _get_caller - Internal function to get calling module/function name.
     """
 
-    if val:
-        return Decimal(val.replace(",", ""))
-    else:
-        return Decimal(0)
+    if isinstance(node.func, ast.Attribute):  # package.procedure
+        if isinstance(node.func.value, ast.Name):
+            pkg = node.func.value.id
+            func = node.func.attr
+        else:  # ??? not sure if this can happen
+            errmsg = f"Unknown type of ast.Call: \nast.{node_fmtd}"
+            raise TypeError(errmsg)
 
+    elif isinstance(node.func, ast.Name):  # procedure
+        pkg = ""
+        func = node.func.id
 
-def validate_user_var(nam: str, val: Decimal) -> None:
-    """
-    validate_user_vars - Validate that nothing improper is in user_variables
-
-    Parameters
-    ----------
-    user_variables : VariablesType
-        The user variables to validate
-
-    Raises
-    ------
-    TypeError
-        Used for custom errors, message indicates what the specific error was.
-    """
-
-    if not nam:
-        raise TypeError(f"Variable has no name")
-
-    if type(nam) != str:
-        raise TypeError(f"Variable name is wrong data type: {nam!r}")
-
-    if not nam.isidentifier():
-        raise TypeError(f"Invalid variable name: {nam!r}")
-
-    if keyword.iskeyword(nam):
-        raise TypeError(f"Variable name is a reserved word: {nam!r}")
-
-    if nam in DEFAULT_VARIABLES.keys():
-        raise TypeError(f"Attempt to overwrite default variable: {nam!r}")
-
-    if val is None:
-        raise TypeError(f"No value for variable: {nam!r}")
-
-    if type(val) != Decimal:
-        raise TypeError(f"Invalid value for variable: {nam!r}: {val!r}")
+    else:  # ??? not sure if this can happen
+        errmsg = f"Unknown type of ast.Call: \nast.{node_fmtd}"
+        raise TypeError(errmsg)
+    return pkg, func
 
 
 def evaluate_calculation(
@@ -205,7 +123,11 @@ def evaluate_calculation(
     root_node = ast.parse(current_calculation, mode="eval")
 
     # internal function, nested so it can't be called directly
+    #
     # unnesting would require moving above validation inside the function
+    #
+    # could possibl rewrite the outer validation as a wrapper around this
+    # in order to unnest without exposing a vulnerability
     def _eval(node: ast.AST) -> Decimal:
         """_eval - Internal recursive function to evaluate the ast nodes"""
 
@@ -262,38 +184,6 @@ def evaluate_calculation(
 
             case _:
                 raise TypeError(f"Unknown ast node: \nast.{node_fmtd}")
-
-    def _get_str_parameter(node):
-        """_get_str_parameter - Internal function to return a single str parameter"""
-
-        if len(node.args) == 1 and isinstance(node.args[0], ast.Constant):
-            parm = node.args[0].value
-        else:
-            raise TypeError("Decimal function accepts exactly one argument")
-        if type(parm) == str:
-            return parm
-        else:
-            raise TypeError("Decimal function should only have str parameter")
-
-    def _get_caller(node, node_fmtd):
-        """_get_caller - Internal function to get calling module/function name"""
-
-        if isinstance(node.func, ast.Attribute):  # package.procedure
-            if isinstance(node.func.value, ast.Name):
-                pkg = node.func.value.id
-                func = node.func.attr
-            else:  # ??? not sure if this can happen
-                errmsg = f"Unknown type of ast.Call: \nast.{node_fmtd}"
-                raise TypeError(errmsg)
-
-        elif isinstance(node.func, ast.Name):  # procedure
-            pkg = ""
-            func = node.func.id
-
-        else:  # ??? not sure if this can happen
-            errmsg = f"Unknown type of ast.Call: \nast.{node_fmtd}"
-            raise TypeError(errmsg)
-        return pkg, func
 
     val = _eval(root_node)
     return val

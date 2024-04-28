@@ -45,7 +45,9 @@ from ..globals import (
     FunctionsType,
     VariablesType,
 )
-from .supportfuncs import evaluate_calculation, numtostr, validate_user_var
+from .evaluate_calculation import evaluate_calculation
+from .numtostr import numtostr
+from .validate_user_var import validate_user_var
 
 
 class CalculatorData:
