@@ -1,9 +1,17 @@
-"""guicalculator/gui - This is the directory with all the tkinter widgets for the calculator
+"""guicalculator/calculator - This is the directory with all the tkinter widgets for the calculator
 
 
 The files in this directory:
 
+    calculatordata.py - The Calculator class with calculator data and functions
 
+    evaluate_calculation.py - The parser function, evaluate_calculation
+
+    numtostr.py - The Decimal number to string function
+
+    strtodecimal.py - The string to Decimal function
+    
+    validate_user_var.py - The user variable validation function
 """
 
 """

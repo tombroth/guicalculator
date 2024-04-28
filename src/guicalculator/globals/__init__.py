@@ -1,4 +1,4 @@
-"""guicalculator/gui - This is the directory with all the tkinter widgets for the calculator
+"""guicalculator/globals - This is the directory with all the tkinter widgets for the calculator
 
 
 The files in this directory:

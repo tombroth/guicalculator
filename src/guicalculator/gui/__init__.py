@@ -1,5 +1,10 @@
 """guicalculator/gui - This is the directory with all the tkinter widgets for the calculator
 
+Notes
+-----
+The file listing here is hierarchical. Any parent file can directly reference descendants, 
+but any descendant referencing a parent would create a circular import error. Instead, 
+descendants reference parents by functions passed in as parameters.
 
 The files in this directory:
 
