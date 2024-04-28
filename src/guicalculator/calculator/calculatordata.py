@@ -32,6 +32,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from copy import deepcopy
 from decimal import Decimal
 from tkinter import StringVar
 from typing import Callable
@@ -44,18 +45,18 @@ from ..globals import (
     FunctionsType,
     VariablesType,
 )
-from .supportfuncs import evaluate_calculation, numtostr
+from .supportfuncs import evaluate_calculation, numtostr, validate_user_var
 
 
 class CalculatorData:
     """CalculatorData - Data and functions used by the calculator"""
 
     # data used by the calculator
-    current_display_calc: str = ""  # the current caolculation to be displayed
-    current_eval_calc: str = ""  # the current calculation to be evalueated
-    current_input: str = ""  # the current number input
+    _current_display_calc: str = ""  # the current caolculation to be displayed
+    _current_eval_calc: str = ""  # the current calculation to be evalueated
+    _current_input: str = ""  # the current number input
 
-    user_variables: VariablesType = VariablesType({})  # user defined variables
+    _user_variables: VariablesType = VariablesType({})  # user defined variables
 
     def __init__(
         self,
@@ -71,7 +72,7 @@ class CalculatorData:
         self.bell = bell
         self.vars_popup = vars_popup
 
-        self.memval = StringVar()  # the value stored in memory
+        self._memval = StringVar()  # the value stored in memory
 
     def validate_symbol_and_func(self, symbol: str, func: FunctionsType) -> None:
         """
@@ -104,7 +105,7 @@ class CalculatorData:
 
         # double checking that variable names are str
         # default variables are defined in code so should be safe
-        for v in self.user_variables.keys():
+        for v in self._user_variables.keys():
             if isinstance(v, str):
                 valid_symbols.append(v)
             else:
@@ -164,13 +165,13 @@ class CalculatorData:
 
         self.validate_symbol_and_func(symbol, func)
 
-        if self.current_input:
+        if self._current_input:
             inpt = numtostr(
                 self.get_current_input(),
                 commas=True,
                 removeZeroes=False,
             )
-            if self.current_input[-1] == ".":
+            if self._current_input[-1] == ".":
                 inpt += "."
         else:
             inpt = ""
@@ -182,7 +183,7 @@ class CalculatorData:
                 inpt = f"{func.display_func}({inpt})"
 
         return_value = " ".join(
-            filter(None, [self.current_display_calc, inpt, symbol])
+            filter(None, [self._current_display_calc, inpt, symbol])
         ).strip()
         return return_value
 
@@ -217,7 +218,7 @@ class CalculatorData:
 
         self.validate_symbol_and_func(symbol, func)
 
-        if self.current_input:
+        if self._current_input:
             i = +self.get_current_input()
             inpt = f"Decimal({str(i)!r})"
         else:
@@ -229,7 +230,7 @@ class CalculatorData:
             else:
                 inpt = f"{func.eval_func}({inpt})"
 
-        return_value = " ".join([self.current_eval_calc, inpt, symbol]).strip()
+        return_value = " ".join([self._current_eval_calc, inpt, symbol]).strip()
         return return_value
 
     def get_current_input(self) -> Decimal:
@@ -243,10 +244,34 @@ class CalculatorData:
             number is currently being input.
         """
 
-        if self.current_input:
-            return Decimal(self.current_input)
+        if self._current_input:
+            return Decimal(self._current_input)
         else:
             return Decimal(0)
+
+    def get_user_variables(self) -> VariablesType:
+        """
+        get_user_variables - Return a deepcopy of _user_variables
+
+        Returns
+        -------
+        VariablesType
+            A deepcopy of the _user_variables
+        """
+        return deepcopy(self._user_variables)
+
+    def set_user_variables(self, user_variables: VariablesType) -> None:
+        """
+        set_user_variables - Set _user_variables
+        """
+
+        # this validation is duplicated from uservarseditfrm
+        # but I don't want to leave the api vulnerable here
+        # or lose the ability to identify the problem row there
+        for nam, val in user_variables.items():
+            validate_user_var(nam, val)
+
+        self._user_variables = user_variables
 
     def update_current_calc(
         self,
@@ -278,12 +303,12 @@ class CalculatorData:
 
         self.validate_symbol_and_func(symbol, func)
 
-        if self.current_input:  # if we have a value, round it
-            self.current_input = numtostr(self.get_current_input())
+        if self._current_input:  # if we have a value, round it
+            self._current_input = numtostr(self.get_current_input())
 
-        self.current_display_calc = self.get_current_display_calc(symbol, func)
-        self.current_eval_calc = self.get_current_eval_calc(symbol, func)
-        self.current_input = ""
+        self._current_display_calc = self.get_current_display_calc(symbol, func)
+        self._current_eval_calc = self.get_current_eval_calc(symbol, func)
+        self._current_input = ""
 
         self.update_display()
 
@@ -385,15 +410,15 @@ class CalculatorData:
         """
 
         if isinstance(symbol, int):
-            self.current_input += str(symbol)
+            self._current_input += str(symbol)
             self.update_display()
 
         elif symbol == ".":
-            if symbol in self.current_input:
+            if symbol in self._current_input:
                 self.bell()
                 return
 
-            self.current_input = (self.current_input or "0") + symbol
+            self._current_input = (self._current_input or "0") + symbol
             self.update_display()
 
         else:
@@ -402,8 +427,8 @@ class CalculatorData:
     def backspace(self) -> None:
         """backspace - Erase last character from number being input."""
 
-        if self.current_input:
-            self.current_input = self.current_input[:-1]
+        if self._current_input:
+            self._current_input = self._current_input[:-1]
         self.update_display()
 
     def clear_value(self) -> None:
@@ -412,11 +437,11 @@ class CalculatorData:
         then clear the current calculation.
         """
 
-        if self.current_input:
-            self.current_input = ""
+        if self._current_input:
+            self._current_input = ""
         else:
-            self.current_display_calc = ""
-            self.current_eval_calc = ""
+            self._current_display_calc = ""
+            self._current_eval_calc = ""
 
         self.update_display()
 
@@ -428,11 +453,23 @@ class CalculatorData:
 
         self.clear_display()
 
-        self.current_display_calc = ""
-        self.current_eval_calc = ""
-        self.current_input = ""
+        self._current_display_calc = ""
+        self._current_eval_calc = ""
+        self._current_input = ""
 
         self.update_display()
+
+    def get_memval(self) -> StringVar:
+        """
+        get_memval - Returns the _memval variable. Needed for attaching to the
+        ttk.Label in memdispfrm.py.
+
+        Returns
+        -------
+        StringVar
+            _memval variable
+        """
+        return self._memval
 
     def get_current_memory(self) -> Decimal:
         """
@@ -445,7 +482,7 @@ class CalculatorData:
             currently stored in memory.
         """
 
-        mem = self.memval.get().replace(",", "")
+        mem = self._memval.get().replace(",", "")
         if mem:
             return Decimal(mem)
         else:
@@ -454,7 +491,7 @@ class CalculatorData:
     def memory_clear(self) -> None:
         """memory_clear - Clear the value stored in memory"""
 
-        self.memval.set("")
+        self._memval.set("")
 
     def memory_recall(self) -> None:
         """
@@ -463,7 +500,7 @@ class CalculatorData:
         """
 
         cur_mem = numtostr(self.get_current_memory())
-        self.current_input = cur_mem
+        self._current_input = cur_mem
         self.update_display()
 
     def memory_store(self) -> None:
@@ -481,11 +518,11 @@ class CalculatorData:
 
         # get and reformat current value
         cur_val = +self.get_current_input()
-        self.current_input = numtostr(cur_val)
+        self._current_input = numtostr(cur_val)
         self.update_display()
 
         # store it
-        self.memval.set(numtostr(cur_val, commas=True))
+        self._memval.set(numtostr(cur_val, commas=True))
 
     def memory_swap(self) -> None:
         """
@@ -506,10 +543,10 @@ class CalculatorData:
         cur_num = numtostr(self.get_current_input(), commas=True)
 
         # store memory in current value
-        self.current_input = numtostr(self.get_current_memory())
+        self._current_input = numtostr(self.get_current_memory())
 
         # store retrieved current value in memory
-        self.memval.set(cur_num)
+        self._memval.set(cur_num)
 
         self.update_display()
 
@@ -541,7 +578,7 @@ class CalculatorData:
 
         # get the current input number (and reformat it)
         cur_val = +self.get_current_input()
-        self.current_input = numtostr(cur_val)
+        self._current_input = numtostr(cur_val)
         self.update_display()
 
         # get current memory
@@ -549,7 +586,7 @@ class CalculatorData:
 
         # add (or subtract)
         mv = cur_mem + (cur_val * sign)
-        self.memval.set(numtostr(mv, commas=True))
+        self._memval.set(numtostr(mv, commas=True))
 
     def invert_sign(self) -> None:
         """
@@ -562,8 +599,8 @@ class CalculatorData:
         precision in the Decimal context.
         """
 
-        if self.current_input:
-            self.current_input = numtostr(-self.get_current_input())
+        if self._current_input:
+            self._current_input = numtostr(-self.get_current_input())
         self.update_display()
 
     def inverse_number(self) -> None:
@@ -577,7 +614,7 @@ class CalculatorData:
         precision in the Decimal context.
         """
 
-        if self.current_input:
+        if self._current_input:
             self.update_current_calc(func=CalculatorFunctions.INVERSION)
         self.update_display()
 
@@ -606,7 +643,7 @@ class CalculatorData:
         precision in the Decimal context.
         """
 
-        if self.current_input:
+        if self._current_input:
             self.update_current_calc(func=CalculatorFunctions.SQUAREROOT)
             # self.current_input = numtostr(Decimal.sqrt(self.get_current_input()))
         self.update_display()
@@ -621,21 +658,21 @@ class CalculatorData:
         self.update_current_calc()
 
         # if we have a calculation to perform
-        if self.current_eval_calc:
+        if self._current_eval_calc:
             try:
                 # run the current calculation
                 val = evaluate_calculation(
-                    self.current_eval_calc,
-                    self.user_variables,
+                    self._current_eval_calc,
+                    self._user_variables,
                 )
 
                 # show the result
                 self.write_to_display(f" = {numtostr(val, commas=True)}\n{'=' * 30}\n")
 
                 # clear current calc and set current input to result
-                self.current_display_calc = ""
-                self.current_eval_calc = ""
-                self.current_input = numtostr(val)
+                self._current_display_calc = ""
+                self._current_eval_calc = ""
+                self._current_input = numtostr(val)
 
             except Exception as error:
                 # should probably use a logger
@@ -644,9 +681,9 @@ class CalculatorData:
                 # clear the current calculation and print the error message
                 self.write_to_display(f"=== ERROR ===\n")
 
-                self.current_display_calc = ""
-                self.current_eval_calc = ""
-                self.current_input = ""
+                self._current_display_calc = ""
+                self._current_eval_calc = ""
+                self._current_input = ""
 
         # update the display
         self.update_display()

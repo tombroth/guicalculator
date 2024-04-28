@@ -81,7 +81,7 @@ class UserVarsEditFrm:
         """
         self.uservars: dict[tuple[int, int], ttk.Entry] = {}
 
-        for k, v in self.calculator_data.user_variables.items():
+        for k, v in self.calculator_data.get_user_variables().items():
             lastrow += 1
             self.addrow(lastrow, k, numtostr(v, commas=True))
 
@@ -180,7 +180,7 @@ class UserVarsEditFrm:
             try:
                 # calling the parser directly so we don't mess with the current display
                 result = evaluate_calculation(
-                    currcalc, self.calculator_data.user_variables
+                    currcalc, self.calculator_data.get_user_variables()
                 )
             except:
                 s = self.calculator_data.get_current_display_calc()
@@ -396,7 +396,7 @@ class UserVarsEditFrm:
             newuservars[nam] = val_decimal
 
         # save the new variables
-        self.calculator_data.user_variables = newuservars
+        self.calculator_data.set_user_variables(newuservars)
 
         # close this window
         self.frm.winfo_toplevel().destroy()

@@ -38,7 +38,7 @@ class MemDispFrm:
         self.memlbl = ttk.Label(self.frm, text="Memory:")
         self.memlbl.grid(row=0, column=0, sticky="e")
 
-        self.mem_txt = ttk.Label(self.frm, textvariable=calculator_data.memval)
+        self.mem_txt = ttk.Label(self.frm, textvariable=calculator_data.get_memval())
         self.mem_txt.grid(row=0, column=1, sticky="w")
 
         self.frm.columnconfigure(0, weight=0)

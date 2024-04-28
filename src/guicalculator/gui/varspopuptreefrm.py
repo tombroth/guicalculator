@@ -70,7 +70,9 @@ class VarsPopupTreeFrm:
         self.add_variable_section("default", DEFAULT_VARIABLES)
 
         # Add user variables
-        self.add_variable_section("user variables", self.calculator_data.user_variables)
+        self.add_variable_section(
+            "user variables", self.calculator_data.get_user_variables()
+        )
 
         self.frm.grid(row=0, column=0, sticky="news")
 

@@ -43,15 +43,15 @@ class SetupCalculatorDataTest(unittest.TestCase):
         """
 
         if "disp" in cur_vals:
-            self.calc_data.current_display_calc = cur_vals["disp"]
+            self.calc_data._current_display_calc = cur_vals["disp"]
         if "eval" in cur_vals:
-            self.calc_data.current_eval_calc = cur_vals["eval"]
+            self.calc_data._current_eval_calc = cur_vals["eval"]
         if "inpt" in cur_vals:
-            self.calc_data.current_input = cur_vals["inpt"]
+            self.calc_data._current_input = cur_vals["inpt"]
         if "mem" in cur_vals:
-            self.calc_data.memval.set(cur_vals["mem"])
+            self.calc_data._memval.set(cur_vals["mem"])
         if "vars" in cur_vals:
-            self.calc_data.user_variables = cur_vals["vars"]
+            self.calc_data._user_variables = cur_vals["vars"]
 
     def chk_current_disp_eval_inpt(self, cur_vals: dict) -> None:
         """
@@ -74,31 +74,31 @@ class SetupCalculatorDataTest(unittest.TestCase):
 
         if "disp" in cur_vals:
             self.assertEqual(
-                self.calc_data.current_display_calc,
+                self.calc_data._current_display_calc,
                 cur_vals["disp"],
                 "current_display_calc",
             )
         if "eval" in cur_vals:
             self.assertEqual(
-                self.calc_data.current_eval_calc,
+                self.calc_data._current_eval_calc,
                 cur_vals["eval"],
                 "current_eval_calc",
             )
         if "inpt" in cur_vals:
             self.assertEqual(
-                self.calc_data.current_input,
+                self.calc_data._current_input,
                 cur_vals["inpt"],
                 "current_input",
             )
         if "mem" in cur_vals:
             self.assertEqual(
-                self.calc_data.memval.get(),
+                self.calc_data._memval.get(),
                 cur_vals["mem"],
                 "memval",
             )
         if "vars" in cur_vals:
             self.assertEqual(
-                self.calc_data.user_variables,
+                self.calc_data._user_variables,
                 cur_vals["vars"],
                 "user_variables",
             )
