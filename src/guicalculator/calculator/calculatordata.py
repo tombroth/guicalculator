@@ -93,16 +93,8 @@ class CalculatorData:
             Used for custom errors, message indicates what the specific error was.
         """
 
-        valid_symbols = [
-            CalculatorSymbols.OPENPAREN,
-            CalculatorSymbols.CLOSEPAREN,
-            CalculatorSymbols.DIVISION,
-            CalculatorSymbols.MULTIPLICATION,
-            CalculatorSymbols.SUBTRACTION,
-            CalculatorSymbols.ADDITION,
-            CalculatorSymbols.SQUARE,
-            CalculatorSymbols.EXPONENTIATION,
-            *DEFAULT_VARIABLES.keys(),
+        valid_symbols = [cs.value for cs in CalculatorSymbols] + [
+            *DEFAULT_VARIABLES.keys()
         ]
 
         # double checking that variable names are str
@@ -113,11 +105,7 @@ class CalculatorData:
             else:
                 raise ValueError(f"User variable name is not str: {v!r}")
 
-        valid_funcs = [
-            CalculatorFunctions.NOFUNCTION,
-            CalculatorFunctions.INVERSION,
-            CalculatorFunctions.SQUAREROOT,
-        ]
+        valid_funcs = [cf for cf in CalculatorFunctions]
 
         if symbol:
             if not isinstance(symbol, str):
@@ -474,9 +462,9 @@ class CalculatorData:
         -------
         ttk.Label
             The label with _memval providing data
-        """        
+        """
         return ttk.Label(master, textvariable=self._memval)
-    
+
     def get_current_memory(self) -> Decimal:
         """
         get_current_memory - Get the current value stored in memory as a Decimal.
