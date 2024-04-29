@@ -162,7 +162,7 @@ class CalculatorData:
                 removeZeroes=False,
             )
             if self._current_input[-1] == ".":
-                inpt += "."
+                inpt = (inpt or "") + "."
         else:
             inpt = ""
 
@@ -209,7 +209,7 @@ class CalculatorData:
         self.validate_symbol_and_func(symbol, func)
 
         if self._current_input:
-            i = +self.get_current_input()
+            i = self.get_current_input()
             inpt = f"Decimal({str(i)!r})"
         else:
             inpt = ""
@@ -223,21 +223,21 @@ class CalculatorData:
         return_value = " ".join([self._current_eval_calc, inpt, symbol]).strip()
         return return_value
 
-    def get_current_input(self) -> Decimal:
+    def get_current_input(self) -> Decimal | None:
         """
         get_current_input - Get current number input as a Decimal.
 
         Returns
         -------
-        Decimal
-            Decimal version of the number currently being input. 0 if no
+        Decimal | None
+            Decimal version of the number currently being input, None if no
             number is currently being input.
         """
 
         if self._current_input:
             return Decimal(self._current_input)
         else:
-            return Decimal(0)
+            return None
 
     def get_user_variables(self) -> VariablesType:
         """
@@ -294,7 +294,7 @@ class CalculatorData:
         self.validate_symbol_and_func(symbol, func)
 
         if self._current_input:  # if we have a value, round it
-            self._current_input = numtostr(self.get_current_input())
+            self._current_input = numtostr(self.get_current_input()) or ""
 
         self._current_display_calc = self.get_current_display_calc(symbol, func)
         self._current_eval_calc = self.get_current_eval_calc(symbol, func)
@@ -419,7 +419,9 @@ class CalculatorData:
 
         if self._current_input:
             self._current_input = self._current_input[:-1]
-        self.update_display()
+            self.update_display()
+        else:
+            self.bell()
 
     def clear_value(self) -> None:
         """
@@ -465,14 +467,14 @@ class CalculatorData:
         """
         return ttk.Label(master, textvariable=self._memval)
 
-    def get_current_memory(self) -> Decimal:
+    def get_current_memory(self) -> Decimal | None:
         """
         get_current_memory - Get the current value stored in memory as a Decimal.
 
         Returns
         -------
-        Decimal
-            Decimal version of the value stored in memory. 0 if no value is
+        Decimal | None
+            Decimal version of the value stored in memory, or None if no value is
             currently stored in memory.
         """
 
@@ -480,7 +482,7 @@ class CalculatorData:
         if mem:
             return Decimal(mem)
         else:
-            return Decimal(0)
+            return None
 
     def memory_clear(self) -> None:
         """memory_clear - Clear the value stored in memory"""
@@ -494,8 +496,11 @@ class CalculatorData:
         """
 
         cur_mem = numtostr(self.get_current_memory())
-        self._current_input = cur_mem
-        self.update_display()
+        if cur_mem:
+            self._current_input = cur_mem
+            self.update_display()
+        else:
+            self.bell()
 
     def memory_store(self) -> None:
         """
@@ -505,18 +510,16 @@ class CalculatorData:
         Notes
         -----
         Cannot do a simple set because we round and format the display.
-
-        As a side effect, will round the number currently being input to the
-        precision in the Decimal context.
         """
 
-        # get and reformat current value
-        cur_val = +self.get_current_input()
-        self._current_input = numtostr(cur_val)
-        self.update_display()
+        # get current value
+        cur_val = self.get_current_input()
 
-        # store it
-        self._memval.set(numtostr(cur_val, commas=True))
+        if cur_val:
+            # store it
+            self._memval.set(numtostr(cur_val, commas=True) or "")
+        else:
+            self.bell()
 
     def memory_swap(self) -> None:
         """
@@ -536,13 +539,19 @@ class CalculatorData:
         # get current value (formatted with commas)
         cur_num = numtostr(self.get_current_input(), commas=True)
 
-        # store memory in current value
-        self._current_input = numtostr(self.get_current_memory())
+        # get current memory
+        cur_mem = numtostr(self.get_current_memory())
 
-        # store retrieved current value in memory
-        self._memval.set(cur_num)
+        if cur_mem or cur_num:
+            # store memory in current value
+            self._current_input = cur_mem or ""
 
-        self.update_display()
+            # store retrieved current value in memory
+            self._memval.set(cur_num or "")
+
+            self.update_display()
+        else:
+            self.bell()
 
     def memory_add(self, addto: bool = True) -> None:
         """
@@ -553,9 +562,6 @@ class CalculatorData:
         -----
         If addto is passed in as false, will subtract the value being input
         from memory by multiplying the value by -1 before adding.
-
-        As a side effect, will round the number currently being input to the
-        precision in the Decimal context.
 
         Parameters
         ----------
@@ -570,17 +576,18 @@ class CalculatorData:
         else:
             sign = Decimal(-1)
 
-        # get the current input number (and reformat it)
-        cur_val = +self.get_current_input()
-        self._current_input = numtostr(cur_val)
-        self.update_display()
+        # get the current input number
+        cur_val = self.get_current_input()
+        if cur_val:
 
-        # get current memory
-        cur_mem = self.get_current_memory()
+            # get current memory
+            cur_mem = self.get_current_memory() or Decimal(0)
 
-        # add (or subtract)
-        mv = cur_mem + (cur_val * sign)
-        self._memval.set(numtostr(mv, commas=True))
+            # add (or subtract)
+            mv = cur_mem + (cur_val * sign)
+            self._memval.set(numtostr(mv, commas=True) or "")
+        else:
+            self.bell()
 
     def invert_sign(self) -> None:
         """
@@ -594,8 +601,11 @@ class CalculatorData:
         """
 
         if self._current_input:
-            self._current_input = numtostr(-self.get_current_input())
-        self.update_display()
+            negateval = -(self.get_current_input() or Decimal(0))
+            self._current_input = numtostr(negateval) or ""
+            self.update_display()
+        else:
+            self.bell()
 
     def inverse_number(self) -> None:
         """
@@ -610,7 +620,9 @@ class CalculatorData:
 
         if self._current_input:
             self.update_current_calc(func=CalculatorFunctions.INVERSION)
-        self.update_display()
+            self.update_display()
+        else:
+            self.bell()
 
     def square_number(self) -> None:
         """
@@ -623,8 +635,11 @@ class CalculatorData:
         precision in the Decimal context.
         """
 
-        self.update_current_calc(CalculatorSymbols.SQUARE)
-        self.update_display()
+        if self._current_input:
+            self.update_current_calc(CalculatorSymbols.SQUARE)
+            self.update_display()
+        else:
+            self.bell()
 
     def root_number(self) -> None:
         """
@@ -639,8 +654,9 @@ class CalculatorData:
 
         if self._current_input:
             self.update_current_calc(func=CalculatorFunctions.SQUAREROOT)
-            # self.current_input = numtostr(Decimal.sqrt(self.get_current_input()))
-        self.update_display()
+            self.update_display()
+        else:
+            self.bell()
 
     def calculate(self) -> None:
         """
@@ -666,7 +682,7 @@ class CalculatorData:
                 # clear current calc and set current input to result
                 self._current_display_calc = ""
                 self._current_eval_calc = ""
-                self._current_input = numtostr(val)
+                self._current_input = numtostr(val) or ""
 
             except Exception as error:
                 # should probably use a logger

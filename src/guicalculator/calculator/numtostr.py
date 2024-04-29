@@ -29,10 +29,10 @@ from decimal import Decimal
 
 
 def numtostr(
-    val: int | float | Decimal,
+    val: int | float | Decimal | None,
     commas: bool = False,
     removeZeroes: bool = True,
-) -> str:
+) -> str | None:
     """
     numtostr - Convert number to string.
 
@@ -47,8 +47,8 @@ def numtostr(
 
     Parameters
     ----------
-    val : int | float | Decimal
-        Number to be converted
+    val : int | float | Decimal | None
+        Number to be converted. If None is passed in, None is returned.
     commas : bool, optional
         True means add thosands separators (commas). By default False.
     removeZeroes : bool, optional
@@ -57,10 +57,13 @@ def numtostr(
 
     Returns
     -------
-    str
-        The string representation of the number
+    str | None
+        The string representation of the number, or None if None was passed in
     """
 
+    if val is None:
+        return None
+    
     v: int | float | Decimal
     if commas:
         c = ","

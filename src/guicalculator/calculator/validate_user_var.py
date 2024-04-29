@@ -31,7 +31,7 @@ from decimal import Decimal
 from ..globals import DEFAULT_VARIABLES
 
 
-def validate_user_var(nam: str, val: Decimal) -> None:
+def validate_user_var(nam: str | None, val: Decimal | None) -> None:
     """
     validate_user_vars - Validate that nothing improper is in user_variables
 
@@ -40,9 +40,9 @@ def validate_user_var(nam: str, val: Decimal) -> None:
 
     Parameters
     ----------
-    nam : str
+    nam : str | None
         The variable name (the key in VariablesType)
-    val : Decimal
+    val : Decimal | None
         The variable value (the value in VariablesType)
 
     Raises

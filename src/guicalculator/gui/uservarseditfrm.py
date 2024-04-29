@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from decimal import Decimal
 from tkinter import END, INSERT, Event, StringVar, Tk, Toplevel, ttk
 from typing import Any
 
@@ -83,7 +84,7 @@ class UserVarsEditFrm:
 
         for k, v in self.calculator_data.get_user_variables().items():
             lastrow += 1
-            self.addrow(lastrow, k, numtostr(v, commas=True))
+            self.addrow(lastrow, k, (numtostr(v, commas=True) or ""))
 
         # if we had no rows, add a blank one
         if not self.uservars:
@@ -115,7 +116,7 @@ class UserVarsEditFrm:
         self.curcalcbtn = ttk.Button(
             self.frm,
             text="Add current result as new variable",
-            command=self.add_current,
+            command=self.add_current_calc,
         )
         self.curcalcbtn.grid(row=1001, column=0, columnspan=2)
         self.frm.rowconfigure(1001, weight=0)
@@ -171,33 +172,36 @@ class UserVarsEditFrm:
                     widget_num = -1
                 self.uservars[remaining_vars[widget_num]].focus_set()
 
-    def add_current(self) -> None:
+    def add_current_calc(self) -> None:
         """Add the current calculation result as a variable"""
 
         currcalc = self.calculator_data.get_current_eval_calc()
-        if currcalc:
-            # get the result
-            try:
-                # calling the parser directly so we don't mess with the current display
-                result = evaluate_calculation(
-                    currcalc, self.calculator_data.get_user_variables()
-                )
-            except:
-                s = self.calculator_data.get_current_display_calc()
-                trimlen = 35
-                if len(s) > trimlen:
-                    s = s[: (trimlen - 4)] + " ..."
-                self.set_errmsg(f"Invalid calculation: {s}")
-                return
+        if not currcalc:
+            self.set_errmsg(f"No calculation available")
+            return
 
-            # add result to a new row
-            row = self.user_vars_edit_addrow()
+        # get the result
+        try:
+            # calling the parser directly so we don't mess with the current display
+            result = evaluate_calculation(
+                currcalc, self.calculator_data.get_user_variables()
+            )
+        except:
+            s = self.calculator_data.get_current_display_calc()
+            trimlen = 35
+            if len(s) > trimlen:
+                s = s[: (trimlen - 4)] + " ..."
+            self.set_errmsg(f"Invalid calculation: {s}")
+            return
 
-            self.uservars[(row, 0)].delete(0, END)
-            self.uservars[(row, 0)].insert(0, "x")
+        # add result to a new row
+        row = self.user_vars_edit_addrow()
 
-            self.uservars[(row, 1)].delete(0, END)
-            self.uservars[(row, 1)].insert(0, numtostr(result, commas=True))
+        self.uservars[(row, 0)].delete(0, END)
+        self.uservars[(row, 0)].insert(0, "x")
+
+        self.uservars[(row, 1)].delete(0, END)
+        self.uservars[(row, 1)].insert(0, numtostr(result, commas=True) or "")
 
     def addrow(self, rownum: int, var: str = "", val: str = "") -> None:
         """
@@ -267,7 +271,7 @@ class UserVarsEditFrm:
         if v:
             # if we have an entry, get it and format it
             v_decimal = strtodecimal(v)
-            v_str = numtostr(v_decimal, commas=True, removeZeroes=False)
+            v_str = numtostr(v_decimal, commas=True, removeZeroes=False) or ""
             if v[-1] == ".":
                 v_str += "."
             event.widget.delete(0, END)
@@ -366,15 +370,10 @@ class UserVarsEditFrm:
             varnam = f"variable name {nam!r}"
 
             # get the decimal value of variable
-            if val:
-                try:
-                    val_decimal = +strtodecimal(val)
-                except:
-                    self.set_errmsg(f"{errmsg} invalid numeric value {val!r}")
-                    self.uservars[(i, 1)].focus_set()
-                    return
-            else:
-                self.set_errmsg(f"{errmsg} value not set")
+            try:
+                val_decimal = strtodecimal(val)
+            except:
+                self.set_errmsg(f"{errmsg} invalid numeric value {val!r}")
                 self.uservars[(i, 1)].focus_set()
                 return
 
@@ -393,7 +392,7 @@ class UserVarsEditFrm:
                 self.uservars[(i, 0)].focus_set()
                 return
 
-            newuservars[nam] = val_decimal
+            newuservars[nam] = val_decimal or Decimal(0)
 
         # save the new variables
         self.calculator_data.set_user_variables(newuservars)

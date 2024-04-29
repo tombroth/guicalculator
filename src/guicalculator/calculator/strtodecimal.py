@@ -28,22 +28,23 @@ SOFTWARE.
 from decimal import Decimal
 
 
-def strtodecimal(val: str) -> Decimal:
+def strtodecimal(val: str | None) -> Decimal | None:
     """
     strtodecimal  - convert string value to Decimal.
 
     Parameters
     ----------
-    val : str
-        Value to be converted
+    val : str | None
+        Value to be converted, or None
 
     Returns
     -------
-    Decimal
-        Converted value
+    Decimal | None
+        Converted value, None if None was input
     """
 
     if val:
-        return Decimal(val.replace(",", ""))
+        # the + forces rounding to Decimal context
+        return +Decimal(val.replace(",", ""))
     else:
-        return Decimal(0)
+        return None
