@@ -28,17 +28,14 @@ SOFTWARE.
 import keyword
 from decimal import Decimal
 
-from ..globals import DEFAULT_VARIABLES
+from ..globals import DEFAULT_VARIABLES, VariablesType
 from .logwrapper import plain_wrapper
 
 
 @plain_wrapper
 def validate_user_var(nam: str | None, val: Decimal | None) -> None:
     """
-    validate_user_vars - Validate that nothing improper is in user_variables
-
-    TODO: Update this to validate the entire variable array. This means also
-    updating the logic in the variable editor to catch the line with the error.
+    validate_user_vars - Validate that nothing improper is in a single user variable
 
     Parameters
     ----------
@@ -73,3 +70,17 @@ def validate_user_var(nam: str | None, val: Decimal | None) -> None:
 
     if type(val) != Decimal:
         raise TypeError(f"Invalid value for variable: {nam!r}: {val!r}")
+
+
+@plain_wrapper
+def validate_user_vars(user_variables: VariablesType):
+    """
+    validate_user_vars  - Validate that nothing improper is in user_variables
+
+    Parameters
+    ----------
+    user_variables : VariablesType
+        variables to validate
+    """
+    for nam, val in user_variables.items():
+        validate_user_var(nam, val)

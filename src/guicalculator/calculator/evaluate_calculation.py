@@ -33,7 +33,7 @@ from unicodedata import normalize
 
 from ..globals import DEFAULT_VARIABLES, NORMALIZE_FORM, VariablesType
 from .logwrapper import plain_wrapper
-from .validate_user_var import validate_user_var
+from .validate_user_var import validate_user_vars
 
 # map of ast operators to functions used by parser
 OPERATOR_MAP: dict[Type[ast.AST], Callable] = {
@@ -138,8 +138,7 @@ def evaluate_calculation(
     #
     # validate that nothing improper is in user_variables
     # we should be able to trust DEFAULT_VARIABLES
-    for nam, val in user_variables.items():
-        validate_user_var(nam, val)
+    validate_user_vars(user_variables)
 
     # validate we actually have a str in current_calculation
     if not current_calculation or type(current_calculation) != str:

@@ -378,6 +378,9 @@ class UserVarsEditFrm:
                 return
 
             # validate nam and val_decimal
+            # this validation is duplicated in set_user_variables
+            # but I don't want to leave the api vulnerable there
+            # or lose the ability to identify the problem row here
             try:
                 validate_user_var(nam, val_decimal)
             except Exception as e:

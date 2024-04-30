@@ -49,7 +49,7 @@ from ..globals import (
 from .evaluate_calculation import evaluate_calculation
 from .logwrapper import object_wrapper
 from .numtostr import numtostr
-from .validate_user_var import validate_user_var
+from .validate_user_var import validate_user_vars
 
 logger = logging.getLogger(__name__)
 
@@ -270,8 +270,7 @@ class CalculatorData:
         # this validation is duplicated from uservarseditfrm
         # but I don't want to leave the api vulnerable here
         # or lose the ability to identify the problem row there
-        for nam, val in user_variables.items():
-            validate_user_var(nam, val)
+        validate_user_vars(user_variables)
 
         self._user_variables = user_variables
 
