@@ -27,7 +27,10 @@ SOFTWARE.
 
 from decimal import Decimal
 
+from .logwrapper import plain_wrapper
 
+
+@plain_wrapper
 def numtostr(
     val: int | float | Decimal | None,
     commas: bool = False,
@@ -63,7 +66,7 @@ def numtostr(
 
     if val is None:
         return None
-    
+
     v: int | float | Decimal
     if commas:
         c = ","

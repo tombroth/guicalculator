@@ -29,8 +29,10 @@ import keyword
 from decimal import Decimal
 
 from ..globals import DEFAULT_VARIABLES
+from .logwrapper import plain_wrapper
 
 
+@plain_wrapper
 def validate_user_var(nam: str | None, val: Decimal | None) -> None:
     """
     validate_user_vars - Validate that nothing improper is in user_variables

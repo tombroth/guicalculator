@@ -38,6 +38,7 @@ SOFTWARE.
 
 from .calculatordata import CalculatorData
 from .evaluate_calculation import evaluate_calculation
+from .logwrapper import object_wrapper, plain_wrapper
 from .numtostr import numtostr
 from .strtodecimal import strtodecimal
 from .validate_user_var import validate_user_var
@@ -45,6 +46,8 @@ from .validate_user_var import validate_user_var
 __all__ = [
     "CalculatorData",
     "numtostr",
+    "object_wrapper",
+    "plain_wrapper",
     "strtodecimal",
     "validate_user_var",
     "evaluate_calculation",

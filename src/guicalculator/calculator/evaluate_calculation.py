@@ -32,6 +32,7 @@ from typing import Any, Callable, Type
 from unicodedata import normalize
 
 from ..globals import DEFAULT_VARIABLES, NORMALIZE_FORM, VariablesType
+from .logwrapper import plain_wrapper
 from .validate_user_var import validate_user_var
 
 # map of ast operators to functions used by parser
@@ -46,45 +47,7 @@ OPERATOR_MAP: dict[Type[ast.AST], Callable] = {
 }
 
 
-def _get_str_parameter(node: ast.Call) -> str:
-    """
-    _get_str_parameter - Internal function to return a single str
-    parameter of an ast Call.
-    """
-
-    if len(node.args) == 1 and isinstance(node.args[0], ast.Constant):
-        parm = node.args[0].value
-    else:
-        raise TypeError("Decimal function accepts exactly one argument")
-    if type(parm) == str:
-        return parm
-    else:
-        raise TypeError("Decimal function should only have str parameter")
-
-
-def _get_caller(node: ast.Call, node_fmtd: str) -> tuple[Any, Any]:
-    """
-    _get_caller - Internal function to get calling module/function name.
-    """
-
-    if isinstance(node.func, ast.Attribute):  # package.procedure
-        if isinstance(node.func.value, ast.Name):
-            pkg = node.func.value.id
-            func = node.func.attr
-        else:  # ??? not sure if this can happen
-            errmsg = f"Unknown type of ast.Call: \nast.{node_fmtd}"
-            raise TypeError(errmsg)
-
-    elif isinstance(node.func, ast.Name):  # procedure
-        pkg = ""
-        func = node.func.id
-
-    else:  # ??? not sure if this can happen
-        errmsg = f"Unknown type of ast.Call: \nast.{node_fmtd}"
-        raise TypeError(errmsg)
-    return pkg, func
-
-
+@plain_wrapper
 def evaluate_calculation(
     current_calculation: str, user_variables: VariablesType
 ) -> Decimal:
@@ -111,28 +74,14 @@ def evaluate_calculation(
 
     """
 
-    # validate that nothing improper is in user_variables
-    # we should be able to trust DEFAULT_VARIABLES
-    for nam, val in user_variables.items():
-        validate_user_var(nam, val)
-
-    # validate we actually have a str in current_calculation
-    if not current_calculation or type(current_calculation) != str:
-        raise TypeError("Invalid calculation")
-
-    root_node = ast.parse(current_calculation, mode="eval")
-
     # internal function, nested so it can't be called directly
     #
-    # unnesting would require moving above validation inside the function
-    #
-    # could possibl rewrite the outer validation as a wrapper around this
-    # in order to unnest without exposing a vulnerability
+    # unnesting would remove the validation done in the outer procedure
     def _eval(node: ast.AST) -> Decimal:
         """_eval - Internal recursive function to evaluate the ast nodes"""
 
         # used in multiple error messages
-        node_fmtd = ast.dump(node, indent=2)
+        node_fmtd = ast.dump(node, annotate_fields=False)
 
         match node:
             case ast.Expression():
@@ -143,7 +92,7 @@ def evaluate_calculation(
                 if isinstance(node.value, (int, float)):
                     return +Decimal(node.value)
                 else:
-                    raise TypeError(f"Unknown constant: ast.{node_fmtd}")
+                    raise TypeError(f"Unknown constant: {node_fmtd}")
 
             case ast.BinOp():
                 left, right, op = node.left, node.right, node.op
@@ -179,11 +128,65 @@ def evaluate_calculation(
                     return Decimal.sqrt(_eval(node.args[0]))
                 else:
                     raise TypeError(
-                        f"Unknown function call: {pkg}.{func}: \nast.{node_fmtd}"
+                        f"Unknown function call: {pkg}.{func}: {node_fmtd}"
                     )
 
             case _:
-                raise TypeError(f"Unknown ast node: \nast.{node_fmtd}")
+                raise TypeError(f"Unknown ast node: {node_fmtd}")
+
+    # back to the outer function
+    #
+    # validate that nothing improper is in user_variables
+    # we should be able to trust DEFAULT_VARIABLES
+    for nam, val in user_variables.items():
+        validate_user_var(nam, val)
+
+    # validate we actually have a str in current_calculation
+    if not current_calculation or type(current_calculation) != str:
+        raise TypeError("Invalid calculation")
+
+    root_node = ast.parse(current_calculation, mode="eval")
 
     val = _eval(root_node)
     return val
+
+
+@plain_wrapper
+def _get_str_parameter(node: ast.Call) -> str:
+    """
+    _get_str_parameter - Internal function to return a single str
+    parameter of an ast Call.
+    """
+
+    if len(node.args) == 1 and isinstance(node.args[0], ast.Constant):
+        parm = node.args[0].value
+    else:
+        raise TypeError("Decimal function accepts exactly one argument")
+    if type(parm) == str:
+        return parm
+    else:
+        raise TypeError("Decimal function should only have str parameter")
+
+
+@plain_wrapper
+def _get_caller(node: ast.Call, node_fmtd: str) -> tuple[Any, Any]:
+    """
+    _get_caller - Internal function to get calling module/function name.
+    """
+
+    if isinstance(node.func, ast.Attribute):  # package.procedure
+        if isinstance(node.func.value, ast.Name):
+            pkg = node.func.value.id
+            func = node.func.attr
+        else:  # ??? not sure if this can happen
+            errmsg = f"Unknown type of ast.Call: {node_fmtd}"
+            raise TypeError(errmsg)
+
+    elif isinstance(node.func, ast.Name):  # procedure
+        pkg = ""
+        func = node.func.id
+
+    else:  # ??? not sure if this can happen
+        errmsg = f"Unknown type of ast.Call: {node_fmtd}"
+        raise TypeError(errmsg)
+    return pkg, func

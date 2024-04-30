@@ -32,6 +32,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import logging
 from copy import deepcopy
 from decimal import Decimal
 from tkinter import StringVar, ttk
@@ -46,8 +47,11 @@ from ..globals import (
     VariablesType,
 )
 from .evaluate_calculation import evaluate_calculation
+from .logwrapper import object_wrapper
 from .numtostr import numtostr
 from .validate_user_var import validate_user_var
+
+logger = logging.getLogger(__name__)
 
 
 class CalculatorData:
@@ -76,6 +80,7 @@ class CalculatorData:
 
         self._memval = StringVar()  # the value stored in memory
 
+    @object_wrapper
     def validate_symbol_and_func(self, symbol: str, func: FunctionsType) -> None:
         """
         validate_symbol_and_func - Validate that symbol and func are valid.
@@ -128,6 +133,7 @@ class CalculatorData:
                     f"Cannot specify both symbol and function: {symbol}, {func}"
                 )
 
+    @object_wrapper
     def get_current_display_calc(
         self,
         symbol: str = "",
@@ -177,6 +183,7 @@ class CalculatorData:
         ).strip()
         return return_value
 
+    @object_wrapper
     def get_current_eval_calc(
         self,
         symbol: str = "",
@@ -225,6 +232,7 @@ class CalculatorData:
         ).strip()
         return return_value
 
+    @object_wrapper
     def get_current_input(self) -> Decimal | None:
         """
         get_current_input - Get current number input as a Decimal.
@@ -241,6 +249,7 @@ class CalculatorData:
         else:
             return None
 
+    @object_wrapper
     def get_user_variables(self) -> VariablesType:
         """
         get_user_variables - Return a deepcopy of _user_variables
@@ -252,6 +261,7 @@ class CalculatorData:
         """
         return deepcopy(self._user_variables)
 
+    @object_wrapper
     def set_user_variables(self, user_variables: VariablesType) -> None:
         """
         set_user_variables - Set _user_variables
@@ -265,6 +275,7 @@ class CalculatorData:
 
         self._user_variables = user_variables
 
+    @object_wrapper
     def update_current_calc(
         self,
         symbol: str = "",
@@ -304,6 +315,7 @@ class CalculatorData:
 
         self.update_display()
 
+    @object_wrapper
     def process_button(
         self,
         buttoncmd: CalculatorCommands,
@@ -381,6 +393,7 @@ class CalculatorData:
                 self.bell()
                 print(f"Unknown command: {buttoncmd!r}")
 
+    @object_wrapper
     def button_press(self, symbol: str | int) -> None:
         """
         button_press - Handles simple button presses.
@@ -416,6 +429,7 @@ class CalculatorData:
         else:
             self.update_current_calc(symbol)
 
+    @object_wrapper
     def backspace(self) -> None:
         """backspace - Erase last character from number being input."""
 
@@ -425,6 +439,7 @@ class CalculatorData:
         else:
             self.bell()
 
+    @object_wrapper
     def clear_value(self) -> None:
         """
         clear_value - Clear the current number input, or if that is empty
@@ -439,6 +454,7 @@ class CalculatorData:
 
         self.update_display()
 
+    @object_wrapper
     def clear_all(self) -> None:
         """
         clear_all - Clear the current number being input, the current
@@ -453,6 +469,7 @@ class CalculatorData:
 
         self.update_display()
 
+    @object_wrapper
     def get_memory_label(self, master) -> ttk.Label:
         """
         get_memory_label - Creates a ttk.Label tied to _memval
@@ -469,6 +486,7 @@ class CalculatorData:
         """
         return ttk.Label(master, textvariable=self._memval)
 
+    @object_wrapper
     def get_current_memory(self) -> Decimal | None:
         """
         get_current_memory - Get the current value stored in memory as a Decimal.
@@ -486,11 +504,13 @@ class CalculatorData:
         else:
             return None
 
+    @object_wrapper
     def memory_clear(self) -> None:
         """memory_clear - Clear the value stored in memory"""
 
         self._memval.set("")
 
+    @object_wrapper
     def memory_recall(self) -> None:
         """
         memory_recall - Replace the current number being input with the value
@@ -504,6 +524,7 @@ class CalculatorData:
         else:
             self.bell()
 
+    @object_wrapper
     def memory_store(self) -> None:
         """
         memory_store - Change the value stored in memory to be the same as the
@@ -523,6 +544,7 @@ class CalculatorData:
         else:
             self.bell()
 
+    @object_wrapper
     def memory_swap(self) -> None:
         """
         memory_swap - Swap the value stored in memory with the current number
@@ -555,6 +577,7 @@ class CalculatorData:
         else:
             self.bell()
 
+    @object_wrapper
     def memory_add(self, addto: bool = True) -> None:
         """
         memory_add - Add or subtract the current number being input to or from
@@ -591,6 +614,7 @@ class CalculatorData:
         else:
             self.bell()
 
+    @object_wrapper
     def invert_sign(self) -> None:
         """
         invert_sign - Convert the current number being input from positive to
@@ -609,6 +633,7 @@ class CalculatorData:
         else:
             self.bell()
 
+    @object_wrapper
     def inverse_number(self) -> None:
         """
         inverse_number - Convert the current number being input to it's
@@ -626,6 +651,7 @@ class CalculatorData:
         else:
             self.bell()
 
+    @object_wrapper
     def square_number(self) -> None:
         """
         square_number - Convert the current number being input to its
@@ -640,6 +666,7 @@ class CalculatorData:
         self.update_current_calc(CalculatorSymbols.SQUARE)
         self.update_display()
 
+    @object_wrapper
     def root_number(self) -> None:
         """
         root_number - Convert the current number being input to its
@@ -657,6 +684,7 @@ class CalculatorData:
         else:
             self.bell()
 
+    @object_wrapper
     def calculate(self) -> None:
         """
         calculate - Performs the current calculation and updates the display

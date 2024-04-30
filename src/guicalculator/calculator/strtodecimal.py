@@ -27,7 +27,10 @@ SOFTWARE.
 
 from decimal import Decimal
 
+from .logwrapper import plain_wrapper
 
+
+@plain_wrapper
 def strtodecimal(val: str | None) -> Decimal | None:
     """
     strtodecimal  - convert string value to Decimal.

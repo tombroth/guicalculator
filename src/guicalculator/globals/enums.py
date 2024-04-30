@@ -29,9 +29,14 @@ from enum import Enum, StrEnum, unique
 
 from .functionstype import FunctionsType
 
+class StrEnumBase(StrEnum):
+    """Base class for StrEnum to set __repr__"""
+    def __repr__(self):
+        return self.__class__.__name__ + "." + self.name
+
 
 @unique
-class CalculatorSymbols(StrEnum):
+class CalculatorSymbols(StrEnumBase):
     """Enum representing calculator math operators like + or -"""
 
     NOSYMBOL = ""
@@ -53,9 +58,15 @@ class CalculatorFunctions(FunctionsType, Enum):
     INVERSION = ("1/", "1/")
     SQUAREROOT = ("sqrt", "Decimal.sqrt")
 
+    def __str__(self):
+        return self.name 
+
+    def __repr__(self):
+        return self.__class__.__name__ + "." + self.name
+
 
 @unique
-class CalculatorCommands(StrEnum):
+class CalculatorCommands(StrEnumBase):
     """Enum that represent command strings used by the calculator"""
 
     NOCOMMAND = ""
@@ -79,7 +90,7 @@ class CalculatorCommands(StrEnum):
 
 
 @unique
-class ButtonStyles(StrEnum):
+class ButtonStyles(StrEnumBase):
     """Enum that represent styles used by calculator buttons"""
 
     NOSTYLE = ""
@@ -91,7 +102,7 @@ class ButtonStyles(StrEnum):
 
 
 @unique
-class TkEvents(StrEnum):
+class TkEvents(StrEnumBase):
     """Enum that represent events bound by Tk widgets"""
 
     NOEVENT = ""
@@ -123,7 +134,7 @@ class TkEvents(StrEnum):
 
 
 @unique
-class ButtonLabels(StrEnum):
+class ButtonLabels(StrEnumBase):
     """Enum that represent the button labels"""
 
     NOLABEL = ""
