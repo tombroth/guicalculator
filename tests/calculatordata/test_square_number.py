@@ -46,8 +46,16 @@ class SquareNumberTest(SetupCalculatorDataTest):
             },
             {
                 "case": "No input value",
-                "current": {"disp": "", "eval": "", "inpt": ""},
-                "ending": {"disp": "** 2", "eval": "** 2", "inpt": ""},
+                "current": {
+                    "disp": "( 3 + 1 )",
+                    "eval": "( Decimal('3') + Decimal('1') )",
+                    "inpt": "",
+                },
+                "ending": {
+                    "disp": "( 3 + 1 ) ** 2",
+                    "eval": "( Decimal('3') + Decimal('1') ) ** 2",
+                    "inpt": "",
+                },
             },
         ]
 

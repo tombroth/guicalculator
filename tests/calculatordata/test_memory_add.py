@@ -44,13 +44,13 @@ class MemoryAddTest(SetupCalculatorDataTest):
                 "case": "No value in memory, no value in input",
                 "current": {"mem": "", "inpt": ""},
                 "params": {},
-                "ending": {"mem": "0", "inpt": "0"},
+                "ending": {"mem": "", "inpt": ""},
             },
             {
                 "case": "Value in memory, no value in input",
                 "current": {"mem": "123", "inpt": ""},
                 "params": {},
-                "ending": {"mem": "123", "inpt": "0"},
+                "ending": {"mem": "123", "inpt": ""},
             },
             {
                 "case": "321 added to 123",
@@ -100,13 +100,13 @@ class MemoryAddTest(SetupCalculatorDataTest):
             },
             {
                 "case": "Invalid value in memory",
-                "current": {"inpt": "", "mem": "abcdefg"},
+                "current": {"inpt": "1", "mem": "abcdefg"},
                 "result": InvalidOperation,
             },
             {
                 "case": "Injection attack in memory",
                 "current": {
-                    "inpt": "",
+                    "inpt": "1",
                     "mem": lambda: __import__("os").system("dir"),
                 },
                 "result": InvalidOperation,

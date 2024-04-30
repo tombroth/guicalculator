@@ -220,7 +220,9 @@ class CalculatorData:
             else:
                 inpt = f"{func.eval_func}({inpt})"
 
-        return_value = " ".join([self._current_eval_calc, inpt, symbol]).strip()
+        return_value = " ".join(
+            filter(None, [self._current_eval_calc, inpt, symbol])
+        ).strip()
         return return_value
 
     def get_current_input(self) -> Decimal | None:
@@ -635,11 +637,8 @@ class CalculatorData:
         precision in the Decimal context.
         """
 
-        if self._current_input:
-            self.update_current_calc(CalculatorSymbols.SQUARE)
-            self.update_display()
-        else:
-            self.bell()
+        self.update_current_calc(CalculatorSymbols.SQUARE)
+        self.update_display()
 
     def root_number(self) -> None:
         """

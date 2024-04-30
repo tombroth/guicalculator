@@ -47,7 +47,7 @@ class GetCurrentInputTest(SetupCalculatorDataTest):
             {
                 "case": "No input value",
                 "current": {"disp": "", "eval": "", "inpt": ""},
-                "result": Decimal("0"),
+                "result": None,
             },
         ]
 

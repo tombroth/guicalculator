@@ -50,7 +50,7 @@ class GetCurrentMemoryTest(SetupCalculatorDataTest):
                 "case": "Value not set",
                 "current": {"mem": ""},
                 "ending": {"mem": ""},
-                "result": Decimal("0"),
+                "result": None,
             },
         ]
 

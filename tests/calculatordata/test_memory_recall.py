@@ -37,7 +37,7 @@ class MemoryRecallTest(SetupCalculatorDataTest):
             {
                 "case": "No value in memory",
                 "current": {"mem": "", "inpt": "321"},
-                "ending": {"mem": "", "inpt": "0"},
+                "ending": {"mem": "", "inpt": "321"},
             },
             {
                 "case": "123",

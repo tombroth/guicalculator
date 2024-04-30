@@ -55,6 +55,12 @@ class ButtonPressTest(SetupCalculatorDataTest):
                     "inpt": "",
                 },
             },
+            {
+                "case": "No input",
+                "current": {"disp": "", "eval": "", "inpt": "123"},
+                "params": {"symbol": None},
+                "ending": {"disp": "123", "eval": "Decimal('123')", "inpt": ""},
+            },
         ]
 
         for data in test_data:
@@ -81,12 +87,6 @@ class ButtonPressTest(SetupCalculatorDataTest):
                 "current": {"disp": "", "eval": "", "inpt": "123"},
                 "params": {"symbol": "+-*/"},
                 "result": ValueError,
-            },
-            {
-                "case": "No input",
-                "current": {"disp": "", "eval": "", "inpt": "123"},
-                "params": {"symbol": None},
-                "result": TypeError,
             },
         ]
 

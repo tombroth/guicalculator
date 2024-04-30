@@ -47,12 +47,12 @@ class StrToDecimalTest(unittest.TestCase):
             {
                 "case": "No input",
                 "params": {"val": ""},
-                "result": Decimal("0"),
+                "result": None,
             },
             {
                 "case": "None input",
                 "params": {"val": None},
-                "result": Decimal("0"),
+                "result": None,
             },
         ]
 

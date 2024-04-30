@@ -37,17 +37,17 @@ class MemorySwapTest(SetupCalculatorDataTest):
             {
                 "case": "No value in memory, value in input",
                 "current": {"mem": "", "inpt": "321"},
-                "ending": {"mem": "321", "inpt": "0"},
+                "ending": {"mem": "321", "inpt": ""},
             },
             {
                 "case": "No value in memory, no value in input",
                 "current": {"mem": "", "inpt": ""},
-                "ending": {"mem": "0", "inpt": "0"},
+                "ending": {"mem": "", "inpt": ""},
             },
             {
                 "case": "Value in memory, no value in input",
                 "current": {"mem": "123", "inpt": ""},
-                "ending": {"mem": "0", "inpt": "123"},
+                "ending": {"mem": "", "inpt": "123"},
             },
             {
                 "case": "321 swaps with 123",

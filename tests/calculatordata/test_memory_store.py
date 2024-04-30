@@ -42,12 +42,12 @@ class MemoryStoreTest(SetupCalculatorDataTest):
             {
                 "case": "No value in memory, no value in input",
                 "current": {"mem": "", "inpt": ""},
-                "ending": {"mem": "0", "inpt": "0"},
+                "ending": {"mem": "", "inpt": ""},
             },
             {
                 "case": "Value in memory, no value in input",
                 "current": {"mem": "123", "inpt": ""},
-                "ending": {"mem": "0", "inpt": "0"},
+                "ending": {"mem": "123", "inpt": ""},
             },
             {
                 "case": "321 overwrites 123",

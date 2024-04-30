@@ -98,6 +98,11 @@ class NumToStrTest(unittest.TestCase):
                 },
                 "result": "12,345.50",
             },
+            {
+                "case": "None input",
+                "params": {"val": None},
+                "result": None,
+            },
         ]
 
         for data in test_data:
@@ -117,11 +122,6 @@ class NumToStrTest(unittest.TestCase):
                 "case": "Empty input",
                 "params": {"val": ""},
                 "result": ValueError,
-            },
-            {
-                "case": "None input",
-                "params": {"val": None},
-                "result": TypeError,
             },
         ]
 
