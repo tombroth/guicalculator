@@ -92,7 +92,7 @@ def evaluate_calculation(
                 if isinstance(node.value, (int, float)):
                     return +Decimal(node.value)
                 else:
-                    raise TypeError(f"Unknown constant: {node_fmtd}")
+                    raise TypeError(f"Unknown constant {node_fmtd}")
 
             case ast.BinOp():
                 left, right, op = node.left, node.right, node.op
@@ -114,7 +114,7 @@ def evaluate_calculation(
 
                 else:
                     node_escpd = node.id.encode("unicode_escape")
-                    raise TypeError(f"Unknown variable: {node_escpd!r}")
+                    raise TypeError(f"Unknown variable {node_escpd!r}")
 
             case ast.Call():
                 pkg, func = _get_caller(node, node_fmtd)
@@ -127,7 +127,7 @@ def evaluate_calculation(
 
                     return Decimal.sqrt(_eval(node.args[0]))
                 else:
-                    raise TypeError(f"Unknown function call: {pkg}.{func}: {node_fmtd}")
+                    raise TypeError(f"Unknown function call {pkg}.{func}: {node_fmtd}")
 
             case _:
                 raise TypeError(f"Unknown ast node: {node_fmtd}")

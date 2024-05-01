@@ -32,6 +32,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from abc import ABC, abstractmethod
 from copy import deepcopy
 from decimal import Decimal
 from tkinter import StringVar, ttk
@@ -51,12 +52,88 @@ from .numtostr import numtostr
 from .validate_user_var import validate_user_vars
 
 
+class _CalcStringBase(ABC):
+
+    @abstractmethod
+    def get_disp(self) -> str: ...
+
+    @abstractmethod
+    def get_eval(self) -> str: ...
+
+    def __str__(self) -> str:
+        return self.get_disp()
+
+    def __repr__(self) -> str:
+        return self.get_eval()
+
+
+class _CalcStringNumber(_CalcStringBase):
+
+    def __init__(
+        self, thenum: Decimal | int | float | str, decimal_point: bool = False
+    ) -> None:
+        if isinstance(thenum, Decimal):
+            self._thenum = thenum
+        elif isinstance(thenum, int) or isinstance(thenum, float):
+            self._thenum = Decimal(thenum)
+        elif isinstance(thenum, str):
+            self._thenum = Decimal(thenum.replace(",", ""))
+        else:
+            raise ValueError(f"Invalid type for number: {type(thenum)}")
+        self._decimal_point = decimal_point
+
+    def get_disp(self) -> str:
+        x = "{0:,f}".format(self._thenum)
+        if self._decimal_point:
+            x += "."
+        return x
+
+    def get_eval(self) -> str:
+        x = repr(
+            self._thenum.quantize(1)
+            if self._thenum == self._thenum.to_integral()
+            else self._thenum.normalize()
+        )
+        return x
+
+
+class _CalcStringFunction(_CalcStringBase):
+
+    def __init__(self, func: FunctionsType, param: _CalcStringNumber | int) -> None:
+        self._func = func
+        if isinstance(param, _CalcStringNumber):
+            self._param = param
+        else:
+            # attempt to convert it
+            self._param = _CalcStringNumber(param)
+
+    def get_disp(self) -> str:
+        x = f"{self._func.display_func}({self._param.get_disp()})"
+        return x
+
+    def get_eval(self) -> str:
+        x = f"{self._func.eval_func}({self._param.get_eval()})"
+        return x
+
+
+class _CalcStringString(_CalcStringBase):
+
+    def __init__(self, thestr: str) -> None:
+        self._thestr = thestr
+
+    def get_disp(self) -> str:
+        new_var = self._thestr
+        return new_var
+
+    def get_eval(self) -> str:
+        return self._thestr
+
+
 class CalculatorData:
     """CalculatorData - Data and functions used by the calculator"""
 
     # data used by the calculator
-    _current_display_calc: str = ""  # the current caolculation to be displayed
-    _current_eval_calc: str = ""  # the current calculation to be evalueated
+    _current_calc: list[_CalcStringBase] = []  # the current calculation
     _current_input: str = ""  # the current number input
 
     _user_variables: VariablesType = VariablesType({})  # user defined variables
@@ -131,6 +208,49 @@ class CalculatorData:
                 )
 
     @object_wrapper
+    def _get_num_fnc_sym(
+        self, symbol: str, func: FunctionsType
+    ) -> tuple[
+        _CalcStringNumber | None, _CalcStringFunction | None, _CalcStringString | None
+    ]:
+        """
+        _get_num_fnc_sym - internal function to convert _current_input, symbol,
+         and func into their _CalcStringBase representations
+
+        Parameters
+        ----------
+        symbol : str
+            String to be added to the end of the calculation.
+        func : FunctionsType
+            Dataclass containing function to be added.
+
+        Returns
+        -------
+        tuple[ _CalcStringNumber | None, _CalcStringFunction | None, _CalcStringString | None ]
+            The _CalcStringBase representations of the number, function and symbol
+        """
+
+        if self._current_input:
+            inpt = _CalcStringNumber(
+                self.get_current_input(),
+                (self._current_input[-1] == "."),
+            )
+        else:
+            inpt = None
+
+        if func and func.display_func and inpt:
+            infnc = _CalcStringFunction(func, inpt)
+            inpt = None
+        else:
+            infnc = None
+
+        if symbol:
+            sym = _CalcStringString(symbol)
+        else:
+            sym = None
+        return inpt, infnc, sym
+
+    @object_wrapper
     def get_current_display_calc(
         self,
         symbol: str = "",
@@ -158,22 +278,12 @@ class CalculatorData:
 
         self.validate_symbol_and_func(symbol, func)
 
-        if self._current_input:
-            inpt = numtostr(
-                self.get_current_input(),
-                commas=True,
-                removeZeroes=False,
-            )
-            if self._current_input[-1] == ".":
-                inpt = (inpt or "") + "."
-        else:
-            inpt = ""
+        num, fnc, sym = self._get_num_fnc_sym(symbol, func)
 
-        if func and func.display_func and inpt:
-            inpt = f"{func.display_func}({inpt})"
+        tmpcalc: list[_CalcStringBase] = [c for c in [num, fnc, sym] if c != None]
 
         return_value = " ".join(
-            filter(None, [self._current_display_calc, inpt, symbol])
+            e.get_disp() for e in self._current_calc + tmpcalc
         ).strip()
         return return_value
 
@@ -209,17 +319,12 @@ class CalculatorData:
 
         self.validate_symbol_and_func(symbol, func)
 
-        if self._current_input:
-            i = self.get_current_input()
-            inpt = f"Decimal({str(i)!r})"
-        else:
-            inpt = ""
+        num, fnc, sym = self._get_num_fnc_sym(symbol, func)
 
-        if func and func.eval_func and inpt:
-            inpt = f"{func.eval_func}({inpt})"
+        tmpcalc: list[_CalcStringBase] = [c for c in [num, fnc, sym] if c != None]
 
         return_value = " ".join(
-            filter(None, [self._current_eval_calc, inpt, symbol])
+            e.get_eval() for e in self._current_calc + tmpcalc
         ).strip()
         return return_value
 
@@ -274,12 +379,6 @@ class CalculatorData:
         """
         update_current_calc - Update the current calculation being input.
 
-        Uses get_current_display_calc and get_current_eval_calc to generate
-        the most recent versions of the calculation being input (including
-        the current number being input and the operator being input passed
-        in by symbol) and stores them in globals.current_display_calc and
-        globals.current_eval_calc. Then calls update_display.
-
         Notes
         -----
         As a side effect, will round the number currently being input to the
@@ -296,11 +395,12 @@ class CalculatorData:
 
         self.validate_symbol_and_func(symbol, func)
 
-        if self._current_input:  # if we have a value, round it
-            self._current_input = numtostr(self.get_current_input()) or ""
+        num, fnc, sym = self._get_num_fnc_sym(symbol, func)
 
-        self._current_display_calc = self.get_current_display_calc(symbol, func)
-        self._current_eval_calc = self.get_current_eval_calc(symbol, func)
+        tmpcalc: list[_CalcStringBase] = [c for c in [num, fnc, sym] if c != None]
+
+        self._current_calc += tmpcalc
+
         self._current_input = ""
 
         self.update_display()
@@ -439,8 +539,7 @@ class CalculatorData:
         if self._current_input:
             self._current_input = ""
         else:
-            self._current_display_calc = ""
-            self._current_eval_calc = ""
+            self._current_calc = []
 
         self.update_display()
 
@@ -453,8 +552,7 @@ class CalculatorData:
 
         self.clear_display()
 
-        self._current_display_calc = ""
-        self._current_eval_calc = ""
+        self._current_calc = []
         self._current_input = ""
 
         self.update_display()
@@ -689,12 +787,14 @@ class CalculatorData:
         # update current calc and display
         self.update_current_calc()
 
+        cur_calc = self.get_current_eval_calc()
+
         # if we have a calculation to perform
-        if self._current_eval_calc:
+        if cur_calc:
             try:
                 # run the current calculation
                 val = evaluate_calculation(
-                    self._current_eval_calc,
+                    cur_calc,
                     self._user_variables,
                 )
 
@@ -702,8 +802,7 @@ class CalculatorData:
                 self.write_to_display(f" = {numtostr(val, commas=True)}\n{'=' * 30}\n")
 
                 # clear current calc and set current input to result
-                self._current_display_calc = ""
-                self._current_eval_calc = ""
+                self._current_calc = []
                 self._current_input = numtostr(val) or ""
 
             except Exception as error:
@@ -720,8 +819,7 @@ class CalculatorData:
                         errmsg = errmsg[: -(len(unknown_line_1))]
                 self.write_to_display(f"=== ERROR ===\n{errmsg}\n=== ERROR ===\n")
 
-                self._current_display_calc = ""
-                self._current_eval_calc = ""
+                self._current_calc = []
                 self._current_input = ""
 
         # update the display
