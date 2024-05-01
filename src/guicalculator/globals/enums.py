@@ -46,7 +46,6 @@ class CalculatorSymbols(StrEnumBase):
     MULTIPLICATION = "*"
     SUBTRACTION = "-"
     ADDITION = "+"
-    SQUARE = "** 2"
     EXPONENTIATION = "**"
 
 
@@ -55,7 +54,6 @@ class CalculatorFunctions(FunctionsType, Enum):
     """Enum that represent functions used by the calculator like square root"""
 
     NOFUNCTION = ("", "")
-    INVERSION = ("1/", "1/")
     SQUAREROOT = ("sqrt", "Decimal.sqrt")
 
     def __str__(self):

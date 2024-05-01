@@ -32,7 +32,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import logging
 from copy import deepcopy
 from decimal import Decimal
 from tkinter import StringVar, ttk
@@ -171,10 +170,7 @@ class CalculatorData:
             inpt = ""
 
         if func and func.display_func and inpt:
-            if func == CalculatorFunctions.INVERSION:
-                inpt = f"({func.display_func}{inpt})"
-            else:
-                inpt = f"{func.display_func}({inpt})"
+            inpt = f"{func.display_func}({inpt})"
 
         return_value = " ".join(
             filter(None, [self._current_display_calc, inpt, symbol])
@@ -220,10 +216,7 @@ class CalculatorData:
             inpt = ""
 
         if func and func.eval_func and inpt:
-            if func == CalculatorFunctions.INVERSION:
-                inpt = f"({func.eval_func}{inpt})"
-            else:
-                inpt = f"{func.eval_func}({inpt})"
+            inpt = f"{func.eval_func}({inpt})"
 
         return_value = " ".join(
             filter(None, [self._current_eval_calc, inpt, symbol])
@@ -643,8 +636,12 @@ class CalculatorData:
         """
 
         if self._current_input:
-            self.update_current_calc(func=CalculatorFunctions.INVERSION)
-            self.update_display()
+            inpt, self._current_input = self._current_input, ""
+            self.update_current_calc(CalculatorSymbols.OPENPAREN)
+            self._current_input = "1"
+            self.update_current_calc(CalculatorSymbols.DIVISION)
+            self._current_input = inpt
+            self.update_current_calc(CalculatorSymbols.CLOSEPAREN)
         else:
             self.bell()
 
@@ -660,8 +657,9 @@ class CalculatorData:
         precision in the Decimal context.
         """
 
-        self.update_current_calc(CalculatorSymbols.SQUARE)
-        self.update_display()
+        self.update_current_calc(CalculatorSymbols.EXPONENTIATION)
+        self._current_input = "2"
+        self.update_current_calc()
 
     @object_wrapper
     def root_number(self) -> None:
@@ -719,7 +717,7 @@ class CalculatorData:
                     errmsg = f"{errmsg}: {str(error)}"
                     unknown_line_1 = " (<unknown>, line 1)"
                     if errmsg.endswith(unknown_line_1):
-                        errmsg = errmsg[:-(len(unknown_line_1))]
+                        errmsg = errmsg[: -(len(unknown_line_1))]
                 self.write_to_display(f"=== ERROR ===\n{errmsg}\n=== ERROR ===\n")
 
                 self._current_display_calc = ""

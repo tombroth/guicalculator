@@ -47,12 +47,12 @@ class UpdateCurrentCalcTest(SetupCalculatorDataTest):
                 "ending": {"disp": "123", "eval": "Decimal('123')", "inpt": ""},
             },
             {
-                "case": "123 ** 2",
+                "case": "123 **",
                 "current": {"disp": "", "eval": "", "inpt": "123"},
-                "params": {"symbol": "** 2"},
+                "params": {"symbol": "**"},
                 "ending": {
-                    "disp": "123 ** 2",
-                    "eval": "Decimal('123') ** 2",
+                    "disp": "123 **",
+                    "eval": "Decimal('123') **",
                     "inpt": "",
                 },
             },
@@ -65,12 +65,6 @@ class UpdateCurrentCalcTest(SetupCalculatorDataTest):
                     "eval": "Decimal.sqrt(Decimal('123'))",
                     "inpt": "",
                 },
-            },
-            {
-                "case": "Inversion: (1/3)",
-                "current": {"disp": "", "eval": "", "inpt": "3"},
-                "params": {"func": CalculatorFunctions.INVERSION},
-                "ending": {"disp": "(1/3)", "eval": "(1/Decimal('3'))", "inpt": ""},
             },
             {
                 "case": "Default variable e",
@@ -120,7 +114,7 @@ class UpdateCurrentCalcTest(SetupCalculatorDataTest):
                 "current": {"disp": "", "eval": "", "inpt": "123"},
                 "params": {
                     "symbol": "+",
-                    "func": CalculatorFunctions.INVERSION,
+                    "func": CalculatorFunctions.SQUAREROOT,
                 },
                 "result": ValueError,
             },

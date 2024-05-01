@@ -84,24 +84,10 @@ class ValidateSymbolAndFuncTest(SetupCalculatorDataTest):
                 },
             },
             {
-                "case": "** 2",
-                "params": {
-                    "symbol": "** 2",
-                    "func": CalculatorFunctions.NOFUNCTION,
-                },
-            },
-            {
                 "case": "**",
                 "params": {
                     "symbol": "**",
                     "func": CalculatorFunctions.NOFUNCTION,
-                },
-            },
-            {
-                "case": "1/",
-                "params": {
-                    "symbol": "",
-                    "func": CalculatorFunctions.INVERSION,
                 },
             },
             {
@@ -125,7 +111,7 @@ class ValidateSymbolAndFuncTest(SetupCalculatorDataTest):
                 "case": "Both parameters used",
                 "params": {
                     "symbol": "+",
-                    "func": CalculatorFunctions.INVERSION,
+                    "func": CalculatorFunctions.SQUAREROOT,
                 },
                 "result": ValueError,
             },

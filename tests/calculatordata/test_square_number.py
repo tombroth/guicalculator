@@ -35,14 +35,22 @@ class SquareNumberTest(SetupCalculatorDataTest):
 
         test_data = [
             {
-                "case": "2 as str",
-                "current": {"disp": "", "eval": "", "inpt": "2"},
-                "ending": {"disp": "2 ** 2", "eval": "Decimal('2') ** 2", "inpt": ""},
+                "case": "3 as str",
+                "current": {"disp": "", "eval": "", "inpt": "3"},
+                "ending": {
+                    "disp": "3 ** 2",
+                    "eval": "Decimal('3') ** Decimal('2')",
+                    "inpt": "",
+                },
             },
             {
-                "case": "2 as int",
-                "current": {"disp": "", "eval": "", "inpt": 2},
-                "ending": {"disp": "2 ** 2", "eval": "Decimal('2') ** 2", "inpt": ""},
+                "case": "3 as int",
+                "current": {"disp": "", "eval": "", "inpt": 3},
+                "ending": {
+                    "disp": "3 ** 2",
+                    "eval": "Decimal('3') ** Decimal('2')",
+                    "inpt": "",
+                },
             },
             {
                 "case": "No input value",
@@ -53,7 +61,7 @@ class SquareNumberTest(SetupCalculatorDataTest):
                 },
                 "ending": {
                     "disp": "( 3 + 1 ) ** 2",
-                    "eval": "( Decimal('3') + Decimal('1') ) ** 2",
+                    "eval": "( Decimal('3') + Decimal('1') ) ** Decimal('2')",
                     "inpt": "",
                 },
             },

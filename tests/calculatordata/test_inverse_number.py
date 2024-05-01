@@ -37,12 +37,20 @@ class InverseNumberTest(SetupCalculatorDataTest):
             {
                 "case": "2 as str",
                 "current": {"disp": "", "eval": "", "inpt": "2"},
-                "ending": {"disp": "(1/2)", "eval": "(1/Decimal('2'))", "inpt": ""},
+                "ending": {
+                    "disp": "( 1 / 2 )",
+                    "eval": "( Decimal('1') / Decimal('2') )",
+                    "inpt": "",
+                },
             },
             {
                 "case": "2 as int",
                 "current": {"disp": "", "eval": "", "inpt": 2},
-                "ending": {"disp": "(1/2)", "eval": "(1/Decimal('2'))", "inpt": ""},
+                "ending": {
+                    "disp": "( 1 / 2 )",
+                    "eval": "( Decimal('1') / Decimal('2') )",
+                    "inpt": "",
+                },
             },
             {
                 "case": "No input value",

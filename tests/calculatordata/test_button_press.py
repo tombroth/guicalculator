@@ -46,12 +46,12 @@ class ButtonPressTest(SetupCalculatorDataTest):
                 "ending": {"disp": "123 +", "eval": "Decimal('123') +", "inpt": ""},
             },
             {
-                "case": "Button press ** 2",
+                "case": "Button press **",
                 "current": {"disp": "", "eval": "", "inpt": "123"},
-                "params": {"symbol": "** 2"},
+                "params": {"symbol": "**"},
                 "ending": {
-                    "disp": "123 ** 2",
-                    "eval": "Decimal('123') ** 2",
+                    "disp": "123 **",
+                    "eval": "Decimal('123') **",
                     "inpt": "",
                 },
             },

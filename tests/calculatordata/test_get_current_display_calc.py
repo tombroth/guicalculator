@@ -57,12 +57,6 @@ class GetCurrentDisplayCalcTest(SetupCalculatorDataTest):
                 "params": {"func": CalculatorFunctions.SQUAREROOT},
                 "result": "sqrt(123)",
             },
-            {
-                "case": "Inversion: (1/3)",
-                "current": {"disp": "", "eval": "", "inpt": "3"},
-                "params": {"func": CalculatorFunctions.INVERSION},
-                "result": "(1/3)",
-            },
         ]
 
         for data in test_data:
@@ -89,7 +83,7 @@ class GetCurrentDisplayCalcTest(SetupCalculatorDataTest):
                 "current": {"disp": "", "eval": "", "inpt": "123"},
                 "params": {
                     "symbol": "+",
-                    "func": CalculatorFunctions.INVERSION,
+                    "func": CalculatorFunctions.SQUAREROOT,
                 },
                 "result": ValueError,
             },
