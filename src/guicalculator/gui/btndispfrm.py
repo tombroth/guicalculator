@@ -27,7 +27,7 @@ SOFTWARE.
 from tkinter import ttk
 
 from ..buttoncfg import ButtonInfo, ButtonLocation, buttons
-from ..calculator import CalculatorData
+from ..calculator import CalculatorData, gui_object_wrapper
 from ..globals import CalculatorCommands
 
 
@@ -52,6 +52,7 @@ class BtnDispFrm:
 
         self.frm.grid(column=0, row=2, sticky="news")
 
+    @gui_object_wrapper
     def add_button(self, btn_loc: ButtonLocation, btn_info: ButtonInfo) -> None:
         """
         add_button - add a button to BtnDispFrm

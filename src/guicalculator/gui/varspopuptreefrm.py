@@ -27,7 +27,7 @@ SOFTWARE.
 
 from tkinter import ttk
 
-from ..calculator import CalculatorData, numtostr
+from ..calculator import CalculatorData, numtostr, gui_object_wrapper
 from ..globals import DEFAULT_VARIABLES, VariablesType
 
 
@@ -76,6 +76,7 @@ class VarsPopupTreeFrm:
 
         self.frm.grid(row=0, column=0, sticky="news")
 
+    @gui_object_wrapper
     def add_variable_section(
         self, section_name: str, section_vars: VariablesType
     ) -> None:

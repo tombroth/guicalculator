@@ -1,5 +1,14 @@
 """
-logwrapper.py - Wrapper function to handle basic logging.
+logwrapper.py - Wrapper functions to handle basic logging.
+
+By default, the logging decorators capture function calls at the INFO 
+level, function return values at the DEBUG level, and errors at the 
+ERROR level with stack trace. 
+
+Any errors that aren't re-raised should be logged by the exception handler
+explicitly by calling logerror.
+
+Logging of __init__ is usually omitted.
 """
 
 """
@@ -29,6 +38,45 @@ from functools import wraps
 from typing import Any, Callable
 
 logger = logging.getLogger()
+
+log_gui_calls: bool = False
+
+
+def enable_gui_logging() -> None:
+    """Set the log_gui_calls flag to True"""
+
+    global log_gui_calls
+    log_gui_calls = True
+
+
+def gui_object_wrapper(func: Callable) -> Callable:
+    """
+    gui_object_wrapper - wrapper that logs data for methods of objects
+
+    Main difference from object_wrapper is that this version checks the
+    global log_gui_calls variable and doesn't log if it is false.
+
+    Parameters
+    ----------
+    func : Callable
+        object method to wrap
+
+    Returns
+    -------
+    Callable
+        wrapped method
+    """
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        global log_gui_calls
+        if log_gui_calls:
+            signature = _get_signature(args[1:], kwargs)
+            return _log_func_call(func, args, kwargs, signature)
+        else:
+            return func(*args, **kwargs)
+
+    return wrapper
 
 
 def object_wrapper(func: Callable) -> Callable:

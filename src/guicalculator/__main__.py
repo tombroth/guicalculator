@@ -30,6 +30,7 @@ import os
 import sys
 
 from . import GuiCalculator
+from .calculator import enable_gui_logging
 
 
 def parse_args() -> argparse.Namespace:
@@ -60,13 +61,26 @@ def parse_args() -> argparse.Namespace:
             if levelValue not in [0, 50]
         ],
     )
+
     parser.add_argument(
         "-o",
         "--logging-output-file",
         default=None,
         help="log file destination (Default: None)",
     )
+
+    parser.add_argument(
+        "-g",
+        "--log-gui-calls",
+        action="store_true",
+        default=None,
+        help="log file destination (Default: None)",
+    )
+
     args = parser.parse_args()
+
+    if args.log_gui_calls:
+        enable_gui_logging()
 
     return args
 
@@ -74,6 +88,15 @@ def parse_args() -> argparse.Namespace:
 def setup_logging(args: argparse.Namespace) -> None:
     """
     setup_logging - Configure logging
+
+    By default, the logging decorators capture function calls at the INFO
+    level, function return values at the DEBUG level, and errors at the
+    ERROR level with stack trace.
+
+    Any errors that aren't re-raised should be logged by the exception handler
+    explicitly by calling logerror.
+
+    Logging of __init__ is usually omitted.
 
     Parameters
     ----------
@@ -104,6 +127,11 @@ def setup_logging(args: argparse.Namespace) -> None:
         handlers=handlers,
     )
     logger.info(f"Logging configured at {args.log_level.upper()}")
+
+    if args.log_gui_calls:
+        logger.info(f"Including gui calls in log")
+    else:
+        logger.info(f"Not including gui calls in log")
 
 
 # poetry build system seems to run better having a target function to run

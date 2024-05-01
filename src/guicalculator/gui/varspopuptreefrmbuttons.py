@@ -27,7 +27,7 @@ SOFTWARE.
 
 from tkinter import ttk
 
-from ..calculator import CalculatorData
+from ..calculator import CalculatorData, gui_object_wrapper
 from ..globals import TkEvents
 from .uservarseditpopup import UserVarsEditPopup
 
@@ -75,6 +75,7 @@ class VarsPopupTreeFrmButtons:
         top_win.bind(TkEvents.ESCAPE, lambda _: self.frm.winfo_toplevel().destroy())
         self.frm.grid(row=1, column=0, sticky="news")
 
+    @gui_object_wrapper
     def user_vars_select(self) -> None:
         """user_vars_select - Return selected variable to the calculator."""
 
@@ -92,6 +93,7 @@ class VarsPopupTreeFrmButtons:
 
         self.frm.winfo_toplevel().destroy()
 
+    @gui_object_wrapper
     def user_vars_edit(self) -> None:
         """user_vars_edit - Popup window to edit the user variables."""
 

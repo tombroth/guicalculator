@@ -33,6 +33,7 @@ from ..calculator import (
     evaluate_calculation,
     logerror,
     numtostr,
+    gui_object_wrapper,
     strtodecimal,
     validate_user_var,
 )
@@ -151,6 +152,7 @@ class UserVarsEditFrm:
 
         self.frm.grid(row=0, column=0, sticky="news")
 
+    @gui_object_wrapper
     def user_vars_edit_delrow(self) -> None:
         """Delete the current row"""
 
@@ -173,6 +175,7 @@ class UserVarsEditFrm:
                     widget_num = -1
                 self.uservars[remaining_vars[widget_num]].focus_set()
 
+    @gui_object_wrapper
     def add_current_calc(self) -> None:
         """Add the current calculation result as a variable"""
 
@@ -206,6 +209,7 @@ class UserVarsEditFrm:
         self.uservars[(row, 1)].delete(0, END)
         self.uservars[(row, 1)].insert(0, numtostr(result, commas=True) or "")
 
+    @gui_object_wrapper
     def addrow(self, rownum: int, var: str = "", val: str = "") -> None:
         """
         addrow - Add a row for a new variable
@@ -223,6 +227,7 @@ class UserVarsEditFrm:
         self.addtextbox(rownum, 0, var)
         self.addtextbox(rownum, 1, val)
 
+    @gui_object_wrapper
     def addtextbox(self, rownum: int, colnum: int, text: str = "") -> None:
         """
         addtextbox - Add a text entry box for variable name or variable value
@@ -260,6 +265,7 @@ class UserVarsEditFrm:
         if colnum == 1:
             tbox.bind(TkEvents.KEYRELEASE, self.format_number)
 
+    @gui_object_wrapper
     def format_number(self, event: Event) -> None:
         """
         format_number - Format the number input
@@ -280,6 +286,7 @@ class UserVarsEditFrm:
             event.widget.delete(0, END)
             event.widget.insert(0, v_str)
 
+    @gui_object_wrapper
     def validate_varname(self, newnam: str) -> bool:
         """
         validate_varname - Validate that the variable being entered
@@ -306,6 +313,7 @@ class UserVarsEditFrm:
 
         return True
 
+    @gui_object_wrapper
     def validate_decimal(self, newval: str) -> bool:
         """
         validate_decimal - Validate that the number being entered is a
@@ -332,6 +340,7 @@ class UserVarsEditFrm:
 
         return True
 
+    @gui_object_wrapper
     def user_vars_edit_addrow(self) -> int:
         """
         user_vars_edit_addrow - Add a row for a new user variable. Returns row
@@ -348,6 +357,7 @@ class UserVarsEditFrm:
 
         return nextrow
 
+    @gui_object_wrapper
     def user_vars_edit_ok(self) -> None:
         """user_vars_edit_ok - Update the user variables from entered data"""
 
@@ -413,6 +423,7 @@ class UserVarsEditFrm:
         self.vptf_topwin.destroy()
         self.calculator_data.vars_popup()
 
+    @gui_object_wrapper
     def set_errmsg(self, error_msg: str) -> None:
         """
         set_errmsg - Set the error message and ring a bell

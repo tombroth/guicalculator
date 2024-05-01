@@ -27,7 +27,7 @@ SOFTWARE.
 
 from tkinter import END, scrolledtext, ttk
 
-from ..calculator import CalculatorData
+from ..calculator import CalculatorData, gui_object_wrapper
 from ..globals import TkEvents
 from .btndispfrm import BtnDispFrm
 from .memdispfrm import MemDispFrm
@@ -78,6 +78,7 @@ class CalcFrm:
 
         self.frm.grid(column=0, row=0, sticky="news")
 
+    @gui_object_wrapper
     def write_to_display(self, msg: str) -> None:
         """
         write_to_display - Write a message to the calculator display.
@@ -97,6 +98,7 @@ class CalcFrm:
         self.display.see(END)
         self.display.configure(state="disabled")
 
+    @gui_object_wrapper
     def update_display(self) -> None:
         """
         update_display - Update the calculator display.
@@ -116,6 +118,7 @@ class CalcFrm:
         self.display.see(END)
         self.display.configure(state="disabled")
 
+    @gui_object_wrapper
     def clear_display(self) -> None:
         """clear_display - Clear the display"""
 
@@ -123,6 +126,7 @@ class CalcFrm:
         self.display.delete(1.0, "end")
         self.display.configure(state="disabled")
 
+    @gui_object_wrapper
     def vars_popup(self) -> None:
         """varsPopup - Display a popup window with currently defined variables."""
 
