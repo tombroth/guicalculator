@@ -47,11 +47,11 @@ from ..globals import (
     VariablesType,
 )
 from .evaluate_calculation import evaluate_calculation
-from .logwrapper import object_wrapper
+from .logwrapper import logerror, object_wrapper
 from .numtostr import numtostr
 from .validate_user_var import validate_user_vars
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 
 
 class CalculatorData:
@@ -711,8 +711,7 @@ class CalculatorData:
                 self._current_input = numtostr(val) or ""
 
             except Exception as error:
-                # should probably use a logger
-                print(f"ERROR: {error}\n")
+                logerror(error, "calculate", 2)
 
                 # clear the current calculation and print the error message
                 self.write_to_display(f"=== ERROR ===\n")

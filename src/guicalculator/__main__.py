@@ -81,7 +81,7 @@ def setup_logging(args: argparse.Namespace) -> None:
         The parsed command line arguments that contain logging options
     """
 
-    logger = logging.getLogger(__name__)
+    logger = logging.getLogger()
 
     if args.logging_output_file:
         # add an error handler for error/critical level to stderror
@@ -98,7 +98,7 @@ def setup_logging(args: argparse.Namespace) -> None:
         handlers = [logging.StreamHandler(stream=sys.stdout)]
 
     logging.basicConfig(
-        format="[%(asctime)s] [%(levelname)8s]: %(message)s (%(filename)s:%(lineno)s)",
+        format="[%(asctime)s] [%(levelname)8s]: %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
         level=args.log_level.upper(),
         handlers=handlers,

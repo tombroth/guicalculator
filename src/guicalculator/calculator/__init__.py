@@ -38,13 +38,14 @@ SOFTWARE.
 
 from .calculatordata import CalculatorData
 from .evaluate_calculation import evaluate_calculation
-from .logwrapper import object_wrapper, plain_wrapper
+from .logwrapper import logerror, object_wrapper, plain_wrapper
 from .numtostr import numtostr
 from .strtodecimal import strtodecimal
 from .validate_user_var import validate_user_var, validate_user_vars
 
 __all__ = [
     "CalculatorData",
+    "logerror",
     "numtostr",
     "object_wrapper",
     "plain_wrapper",

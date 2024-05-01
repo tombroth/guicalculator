@@ -28,7 +28,7 @@ import logging
 from functools import wraps
 from typing import Any, Callable
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 
 
 def object_wrapper(func: Callable) -> Callable:
@@ -145,8 +145,12 @@ def _log_func_call(
         return result
 
     except Exception as e:
-        logger.error(
-            f"Exception raised in {func.__qualname__}. exception: {str(e)}",
-            stacklevel=3,
-        )
+        logerror(e, func.__qualname__, 4)
         raise e
+
+
+def logerror(e: Exception, funcname: str, sl: int = 1):
+    logger.exception(
+        f"Exception raised in {funcname}. exception: {str(e)}",
+        stacklevel=sl,
+    )
