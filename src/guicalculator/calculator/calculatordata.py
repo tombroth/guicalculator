@@ -712,7 +712,15 @@ class CalculatorData:
                 logerror(error, "calculate", 2)
 
                 # clear the current calculation and print the error message
-                self.write_to_display(f"=== ERROR ===\n")
+                errmsg = error.__class__.__qualname__
+                if errmsg == "TypeError":
+                    errmsg = str(error).split(":")[0]
+                elif errmsg == "SyntaxError":
+                    errmsg = f"{errmsg}: {str(error)}"
+                    unknown_line_1 = " (<unknown>, line 1)"
+                    if errmsg.endswith(unknown_line_1):
+                        errmsg = errmsg[:-(len(unknown_line_1))]
+                self.write_to_display(f"=== ERROR ===\n{errmsg}\n=== ERROR ===\n")
 
                 self._current_display_calc = ""
                 self._current_eval_calc = ""
