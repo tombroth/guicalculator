@@ -22,10 +22,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from decimal import Decimal
-from io import StringIO
+import logging
 import unittest
-from unittest.mock import patch
+from decimal import Decimal
 
 from guicalculator.globals.constants import PI
 from tests.calculatordata.test__setup_calculatordata import SetupCalculatorDataTest
@@ -112,7 +111,7 @@ class CalculateTest(SetupCalculatorDataTest):
                 "case": "1 + 1",
                 "current": {"disp": "1 +", "eval": "Decimal(1) +", "inpt": "1"},
                 "ending": {"disp": "", "eval": "", "inpt": ""},
-                "result": "ERROR: Decimal function should only have str parameter",
+                "result": "Decimal function should only have str parameter",
             },
             {
                 "case": "Code injection",
@@ -122,21 +121,20 @@ class CalculateTest(SetupCalculatorDataTest):
                     "inpt": "",
                 },
                 "ending": {"disp": "", "eval": "", "inpt": ""},
-                "result": "ERROR: Unknown type of ast.Call",
+                "result": "Unknown type of ast.Call",
             },
         ]
 
         for data in test_data:
             with self.subTest(msg="calculate: " + data["case"]):
-                with patch("sys.stdout", new=StringIO()) as fake_out:
+                with self.assertLogs(level=logging.ERROR) as logmsgs:
                     self.run_basic_test(
                         func=self.calc_data.calculate,
                         cur_vals=data["current"],
                         end_vals=data["ending"],
                     )
-                    # assertStartsWith would be nice
-                    self.assertEqual(
-                        fake_out.getvalue()[: len(data["result"])], data["result"]
+                    self.assertTrue(
+                        any(data["result"] in errmsg for errmsg in logmsgs.output)
                     )
 
 

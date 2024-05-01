@@ -127,9 +127,7 @@ def evaluate_calculation(
 
                     return Decimal.sqrt(_eval(node.args[0]))
                 else:
-                    raise TypeError(
-                        f"Unknown function call: {pkg}.{func}: {node_fmtd}"
-                    )
+                    raise TypeError(f"Unknown function call: {pkg}.{func}: {node_fmtd}")
 
             case _:
                 raise TypeError(f"Unknown ast node: {node_fmtd}")
