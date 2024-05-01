@@ -31,6 +31,7 @@ from typing import Any
 from ..calculator import (
     CalculatorData,
     evaluate_calculation,
+    logerror,
     numtostr,
     strtodecimal,
     validate_user_var,
@@ -186,7 +187,9 @@ class UserVarsEditFrm:
             result = evaluate_calculation(
                 currcalc, self.calculator_data.get_user_variables()
             )
-        except:
+        except Exception as e:
+            logerror(e, "add_current_calc", 2)
+
             s = self.calculator_data.get_current_display_calc()
             trimlen = 35
             if len(s) > trimlen:
@@ -322,7 +325,8 @@ class UserVarsEditFrm:
         if newval:
             try:
                 _ = strtodecimal(newval)
-            except:
+            except Exception as e:
+                logerror(e, "validate_decimal", 2)
                 self.frm.bell()
                 return False
 
@@ -372,7 +376,8 @@ class UserVarsEditFrm:
             # get the decimal value of variable
             try:
                 val_decimal = strtodecimal(val)
-            except:
+            except Exception as e:
+                logerror(e, "user_vars_edit_ok", 2)
                 self.set_errmsg(f"{errmsg} invalid numeric value {val!r}")
                 self.uservars[(i, 1)].focus_set()
                 return
@@ -384,6 +389,7 @@ class UserVarsEditFrm:
             try:
                 validate_user_var(nam, val_decimal)
             except Exception as e:
+                logerror(e, "user_vars_edit_ok", 2)
                 self.set_errmsg(f"{errmsg} {str(e)}")
                 self.uservars[(i, 0)].focus_set()
                 return

@@ -51,8 +51,6 @@ from .logwrapper import logerror, object_wrapper
 from .numtostr import numtostr
 from .validate_user_var import validate_user_vars
 
-logger = logging.getLogger()
-
 
 class CalculatorData:
     """CalculatorData - Data and functions used by the calculator"""
