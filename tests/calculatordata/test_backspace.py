@@ -24,6 +24,12 @@ SOFTWARE.
 
 import unittest
 
+from guicalculator.calculator.calculatordata import (
+    _CalcStringFunction,
+    _CalcStringNumber,
+    _CalcStringString,
+)
+from guicalculator.globals.enums import CalculatorFunctions
 from tests.calculatordata.test__setup_calculatordata import SetupCalculatorDataTest
 
 
@@ -34,12 +40,91 @@ class BackspaceTest(SetupCalculatorDataTest):
 
         test_data = [
             {
-                "case": "Backspace",
+                "case": "Backspace, number in input",
                 "current": {"calc": [], "inpt": "123"},
                 "ending": {"calc": [], "inpt": "12"},
             },
             {
-                "case": "Backspace but no input",
+                "case": "Backspace, no input, plain function in calculation",
+                "current": {
+                    "calc": [
+                        _CalcStringFunction(
+                            CalculatorFunctions.SQUAREROOT, _CalcStringNumber(123)
+                        )
+                    ],
+                    "inpt": "",
+                },
+                "ending": {"calc": [], "inpt": "123"},
+            },
+            {
+                "case": "Backspace, no input, plain function in calculation",
+                "current": {
+                    "calc": [
+                        _CalcStringFunction(
+                            CalculatorFunctions.SQUAREROOT, _CalcStringString("e")
+                        )
+                    ],
+                    "inpt": "",
+                },
+                "ending": {"calc": [_CalcStringString("e")], "inpt": ""},
+            },
+            {
+                "case": "Backspace, no input, nested function in calculation",
+                "current": {
+                    "calc": [
+                        _CalcStringFunction(
+                            CalculatorFunctions.SQUAREROOT,
+                            _CalcStringFunction(
+                                CalculatorFunctions.SQUAREROOT, _CalcStringString("e")
+                            ),
+                        ),
+                    ],
+                    "inpt": "",
+                },
+                "ending": {
+                    "calc": [
+                        _CalcStringFunction(
+                            CalculatorFunctions.SQUAREROOT, _CalcStringString("e")
+                        )
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Backspace, no input, variable in calculation",
+                "current": {
+                    "calc": [
+                        _CalcStringNumber(123),
+                        _CalcStringString("**"),
+                        _CalcStringString("e"),
+                    ],
+                    "inpt": "",
+                },
+                "ending": {
+                    "calc": [_CalcStringNumber(123), _CalcStringString("**")],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Backspace, no input, operator in calculation",
+                "current": {
+                    "calc": [_CalcStringNumber(123), _CalcStringString("**")],
+                    "inpt": "",
+                },
+                "ending": {
+                    "calc": [
+                        _CalcStringNumber(123),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Backspace, no input, number in calculation",
+                "current": {"calc": [_CalcStringNumber(123)], "inpt": ""},
+                "ending": {"calc": [], "inpt": "12"},
+            },
+            {
+                "case": "Backspace but no input or calc",
                 "current": {"calc": [], "inpt": ""},
                 "ending": {"calc": [], "inpt": ""},
             },

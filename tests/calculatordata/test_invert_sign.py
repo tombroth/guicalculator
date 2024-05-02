@@ -25,6 +25,12 @@ SOFTWARE.
 import unittest
 from decimal import InvalidOperation
 
+from guicalculator.calculator.calculatordata import (
+    _CalcStringFunction,
+    _CalcStringNumber,
+    _CalcStringString,
+)
+from guicalculator.globals.enums import CalculatorFunctions
 from tests.calculatordata.test__setup_calculatordata import SetupCalculatorDataTest
 
 
@@ -43,6 +49,71 @@ class InvertSignTest(SetupCalculatorDataTest):
                 "case": "123 as int",
                 "current": {"inpt": 123},
                 "ending": {"inpt": "-123"},
+            },
+            {
+                "case": "Variable",
+                "current": {"calc": [_CalcStringString("e")], "inpt": ""},
+                "ending": {
+                    "calc": [
+                        _CalcStringString("-"),
+                        _CalcStringString("e"),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Function",
+                "current": {
+                    "calc": [
+                        _CalcStringFunction(
+                            CalculatorFunctions.SQUAREROOT, _CalcStringNumber(2)
+                        )
+                    ],
+                    "inpt": "",
+                },
+                "ending": {
+                    "calc": [
+                        _CalcStringString("-"),
+                        _CalcStringFunction(
+                            CalculatorFunctions.SQUAREROOT, _CalcStringNumber(2)
+                        ),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Number in calc, empty input",
+                "current": {"calc": [_CalcStringNumber(2)], "inpt": ""},
+                "ending": {
+                    "calc": [
+                        _CalcStringString("-"),
+                        _CalcStringNumber(2),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "double negative",
+                "current": {
+                    "calc": [
+                        _CalcStringString("-"),
+                        _CalcStringNumber(2),
+                    ],
+                    "inpt": "",
+                },
+                "ending": {
+                    "calc": [
+                        _CalcStringString("-"),
+                        _CalcStringString("-"),
+                        _CalcStringNumber(2),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Calc ends in string that is not a variable",
+                "current": {"calc": [_CalcStringString("+")], "inpt": ""},
+                "ending": {"calc": [_CalcStringString("+")], "inpt": ""},
             },
             {
                 "case": "No input value",

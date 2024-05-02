@@ -127,6 +127,21 @@ class RootNumberTest(SetupCalculatorDataTest):
                 },
             },
             {
+                "case": "No input, last element of calc is number",
+                "current": {
+                    "calc": [_CalcStringNumber(2)],
+                    "inpt": "",
+                },
+                "ending": {
+                    "calc": [
+                        _CalcStringFunction(
+                            CalculatorFunctions.SQUAREROOT, _CalcStringNumber(2)
+                        )
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
                 "case": "No input value",
                 "current": {"calc": [], "inpt": ""},
                 "ending": {"calc": [], "inpt": ""},

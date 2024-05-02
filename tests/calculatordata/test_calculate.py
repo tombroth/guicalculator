@@ -26,8 +26,9 @@ import logging
 import unittest
 from decimal import Decimal
 
-from guicalculator.calculator.calculatordata import _CalcStringNumber, _CalcStringString
+from guicalculator.calculator.calculatordata import _CalcStringFunction, _CalcStringNumber, _CalcStringString
 from guicalculator.globals.constants import PI
+from guicalculator.globals.enums import CalculatorFunctions
 from tests.calculatordata.test__setup_calculatordata import SetupCalculatorDataTest
 
 
@@ -83,6 +84,22 @@ class CalculateTest(SetupCalculatorDataTest):
                     "vars": {"x": Decimal("1234.56")},
                 },
                 "ending": {"calc": [], "inpt": "1234.56"},
+            },
+            {
+                "case": "Nested functions",
+                "current": {
+                    "calc": [
+                        _CalcStringFunction(
+                            CalculatorFunctions.SQUAREROOT,
+                            _CalcStringFunction(
+                                CalculatorFunctions.SQUAREROOT, _CalcStringNumber(81)
+                            ),
+                        )
+                    ],
+                    "inpt": "",
+                    "vars": {},
+                },
+                "ending": {"calc": [], "inpt": "3"},
             },
         ]
 
