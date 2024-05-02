@@ -24,6 +24,7 @@ SOFTWARE.
 
 import unittest
 
+from guicalculator.calculator.calculatordata import _CalcStringNumber, _CalcStringString
 from guicalculator.globals import CalculatorFunctions
 from tests.calculatordata.test__setup_calculatordata import SetupCalculatorDataTest
 
@@ -41,21 +42,33 @@ class GetCurrentDisplayCalcTest(SetupCalculatorDataTest):
         test_data = [
             {
                 "case": "No parameters",
-                "current": {"disp": "", "eval": "", "inpt": "123"},
+                "current": {"calc": [], "inpt": "123"},
                 "params": {},
                 "result": "123",
             },
             {
                 "case": "123 +",
-                "current": {"disp": "", "eval": "", "inpt": "123"},
+                "current": {"calc": [], "inpt": "123"},
                 "params": {"symbol": "+"},
                 "result": "123 +",
             },
             {
                 "case": "sqrt(123)",
-                "current": {"disp": "", "eval": "", "inpt": "123"},
+                "current": {
+                    "calc": [_CalcStringNumber(123), _CalcStringString("+")],
+                    "inpt": "123",
+                },
                 "params": {"func": CalculatorFunctions.SQUAREROOT},
-                "result": "sqrt(123)",
+                "result": "123 + sqrt(123)",
+            },
+            {
+                "case": "sqrt, with no input",
+                "current": {
+                    "calc": [_CalcStringNumber(123), _CalcStringString("+")],
+                    "inpt": "",
+                },
+                "params": {"func": CalculatorFunctions.SQUAREROOT},
+                "result": "123 +",
             },
         ]
 
@@ -80,7 +93,7 @@ class GetCurrentDisplayCalcTest(SetupCalculatorDataTest):
         test_data = [
             {
                 "case": "Both symbol and func specified",
-                "current": {"disp": "", "eval": "", "inpt": "123"},
+                "current": {"calc": [], "inpt": "123"},
                 "params": {
                     "symbol": "+",
                     "func": CalculatorFunctions.SQUAREROOT,

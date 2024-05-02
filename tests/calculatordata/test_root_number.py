@@ -23,8 +23,14 @@ SOFTWARE.
 """
 
 import unittest
-from decimal import InvalidOperation
+from decimal import Decimal, InvalidOperation
 
+from guicalculator.calculator.calculatordata import (
+    _CalcStringFunction,
+    _CalcStringNumber,
+    _CalcStringString,
+)
+from guicalculator.globals.enums import CalculatorFunctions
 from tests.calculatordata.test__setup_calculatordata import SetupCalculatorDataTest
 
 
@@ -36,26 +42,94 @@ class RootNumberTest(SetupCalculatorDataTest):
         test_data = [
             {
                 "case": "2 as str",
-                "current": {"disp": "", "eval": "", "inpt": "2"},
+                "current": {"calc": [], "inpt": "2"},
                 "ending": {
-                    "disp": "sqrt(2)",
-                    "eval": "Decimal.sqrt(Decimal('2'))",
+                    "calc": [
+                        _CalcStringFunction(
+                            CalculatorFunctions.SQUAREROOT, _CalcStringNumber(2)
+                        )
+                    ],
                     "inpt": "",
                 },
             },
             {
                 "case": "2 as int",
-                "current": {"disp": "", "eval": "", "inpt": 2},
+                "current": {"calc": [], "inpt": 2},
                 "ending": {
-                    "disp": "sqrt(2)",
-                    "eval": "Decimal.sqrt(Decimal('2'))",
+                    "calc": [
+                        _CalcStringFunction(
+                            CalculatorFunctions.SQUAREROOT, _CalcStringNumber(2)
+                        )
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Apply to variable (no input, last element in calc is a default variable)",
+                "current": {"calc": [_CalcStringString("e")], "inpt": ""},
+                "ending": {
+                    "calc": [
+                        _CalcStringFunction(
+                            CalculatorFunctions.SQUAREROOT, _CalcStringString("e")
+                        )
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Apply to variable (no input, last element in calc is a user variable)",
+                "current": {
+                    "calc": [_CalcStringString("x")],
+                    "inpt": "",
+                    "vars": {"x": Decimal("1234.56")},
+                },
+                "ending": {
+                    "calc": [
+                        _CalcStringFunction(
+                            CalculatorFunctions.SQUAREROOT, _CalcStringString("x")
+                        )
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Apply to variable (no input, last element in calc is a function)",
+                "current": {
+                    "calc": [
+                        _CalcStringFunction(
+                            CalculatorFunctions.SQUAREROOT, _CalcStringString("x")
+                        )
+                    ],
+                    "inpt": "",
+                    "vars": {},
+                },
+                "ending": {
+                    "calc": [
+                        _CalcStringFunction(
+                            CalculatorFunctions.SQUAREROOT,
+                            _CalcStringFunction(
+                                CalculatorFunctions.SQUAREROOT, _CalcStringString("x")
+                            ),
+                        )
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "No input, last element of calc not a variable or function",
+                "current": {
+                    "calc": [_CalcStringNumber(1), _CalcStringString("+")],
+                    "inpt": "",
+                },
+                "ending": {
+                    "calc": [_CalcStringNumber(1), _CalcStringString("+")],
                     "inpt": "",
                 },
             },
             {
                 "case": "No input value",
-                "current": {"disp": "", "eval": "", "inpt": ""},
-                "ending": {"disp": "", "eval": "", "inpt": ""},
+                "current": {"calc": [], "inpt": ""},
+                "ending": {"calc": [], "inpt": ""},
             },
         ]
 
@@ -73,19 +147,18 @@ class RootNumberTest(SetupCalculatorDataTest):
         test_data = [
             {
                 "case": "Text stored in input",
-                "current": {"disp": "", "eval": "", "inpt": "abcdefg"},
+                "current": {"calc": [], "inpt": "abcdefg"},
                 "result": InvalidOperation,
             },
             {
                 "case": "List stored in input",
-                "current": {"disp": "", "eval": "", "inpt": ["1", "2", "3"]},
+                "current": {"calc": [], "inpt": ["1", "2", "3"]},
                 "result": ValueError,
             },
             {
                 "case": "Injection attack #1",
                 "current": {
-                    "disp": "",
-                    "eval": "",
+                    "calc": [],
                     "inpt": "__import__('os').system('dir')",
                 },
                 "result": InvalidOperation,
@@ -93,8 +166,7 @@ class RootNumberTest(SetupCalculatorDataTest):
             {
                 "case": "Injection attack #2",
                 "current": {
-                    "disp": "",
-                    "eval": "",
+                    "calc": [],
                     "inpt": lambda: __import__("os").system("dir"),
                 },
                 "result": TypeError,

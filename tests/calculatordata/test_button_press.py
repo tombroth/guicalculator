@@ -24,6 +24,7 @@ SOFTWARE.
 
 import unittest
 
+from guicalculator.calculator.calculatordata import _CalcStringNumber, _CalcStringString
 from tests.calculatordata.test__setup_calculatordata import SetupCalculatorDataTest
 
 
@@ -35,31 +36,36 @@ class ButtonPressTest(SetupCalculatorDataTest):
         test_data = [
             {
                 "case": "Button press 1",
-                "current": {"disp": "", "eval": "", "inpt": "123"},
+                "current": {"calc": [], "inpt": "123"},
                 "params": {"symbol": 1},
-                "ending": {"disp": "", "eval": "", "inpt": "1231"},
+                "ending": {"calc": [], "inpt": "1231"},
             },
             {
                 "case": "Button press +",
-                "current": {"disp": "", "eval": "", "inpt": "123"},
+                "current": {"calc": [], "inpt": "123"},
                 "params": {"symbol": "+"},
-                "ending": {"disp": "123 +", "eval": "Decimal('123') +", "inpt": ""},
+                "ending": {
+                    "calc": [_CalcStringNumber(123), _CalcStringString("+")],
+                    "inpt": "",
+                },
             },
             {
                 "case": "Button press **",
-                "current": {"disp": "", "eval": "", "inpt": "123"},
+                "current": {"calc": [], "inpt": "123"},
                 "params": {"symbol": "**"},
                 "ending": {
-                    "disp": "123 **",
-                    "eval": "Decimal('123') **",
+                    "calc": [_CalcStringNumber(123), _CalcStringString("**")],
                     "inpt": "",
                 },
             },
             {
                 "case": "No input",
-                "current": {"disp": "", "eval": "", "inpt": "123"},
+                "current": {"calc": [], "inpt": "123"},
                 "params": {"symbol": None},
-                "ending": {"disp": "123", "eval": "Decimal('123')", "inpt": ""},
+                "ending": {
+                    "calc": [_CalcStringNumber(123)],
+                    "inpt": "",
+                },
             },
         ]
 
@@ -78,13 +84,13 @@ class ButtonPressTest(SetupCalculatorDataTest):
         test_data = [
             {
                 "case": "Button press 1 as str",
-                "current": {"disp": "", "eval": "", "inpt": "123"},
+                "current": {"calc": [], "inpt": "123"},
                 "params": {"symbol": "1"},
                 "result": ValueError,
             },
             {
                 "case": "Invalid symbol",
-                "current": {"disp": "", "eval": "", "inpt": "123"},
+                "current": {"calc": [], "inpt": "123"},
                 "params": {"symbol": "+-*/"},
                 "result": ValueError,
             },

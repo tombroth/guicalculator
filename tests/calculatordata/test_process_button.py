@@ -55,22 +55,22 @@ class ProcessButtonTest(SetupCalculatorDataTest):
         test_data = [
             {
                 "case": "Unknown function Call",
-                "current": {"disp": "", "eval": "", "inpt": ""},
+                "current": {"calc": [], "inpt": ""},
                 "params": {"buttoncmd": "UnknownFunctionCall"},
             },
             {
                 "case": "Passing int instead of str",
-                "current": {"disp": "", "eval": "", "inpt": ""},
+                "current": {"calc": [], "inpt": ""},
                 "params": {"buttoncmd": 123},
             },
             {
                 "case": "Passing empty string",
-                "current": {"disp": "", "eval": "", "inpt": ""},
+                "current": {"calc": [], "inpt": ""},
                 "params": {"buttoncmd": ""},
             },
             {
                 "case": "Passing None",
-                "current": {"disp": "", "eval": "", "inpt": ""},
+                "current": {"calc": [], "inpt": ""},
                 "params": {"buttoncmd": None},
             },
         ]

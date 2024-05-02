@@ -26,6 +26,7 @@ import logging
 import unittest
 from decimal import Decimal
 
+from guicalculator.calculator.calculatordata import _CalcStringNumber, _CalcStringString
 from guicalculator.globals.constants import PI
 from tests.calculatordata.test__setup_calculatordata import SetupCalculatorDataTest
 
@@ -45,46 +46,43 @@ class CalculateTest(SetupCalculatorDataTest):
         test_data = [
             {
                 "case": "1 + 1",
-                "current": {"disp": "1 +", "eval": "Decimal('1') +", "inpt": "1"},
-                "ending": {"disp": "", "eval": "", "inpt": "2"},
+                "current": {
+                    "calc": [_CalcStringNumber(1), _CalcStringString("+")],
+                    "inpt": "1",
+                },
+                "ending": {"calc": [], "inpt": "2"},
             },
             {
                 "case": "2 ** 3",
-                "current": {"disp": "2 **", "eval": "Decimal('2') **", "inpt": "3"},
-                "ending": {"disp": "", "eval": "", "inpt": "8"},
+                "current": {
+                    "calc": [_CalcStringNumber(2), _CalcStringString("**")],
+                    "inpt": "3",
+                },
+                "ending": {"calc": [], "inpt": "8"},
             },
             {
                 "case": "No input value",
-                "current": {"disp": "", "eval": "", "inpt": ""},
-                "ending": {"disp": "", "eval": "", "inpt": ""},
+                "current": {"calc": [], "inpt": ""},
+                "ending": {"calc": [], "inpt": ""},
             },
             {
                 "case": "Default variable e",
-                "current": {"disp": "e", "eval": "e", "inpt": ""},
-                "ending": {
-                    "disp": "",
-                    "eval": "",
-                    "inpt": "2.718281828459045235360287471",
-                },
+                "current": {"calc": [_CalcStringString("e")], "inpt": ""},
+                "ending": {"calc": [], "inpt": "2.718281828459045235360287471"},
             },
             {
                 "case": "Default Variable PI",
-                "current": {"disp": PI, "eval": PI, "inpt": ""},
-                "ending": {
-                    "disp": "",
-                    "eval": "",
-                    "inpt": "3.141592653589793238462643383",
-                },
+                "current": {"calc": [_CalcStringString(PI)], "inpt": ""},
+                "ending": {"calc": [], "inpt": "3.141592653589793238462643383"},
             },
             {
                 "case": "User variable x",
                 "current": {
-                    "disp": "x",
-                    "eval": "x",
+                    "calc": [_CalcStringString("x")],
                     "inpt": "",
                     "vars": {"x": Decimal("1234.56")},
                 },
-                "ending": {"disp": "", "eval": "", "inpt": "1234.56"},
+                "ending": {"calc": [], "inpt": "1234.56"},
             },
         ]
 
@@ -109,18 +107,17 @@ class CalculateTest(SetupCalculatorDataTest):
         test_data = [
             {
                 "case": "1 + 1",
-                "current": {"disp": "1 +", "eval": "Decimal(1) +", "inpt": "1"},
-                "ending": {"disp": "", "eval": "", "inpt": ""},
+                "current": {"calc": [_CalcStringString("Decimal(1)"), _CalcStringString("+")], "inpt": "1"},
+                "ending": {"calc": [], "inpt": ""},
                 "result": "Decimal function should only have str parameter",
             },
             {
                 "case": "Code injection",
                 "current": {
-                    "disp": "",
-                    "eval": "__import__('os').system('dir')",
+                    "calc": [_CalcStringString("__import__('os').system('dir')")],
                     "inpt": "",
                 },
-                "ending": {"disp": "", "eval": "", "inpt": ""},
+                "ending": {"calc": [], "inpt": ""},
                 "result": "Unknown type of ast.Call",
             },
         ]

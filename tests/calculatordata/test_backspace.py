@@ -35,13 +35,13 @@ class BackspaceTest(SetupCalculatorDataTest):
         test_data = [
             {
                 "case": "Backspace",
-                "current": {"disp": "", "eval": "", "inpt": "123"},
-                "ending": {"disp": "", "eval": "", "inpt": "12"},
+                "current": {"calc": [], "inpt": "123"},
+                "ending": {"calc": [], "inpt": "12"},
             },
             {
                 "case": "Backspace but no input",
-                "current": {"disp": "", "eval": "", "inpt": ""},
-                "ending": {"disp": "", "eval": "", "inpt": ""},
+                "current": {"calc": [], "inpt": ""},
+                "ending": {"calc": [], "inpt": ""},
             },
         ]
 

@@ -24,6 +24,7 @@ SOFTWARE.
 
 import unittest
 
+from guicalculator.calculator.calculatordata import _CalcStringNumber, _CalcStringString
 from tests.calculatordata.test__setup_calculatordata import SetupCalculatorDataTest
 
 
@@ -35,13 +36,19 @@ class ClearAllTest(SetupCalculatorDataTest):
         test_data = [
             {
                 "case": "Clear value, input exists",
-                "current": {"disp": "1 +", "eval": "Decimal(1) +", "inpt": "123"},
-                "ending": {"disp": "", "eval": "", "inpt": ""},
+                "current": {
+                    "calc": [_CalcStringNumber(1), _CalcStringString("+")],
+                    "inpt": "123",
+                },
+                "ending": {"calc": [], "inpt": ""},
             },
             {
                 "case": "Clear value but no input",
-                "current": {"disp": "1 +", "eval": "Decimal(1) +", "inpt": ""},
-                "ending": {"disp": "", "eval": "", "inpt": ""},
+                "current": {
+                    "calc": [_CalcStringNumber(1), _CalcStringString("+")],
+                    "inpt": "",
+                },
+                "ending": {"calc": [], "inpt": ""},
             },
         ]
 

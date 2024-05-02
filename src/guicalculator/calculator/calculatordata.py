@@ -60,6 +60,9 @@ class _CalcStringBase(ABC):
     @abstractmethod
     def get_eval(self) -> str: ...
 
+    @abstractmethod
+    def __eq__(self, other) -> bool: ...
+
     def __str__(self) -> str:
         return self.get_disp()
 
@@ -82,6 +85,9 @@ class _CalcStringNumber(_CalcStringBase):
             raise ValueError(f"Invalid type for number: {type(thenum)}")
         self._decimal_point = decimal_point
 
+    def __eq__(self, other) -> bool:
+        return isinstance(other, _CalcStringNumber) and self._thenum == other._thenum
+
     def get_disp(self) -> str:
         x = "{0:,f}".format(self._thenum)
         if self._decimal_point:
@@ -99,13 +105,20 @@ class _CalcStringNumber(_CalcStringBase):
 
 class _CalcStringFunction(_CalcStringBase):
 
-    def __init__(self, func: FunctionsType, param: _CalcStringNumber | int) -> None:
+    def __init__(self, func: FunctionsType, param: _CalcStringBase | int) -> None:
         self._func = func
-        if isinstance(param, _CalcStringNumber):
+        if isinstance(param, _CalcStringBase):
             self._param = param
         else:
-            # attempt to convert it
+            # attempt to convert it to a number
             self._param = _CalcStringNumber(param)
+
+    def __eq__(self, other) -> bool:
+        return (
+            isinstance(other, _CalcStringFunction)
+            and self._func == other._func
+            and self._param == other._param
+        )
 
     def get_disp(self) -> str:
         x = f"{self._func.display_func}({self._param.get_disp()})"
@@ -120,6 +133,9 @@ class _CalcStringString(_CalcStringBase):
 
     def __init__(self, thestr: str) -> None:
         self._thestr = thestr
+
+    def __eq__(self, other) -> bool:
+        return isinstance(other, _CalcStringString) and self._thestr == other._thestr
 
     def get_disp(self) -> str:
         new_var = self._thestr
@@ -233,7 +249,7 @@ class CalculatorData:
         if self._current_input:
             inpt = _CalcStringNumber(
                 self.get_current_input(),
-                (self._current_input[-1] == "."),
+                (str(self._current_input)[-1] == "."),
             )
         else:
             inpt = None
@@ -523,11 +539,51 @@ class CalculatorData:
     def backspace(self) -> None:
         """backspace - Erase last character from number being input."""
 
+        # if we have a number being input, remove last digit
         if self._current_input:
             self._current_input = self._current_input[:-1]
-            self.update_display()
+
+        # if we have a function in the last place
+        elif self._current_calc and isinstance(
+            self._current_calc[-1], _CalcStringFunction
+        ):
+            last = self._current_calc[-1]._param
+
+            # if it is a nested function or a function with a variable parameter, unnest
+            if isinstance(last, _CalcStringFunction) or isinstance(
+                last, _CalcStringString
+            ):
+                self._current_calc[-1] = last
+
+            # if it is a single number parameter
+            elif isinstance(last, _CalcStringNumber):
+                self._current_input = last.get_disp().replace(",", "")
+                del self._current_calc[-1]
+
+            # unexpected parameter(s)
+            else:
+                self.bell()
+
+        # if we have a string (a variable, math operator, etc), remove it
+        elif self._current_calc and isinstance(
+            self._current_calc[-1], _CalcStringString
+        ):
+            del self._current_calc[-1]
+
+        # if we have a number, put it in _current_input and remove last digit
+        elif self._current_calc and isinstance(
+            self._current_calc[-1], _CalcStringNumber
+        ):
+            self._current_input = (
+                self._current_calc[-1].get_disp().replace(",", "")[:-1]
+            )
+            del self._current_calc[-1]
+
+        # if we have nothing (or unexpected list member), ring the bell
         else:
             self.bell()
+
+        self.update_display()
 
     @object_wrapper
     def clear_value(self) -> None:
@@ -718,6 +774,25 @@ class CalculatorData:
             negateval = -(self.get_current_input() or Decimal(0))
             self._current_input = numtostr(negateval) or ""
             self.update_display()
+
+        elif self._current_calc and (
+            (
+                isinstance(self._current_calc[-1], _CalcStringString)
+                and (
+                    self._current_calc[-1].get_disp() in DEFAULT_VARIABLES.keys()
+                    or self._current_calc[-1].get_disp() in self._user_variables.keys()
+                )
+            )  # if we have a variable
+            or (
+                isinstance(self._current_calc[-1], _CalcStringFunction)
+            )  # or a function
+            or (isinstance(self._current_calc[-1], _CalcStringNumber))  # or a number
+        ):
+            inpt = self._current_calc.pop()
+            self.update_current_calc(CalculatorSymbols.SUBTRACTION)
+            self._current_calc.append(inpt)
+            self.update_display()
+
         else:
             self.bell()
 
@@ -733,12 +808,31 @@ class CalculatorData:
         precision in the Decimal context.
         """
 
+        inpt: _CalcStringBase | None = None
+
         if self._current_input:
-            inpt, self._current_input = self._current_input, ""
+            inpt, self._current_input = _CalcStringNumber(self._current_input), ""
+
+        elif self._current_calc and (
+            (
+                isinstance(self._current_calc[-1], _CalcStringString)
+                and (
+                    self._current_calc[-1].get_disp() in DEFAULT_VARIABLES.keys()
+                    or self._current_calc[-1].get_disp() in self._user_variables.keys()
+                )
+            )  # if we have a variable
+            or (
+                isinstance(self._current_calc[-1], _CalcStringFunction)
+            )  # or a function
+            or (isinstance(self._current_calc[-1], _CalcStringNumber))  # or a number
+        ):
+            inpt = self._current_calc.pop()
+
+        if inpt:
             self.update_current_calc(CalculatorSymbols.OPENPAREN)
             self._current_input = "1"
             self.update_current_calc(CalculatorSymbols.DIVISION)
-            self._current_input = inpt
+            self._current_calc.append(inpt)
             self.update_current_calc(CalculatorSymbols.CLOSEPAREN)
         else:
             self.bell()
@@ -771,9 +865,32 @@ class CalculatorData:
         precision in the Decimal context.
         """
 
+        # TODO: put all this logic into _get_num_fnc_sym to abstract it for future functions
+        # then this just becomes a single call to update_current_calc
+
+        # if we have a number being input
         if self._current_input:
             self.update_current_calc(func=CalculatorFunctions.SQUAREROOT)
+
+        # if we have a variable or number or function available to wrap
+        elif self._current_calc and (
+            (
+                isinstance(self._current_calc[-1], _CalcStringString)
+                and (
+                    self._current_calc[-1].get_disp() in DEFAULT_VARIABLES.keys()
+                    or self._current_calc[-1].get_disp() in self._user_variables.keys()
+                )
+            )  # if we have a variable
+            or (
+                isinstance(self._current_calc[-1], _CalcStringFunction)
+            )  # or a function
+            or (isinstance(self._current_calc[-1], _CalcStringNumber))  # or a number
+        ):
+            self._current_calc[-1] = _CalcStringFunction(
+                CalculatorFunctions.SQUAREROOT, self._current_calc[-1]
+            )
             self.update_display()
+
         else:
             self.bell()
 

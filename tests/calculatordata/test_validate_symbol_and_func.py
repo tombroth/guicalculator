@@ -25,6 +25,7 @@ SOFTWARE.
 import unittest
 
 from guicalculator.globals import CalculatorFunctions
+from guicalculator.globals.functionstype import FunctionsType
 from tests.calculatordata.test__setup_calculatordata import SetupCalculatorDataTest
 
 
@@ -39,6 +40,13 @@ class ValidateSymbolAndFuncTest(SetupCalculatorDataTest):
                 "params": {
                     "symbol": "",
                     "func": CalculatorFunctions.NOFUNCTION,
+                },
+            },
+            {
+                "case": "Both parameters empty #2",
+                "params": {
+                    "symbol": None,
+                    "func": None,
                 },
             },
             {
@@ -148,31 +156,31 @@ class ValidateSymbolAndFuncTest(SetupCalculatorDataTest):
                 "result": ValueError,
             },
             {
-                "case": "Elements in func tuple not str",  # test from when func was a tuple[str, str]
+                "case": "Elements in function not str",
                 "params": {
                     "symbol": "",
-                    "func": (1, 1),
+                    "func": FunctionsType(1, 1),
                 },
                 "result": ValueError,
             },
             {
-                "case": "Invalid func tuple #1",  # test from when func was a tuple[str, str]
+                "case": "Invalid function",
                 "params": {
                     "symbol": "",
-                    "func": ("1/", "sqrt"),
+                    "func": FunctionsType("1/", "sqrt"),
                 },
                 "result": ValueError,
             },
             {
-                "case": "Invalid func tuple #2",  # test from when func was a tuple[str, str]
+                "case": "Invalid function #2",
                 "params": {
                     "symbol": "",
-                    "func": ("print", "print"),
+                    "func": FunctionsType("print", "print"),
                 },
                 "result": ValueError,
             },
             {
-                "case": "Func not a CalculatorFunctions",
+                "case": "Func not a FunctionsType",
                 "params": {
                     "symbol": "",
                     "func": 42,

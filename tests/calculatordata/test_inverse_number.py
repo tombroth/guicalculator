@@ -25,6 +25,7 @@ SOFTWARE.
 import unittest
 from decimal import InvalidOperation
 
+from guicalculator.calculator.calculatordata import _CalcStringNumber, _CalcStringString
 from tests.calculatordata.test__setup_calculatordata import SetupCalculatorDataTest
 
 
@@ -36,26 +37,36 @@ class InverseNumberTest(SetupCalculatorDataTest):
         test_data = [
             {
                 "case": "2 as str",
-                "current": {"disp": "", "eval": "", "inpt": "2"},
+                "current": {"calc": [], "inpt": "2"},
                 "ending": {
-                    "disp": "( 1 / 2 )",
-                    "eval": "( Decimal('1') / Decimal('2') )",
+                    "calc": [
+                        _CalcStringString("("),
+                        _CalcStringNumber(1),
+                        _CalcStringString("/"),
+                        _CalcStringNumber(2),
+                        _CalcStringString(")"),
+                    ],
                     "inpt": "",
                 },
             },
             {
                 "case": "2 as int",
-                "current": {"disp": "", "eval": "", "inpt": 2},
+                "current": {"calc": [], "inpt": 2},
                 "ending": {
-                    "disp": "( 1 / 2 )",
-                    "eval": "( Decimal('1') / Decimal('2') )",
+                    "calc": [
+                        _CalcStringString("("),
+                        _CalcStringNumber(1),
+                        _CalcStringString("/"),
+                        _CalcStringNumber(2),
+                        _CalcStringString(")"),
+                    ],
                     "inpt": "",
                 },
             },
             {
                 "case": "No input value",
-                "current": {"disp": "", "eval": "", "inpt": ""},
-                "ending": {"disp": "", "eval": "", "inpt": ""},
+                "current": {"calc": [], "inpt": ""},
+                "ending": {"calc": [], "inpt": ""},
             },
         ]
 
@@ -73,19 +84,18 @@ class InverseNumberTest(SetupCalculatorDataTest):
         test_data = [
             {
                 "case": "Text stored in input",
-                "current": {"disp": "", "eval": "", "inpt": "abcdefg"},
+                "current": {"calc": [], "inpt": "abcdefg"},
                 "result": InvalidOperation,
             },
             {
                 "case": "List stored in input",
-                "current": {"disp": "", "eval": "", "inpt": ["1", "2", "3"]},
+                "current": {"calc": [], "inpt": ["1", "2", "3"]},
                 "result": ValueError,
             },
             {
                 "case": "Injection attack #1",
                 "current": {
-                    "disp": "",
-                    "eval": "",
+                    "calc": [],
                     "inpt": "__import__('os').system('dir')",
                 },
                 "result": InvalidOperation,
@@ -93,8 +103,7 @@ class InverseNumberTest(SetupCalculatorDataTest):
             {
                 "case": "Injection attack #2",
                 "current": {
-                    "disp": "",
-                    "eval": "",
+                    "calc": [],
                     "inpt": lambda: __import__("os").system("dir"),
                 },
                 "result": TypeError,

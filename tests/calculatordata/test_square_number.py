@@ -25,6 +25,7 @@ SOFTWARE.
 import unittest
 from decimal import InvalidOperation
 
+from guicalculator.calculator.calculatordata import _CalcStringNumber, _CalcStringString
 from tests.calculatordata.test__setup_calculatordata import SetupCalculatorDataTest
 
 
@@ -36,32 +37,50 @@ class SquareNumberTest(SetupCalculatorDataTest):
         test_data = [
             {
                 "case": "3 as str",
-                "current": {"disp": "", "eval": "", "inpt": "3"},
+                "current": {"calc": [], "inpt": "3"},
                 "ending": {
-                    "disp": "3 ** 2",
-                    "eval": "Decimal('3') ** Decimal('2')",
+                    "calc": [
+                        _CalcStringNumber(3),
+                        _CalcStringString("**"),
+                        _CalcStringNumber(2),
+                    ],
                     "inpt": "",
                 },
             },
             {
                 "case": "3 as int",
-                "current": {"disp": "", "eval": "", "inpt": 3},
+                "current": {"calc": [], "inpt": 3},
                 "ending": {
-                    "disp": "3 ** 2",
-                    "eval": "Decimal('3') ** Decimal('2')",
+                    "calc": [
+                        _CalcStringNumber(3),
+                        _CalcStringString("**"),
+                        _CalcStringNumber(2),
+                    ],
                     "inpt": "",
                 },
             },
             {
                 "case": "No input value",
                 "current": {
-                    "disp": "( 3 + 1 )",
-                    "eval": "( Decimal('3') + Decimal('1') )",
+                    "calc": [
+                        _CalcStringString("("),
+                        _CalcStringNumber(3),
+                        _CalcStringString("+"),
+                        _CalcStringNumber(1),
+                        _CalcStringString(")"),
+                    ],
                     "inpt": "",
                 },
                 "ending": {
-                    "disp": "( 3 + 1 ) ** 2",
-                    "eval": "( Decimal('3') + Decimal('1') ) ** Decimal('2')",
+                    "calc": [
+                        _CalcStringString("("),
+                        _CalcStringNumber(3),
+                        _CalcStringString("+"),
+                        _CalcStringNumber(1),
+                        _CalcStringString(")"),
+                        _CalcStringString("**"),
+                        _CalcStringNumber(2),
+                    ],
                     "inpt": "",
                 },
             },
@@ -81,19 +100,18 @@ class SquareNumberTest(SetupCalculatorDataTest):
         test_data = [
             {
                 "case": "Text stored in input",
-                "current": {"disp": "", "eval": "", "inpt": "abcdefg"},
+                "current": {"calc": [], "inpt": "abcdefg"},
                 "result": InvalidOperation,
             },
             {
                 "case": "List stored in input",
-                "current": {"disp": "", "eval": "", "inpt": ["1", "2", "3"]},
+                "current": {"calc": [], "inpt": ["1", "2", "3"]},
                 "result": ValueError,
             },
             {
                 "case": "Injection attack #1",
                 "current": {
-                    "disp": "",
-                    "eval": "",
+                    "calc": [],
                     "inpt": "__import__('os').system('dir')",
                 },
                 "result": InvalidOperation,
@@ -101,8 +119,7 @@ class SquareNumberTest(SetupCalculatorDataTest):
             {
                 "case": "Injection attack #2",
                 "current": {
-                    "disp": "",
-                    "eval": "",
+                    "calc": [],
                     "inpt": lambda: __import__("os").system("dir"),
                 },
                 "result": TypeError,

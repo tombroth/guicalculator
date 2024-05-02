@@ -36,17 +36,22 @@ class GetCurrentInputTest(SetupCalculatorDataTest):
         test_data = [
             {
                 "case": "123 as str",
-                "current": {"disp": "", "eval": "", "inpt": "123"},
+                "current": {"calc": [], "inpt": "123"},
                 "result": Decimal("123"),
             },
             {
                 "case": "123 as int",
-                "current": {"disp": "", "eval": "", "inpt": 123},
+                "current": {"calc": [], "inpt": 123},
                 "result": Decimal("123"),
             },
             {
+                "case": "2.5 as float",
+                "current": {"calc": [], "inpt": 2.5},
+                "result": Decimal("2.5"),
+            },
+            {
                 "case": "No input value",
-                "current": {"disp": "", "eval": "", "inpt": ""},
+                "current": {"calc": [], "inpt": ""},
                 "result": None,
             },
         ]
@@ -66,19 +71,18 @@ class GetCurrentInputTest(SetupCalculatorDataTest):
         test_data = [
             {
                 "case": "Text stored in input",
-                "current": {"disp": "", "eval": "", "inpt": "abcdefg"},
+                "current": {"calc": [], "inpt": "abcdefg"},
                 "result": InvalidOperation,
             },
             {
                 "case": "List stored in input",
-                "current": {"disp": "", "eval": "", "inpt": ["1", "2", "3"]},
+                "current": {"calc": [], "inpt": ["1", "2", "3"]},
                 "result": ValueError,
             },
             {
                 "case": "Injection attack #1",
                 "current": {
-                    "disp": "",
-                    "eval": "",
+                    "calc": [],
                     "inpt": "__import__('os').system('dir')",
                 },
                 "result": InvalidOperation,
@@ -86,8 +90,7 @@ class GetCurrentInputTest(SetupCalculatorDataTest):
             {
                 "case": "Injection attack #2",
                 "current": {
-                    "disp": "",
-                    "eval": "",
+                    "calc": [],
                     "inpt": lambda: __import__("os").system("dir"),
                 },
                 "result": TypeError,

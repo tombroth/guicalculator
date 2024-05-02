@@ -25,6 +25,11 @@ SOFTWARE.
 import unittest
 from decimal import Decimal
 
+from guicalculator.calculator.calculatordata import (
+    _CalcStringFunction,
+    _CalcStringNumber,
+    _CalcStringString,
+)
 from guicalculator.globals import PI, CalculatorFunctions
 from tests.calculatordata.test__setup_calculatordata import SetupCalculatorDataTest
 
@@ -42,52 +47,58 @@ class UpdateCurrentCalcTest(SetupCalculatorDataTest):
         test_data = [
             {
                 "case": "No parameters",
-                "current": {"disp": "", "eval": "", "inpt": "123"},
+                "current": {"calc": [], "inpt": "123"},
                 "params": {},
-                "ending": {"disp": "123", "eval": "Decimal('123')", "inpt": ""},
+                "ending": {"calc": [_CalcStringNumber(123)], "inpt": ""},
             },
             {
                 "case": "123 **",
-                "current": {"disp": "", "eval": "", "inpt": "123"},
+                "current": {"calc": [], "inpt": "123"},
                 "params": {"symbol": "**"},
                 "ending": {
-                    "disp": "123 **",
-                    "eval": "Decimal('123') **",
+                    "calc": [_CalcStringNumber(123), _CalcStringString("**")],
                     "inpt": "",
                 },
             },
             {
                 "case": "sqrt(123)",
-                "current": {"disp": "", "eval": "", "inpt": "123"},
+                "current": {
+                    "calc": [_CalcStringNumber(123), _CalcStringString("+")],
+                    "inpt": "123",
+                },
                 "params": {"func": CalculatorFunctions.SQUAREROOT},
                 "ending": {
-                    "disp": "sqrt(123)",
-                    "eval": "Decimal.sqrt(Decimal('123'))",
+                    "calc": [
+                        _CalcStringNumber(123),
+                        _CalcStringString("+"),
+                        _CalcStringFunction(
+                            CalculatorFunctions.SQUAREROOT, _CalcStringNumber(123)
+                        ),
+                    ],
                     "inpt": "",
                 },
             },
             {
                 "case": "Default variable e",
-                "current": {"disp": "", "eval": "", "inpt": ""},
+                "current": {"calc": [], "inpt": ""},
                 "params": {"symbol": "e"},
-                "ending": {"disp": "e", "eval": "e", "inpt": ""},
+                "ending": {"calc": [_CalcStringString("e")], "inpt": ""},
             },
             {
                 "case": "Default variable PI",
-                "current": {"disp": "", "eval": "", "inpt": ""},
+                "current": {"calc": [], "inpt": ""},
                 "params": {"symbol": PI},
-                "ending": {"disp": PI, "eval": PI, "inpt": ""},
+                "ending": {"calc": [_CalcStringString(PI)], "inpt": ""},
             },
             {
                 "case": "User variable x",
                 "current": {
-                    "disp": "",
-                    "eval": "",
+                    "calc": [],
                     "inpt": "",
                     "vars": {"x": Decimal("1234.56")},
                 },
                 "params": {"symbol": "x"},
-                "ending": {"disp": "x", "eval": "x", "inpt": ""},
+                "ending": {"calc": [_CalcStringString("x")], "inpt": ""},
             },
         ]
 
@@ -111,7 +122,7 @@ class UpdateCurrentCalcTest(SetupCalculatorDataTest):
         test_data = [
             {
                 "case": "Both symbol and func specified",
-                "current": {"disp": "", "eval": "", "inpt": "123"},
+                "current": {"calc": [], "inpt": "123"},
                 "params": {
                     "symbol": "+",
                     "func": CalculatorFunctions.SQUAREROOT,
@@ -120,7 +131,7 @@ class UpdateCurrentCalcTest(SetupCalculatorDataTest):
             },
             {
                 "case": "Unknown symbol",
-                "current": {"disp": "", "eval": "", "inpt": "123", "vars": {}},
+                "current": {"calc": [], "inpt": "123", "vars": {}},
                 "params": {
                     "symbol": "abcde",
                 },
@@ -128,7 +139,7 @@ class UpdateCurrentCalcTest(SetupCalculatorDataTest):
             },
             {
                 "case": "Keyword",
-                "current": {"disp": "", "eval": "", "inpt": "123"},
+                "current": {"calc": [], "inpt": "123"},
                 "params": {
                     "symbol": "def",
                 },
