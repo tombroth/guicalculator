@@ -53,6 +53,10 @@ from .validate_user_var import validate_user_vars
 
 
 class _CalcStringBase(ABC):
+    """
+    _CalcStringBase - An internal Abstract Base Class to represent an entry 
+    in the _current_calc list.
+    """
 
     @abstractmethod
     def get_disp(self) -> str: ...
@@ -71,6 +75,10 @@ class _CalcStringBase(ABC):
 
 
 class _CalcStringNumber(_CalcStringBase):
+    """
+    _CalcStringNumber - An internal class to represent a numeric value
+    (stored as a Decimal) in the _current_calc list.
+    """
 
     def __init__(
         self, thenum: Decimal | int | float | str, decimal_point: bool = False
@@ -104,6 +112,11 @@ class _CalcStringNumber(_CalcStringBase):
 
 
 class _CalcStringFunction(_CalcStringBase):
+    """
+     _CalcStringFunction - An internal class to represent a function
+    (stored as a FunctionsType with optional _CalcStringBase parameters) 
+    in the _current_calc list.
+    """
 
     def __init__(self, func: FunctionsType, param: _CalcStringBase | int) -> None:
         self._func = func
@@ -130,6 +143,12 @@ class _CalcStringFunction(_CalcStringBase):
 
 
 class _CalcStringString(_CalcStringBase):
+    """
+    _CalcStringString - An internal class to represent a string value
+    (stored as a str) in the _current_calc list. String values represent
+    either mathematical operators like + or *, parenthesis, default variables
+    (like pi or e) or user defined variables.
+    """
 
     def __init__(self, thestr: str) -> None:
         self._thestr = thestr
@@ -231,7 +250,8 @@ class CalculatorData:
     ]:
         """
         _get_num_fnc_sym - internal function to convert _current_input, symbol,
-         and func into their _CalcStringBase representations
+         and func into their _CalcStringBase representations. Used by the 
+         functions that display or update _current_calc.
 
         Parameters
         ----------

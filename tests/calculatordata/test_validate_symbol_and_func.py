@@ -25,6 +25,7 @@ SOFTWARE.
 import unittest
 
 from guicalculator.globals import CalculatorFunctions
+from guicalculator.globals.enums import CalculatorSymbols
 from guicalculator.globals.functionstype import FunctionsType
 from tests.calculatordata.test__setup_calculatordata import SetupCalculatorDataTest
 
@@ -38,7 +39,7 @@ class ValidateSymbolAndFuncTest(SetupCalculatorDataTest):
             {
                 "case": "Both parameters empty",
                 "params": {
-                    "symbol": "",
+                    "symbol": CalculatorSymbols.NOSYMBOL,
                     "func": CalculatorFunctions.NOFUNCTION,
                 },
             },
@@ -52,56 +53,56 @@ class ValidateSymbolAndFuncTest(SetupCalculatorDataTest):
             {
                 "case": "(",
                 "params": {
-                    "symbol": "(",
+                    "symbol": CalculatorSymbols.OPENPAREN,
                     "func": CalculatorFunctions.NOFUNCTION,
                 },
             },
             {
                 "case": ")",
                 "params": {
-                    "symbol": ")",
+                    "symbol": CalculatorSymbols.CLOSEPAREN,
                     "func": CalculatorFunctions.NOFUNCTION,
                 },
             },
             {
                 "case": "/",
                 "params": {
-                    "symbol": "/",
+                    "symbol": CalculatorSymbols.DIVISION,
                     "func": CalculatorFunctions.NOFUNCTION,
                 },
             },
             {
                 "case": "*",
                 "params": {
-                    "symbol": "*",
+                    "symbol": CalculatorSymbols.MULTIPLICATION,
                     "func": CalculatorFunctions.NOFUNCTION,
                 },
             },
             {
                 "case": "-",
                 "params": {
-                    "symbol": "-",
+                    "symbol": CalculatorSymbols.SUBTRACTION,
                     "func": CalculatorFunctions.NOFUNCTION,
                 },
             },
             {
                 "case": "+",
                 "params": {
-                    "symbol": "+",
+                    "symbol": CalculatorSymbols.ADDITION,
                     "func": CalculatorFunctions.NOFUNCTION,
                 },
             },
             {
                 "case": "**",
                 "params": {
-                    "symbol": "**",
+                    "symbol": CalculatorSymbols.EXPONENTIATION,
                     "func": CalculatorFunctions.NOFUNCTION,
                 },
             },
             {
                 "case": "sqrt",
                 "params": {
-                    "symbol": "",
+                    "symbol": CalculatorSymbols.NOSYMBOL,
                     "func": CalculatorFunctions.SQUAREROOT,
                 },
             },
@@ -118,7 +119,7 @@ class ValidateSymbolAndFuncTest(SetupCalculatorDataTest):
             {
                 "case": "Both parameters used",
                 "params": {
-                    "symbol": "+",
+                    "symbol": CalculatorSymbols.ADDITION,
                     "func": CalculatorFunctions.SQUAREROOT,
                 },
                 "result": ValueError,
@@ -142,7 +143,7 @@ class ValidateSymbolAndFuncTest(SetupCalculatorDataTest):
             {
                 "case": "More than two elements in func tuple",  # test from when func was a tuple[str, str]
                 "params": {
-                    "symbol": "",
+                    "symbol": CalculatorSymbols.NOSYMBOL,
                     "func": ("1/", "1/", "1/"),
                 },
                 "result": ValueError,
@@ -150,7 +151,7 @@ class ValidateSymbolAndFuncTest(SetupCalculatorDataTest):
             {
                 "case": "Only one element in func tuple",  # test from when func was a tuple[str, str]
                 "params": {
-                    "symbol": "",
+                    "symbol": CalculatorSymbols.NOSYMBOL,
                     "func": ("1/"),
                 },
                 "result": ValueError,
@@ -158,7 +159,7 @@ class ValidateSymbolAndFuncTest(SetupCalculatorDataTest):
             {
                 "case": "Elements in function not str",
                 "params": {
-                    "symbol": "",
+                    "symbol": CalculatorSymbols.NOSYMBOL,
                     "func": FunctionsType(1, 1),
                 },
                 "result": ValueError,
@@ -166,7 +167,7 @@ class ValidateSymbolAndFuncTest(SetupCalculatorDataTest):
             {
                 "case": "Invalid function",
                 "params": {
-                    "symbol": "",
+                    "symbol": CalculatorSymbols.NOSYMBOL,
                     "func": FunctionsType("1/", "sqrt"),
                 },
                 "result": ValueError,
@@ -174,7 +175,7 @@ class ValidateSymbolAndFuncTest(SetupCalculatorDataTest):
             {
                 "case": "Invalid function #2",
                 "params": {
-                    "symbol": "",
+                    "symbol": CalculatorSymbols.NOSYMBOL,
                     "func": FunctionsType("print", "print"),
                 },
                 "result": ValueError,
@@ -182,7 +183,7 @@ class ValidateSymbolAndFuncTest(SetupCalculatorDataTest):
             {
                 "case": "Func not a FunctionsType",
                 "params": {
-                    "symbol": "",
+                    "symbol": CalculatorSymbols.NOSYMBOL,
                     "func": 42,
                 },
                 "result": ValueError,
