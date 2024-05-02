@@ -106,7 +106,7 @@ class InverseNumberTest(SetupCalculatorDataTest):
                     "calc": [],
                     "inpt": lambda: __import__("os").system("dir"),
                 },
-                "result": TypeError,
+                "result": ValueError,
             },
         ]
 
