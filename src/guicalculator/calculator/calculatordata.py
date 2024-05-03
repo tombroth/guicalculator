@@ -215,6 +215,7 @@ class CalculatorData:
             Used for custom errors, message indicates what the specific error was.
         """
 
+        # initialize lists of valid symbols and functions
         valid_symbols = [cs.value for cs in CalculatorSymbols] + [
             *DEFAULT_VARIABLES.keys()
         ]
@@ -229,6 +230,7 @@ class CalculatorData:
 
         valid_funcs = [cf for cf in CalculatorFunctions]
 
+        # validate symbol
         if symbol:
             if not isinstance(symbol, str):
                 raise ValueError(f"Symbol is wrong data type: {symbol!r}")
@@ -236,6 +238,7 @@ class CalculatorData:
             if symbol not in valid_symbols:
                 raise ValueError(f"Invalid symbol: {symbol!r}")
 
+        # validate function
         if func:
             if not isinstance(func, FunctionsType):
                 raise ValueError(
@@ -285,20 +288,27 @@ class CalculatorData:
             Used for custom errors, message indicates what the specific error was.
         """
 
+        # basic validation of parameters
         if symbol and not isinstance(symbol, str):
             raise TypeError(f"Symbol is not correct type")
         if func and not isinstance(func, FunctionsType):
             raise TypeError(f"Function is not correct type")
         # no need to check remove_parameter, Python will cast anything to bool
 
+        inpt, infnc, sym = None, None, None
+
+        # if we are inputting a number
         if self._current_input:
             inpt = _CalcStringNumber(
                 self.get_current_input(),
                 (str(self._current_input)[-1] == "."),
             )
-        else:
-            inpt = None
 
+        # if we are inputting a symbol like + or )
+        if symbol:
+            sym = _CalcStringString(symbol)
+
+        # if we are inputting a function
         if func and func != CalculatorFunctions.NOFUNCTION:
             # if number being input
             if inpt:
@@ -310,17 +320,13 @@ class CalculatorData:
                 (
                     isinstance(self._current_calc[-1], _CalcStringString)
                     and (
-                        self._current_calc[-1].get_disp() in DEFAULT_VARIABLES.keys()
-                        or self._current_calc[-1].get_disp()
-                        in self._user_variables.keys()
+                        d
+                        for d in [DEFAULT_VARIABLES, self._user_variables]
+                        if self._current_calc[-1].get_disp() in d
                     )
-                )  # if we have a variable
-                or (
-                    isinstance(self._current_calc[-1], _CalcStringFunction)
-                )  # or a function
-                or (
-                    isinstance(self._current_calc[-1], _CalcStringNumber)
-                )  # or a number
+                )
+                or (isinstance(self._current_calc[-1], _CalcStringFunction))
+                or (isinstance(self._current_calc[-1], _CalcStringNumber))
             ):
                 infnc = _CalcStringFunction(func, self._current_calc[-1])
                 if remove_parameter:
@@ -328,14 +334,6 @@ class CalculatorData:
 
             else:
                 raise TypeError("No argument for function")
-
-        else:
-            infnc = None
-
-        if symbol:
-            sym = _CalcStringString(symbol)
-        else:
-            sym = None
 
         return inpt, infnc, sym
 
