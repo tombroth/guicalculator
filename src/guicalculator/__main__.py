@@ -47,26 +47,30 @@ def parse_args() -> argparse.Namespace:
         prog=os.path.basename(sys.argv[0]),
         description="A calculator written with python and tkinter",
         epilog="Copyright (c) 2024 Thomas Brotherton. See https://github.com/tombroth/guicalculator for licensing details.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
+
+    loglevels = [
+        levelName.lower()
+        for levelName, levelValue in logging.getLevelNamesMapping().items()
+        if levelValue not in [0, 50]
+    ]
+    loglevels.append("none")
 
     parser.add_argument(
         "-l",
         "--log-level",
         type=str.lower,
-        default="warning",
-        help="set log level (Default: warning)",
-        choices=[
-            levelName.lower()
-            for levelName, levelValue in logging.getLevelNamesMapping().items()
-            if levelValue not in [0, 50]
-        ],
+        default="none",
+        help="set log level",
+        choices=loglevels,
     )
 
     parser.add_argument(
         "-o",
         "--logging-output-file",
         default=None,
-        help="log file destination (Default: None)",
+        help="log file destination",
     )
 
     parser.add_argument(
@@ -74,7 +78,7 @@ def parse_args() -> argparse.Namespace:
         "--log-gui-calls",
         action="store_true",
         default=None,
-        help="log file destination (Default: None)",
+        help="log file destination",
     )
 
     args = parser.parse_args()
@@ -103,6 +107,10 @@ def setup_logging(args: argparse.Namespace) -> None:
     args : argparse.Namespace
         The parsed command line arguments that contain logging options
     """
+
+    if args.log_level == "none":
+        logging.getLogger().addHandler(logging.NullHandler())
+        return
 
     logger = logging.getLogger()
 

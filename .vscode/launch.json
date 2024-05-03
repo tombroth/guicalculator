@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python Debugger: Module guicalculator with Arguments",
+            "name": "Python Debugger: guicalculator with Arguments",
             "type": "debugpy",
             "request": "launch",
             "module": "guicalculator",
@@ -13,10 +13,20 @@
             "args": "${command:pickArgs}"
         },
         {
-            "name": "Python Debugger: Module guicalculator",
+            "name": "Python Debugger: guicalculator",
             "type": "debugpy",
             "request": "launch",
-            "module": "guicalculator"
+            "module": "guicalculator",
+        }
+        {
+            "name": "Python Debugger: guicalculator (logging=warn)",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "guicalculator",
+            "args": [
+                "-l",
+                "warn"
+            ]
         }
     ]
 }
