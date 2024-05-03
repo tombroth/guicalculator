@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import logging
 import unittest
 from decimal import Decimal, InvalidOperation
 
@@ -143,11 +144,14 @@ class RootNumberTest(SetupCalculatorDataTest):
     def test_root_number_invalid_input(self):
         """Test the root_number function with invalid input."""
 
+        lambdafunc = lambda: __import__("os").system("dir")
+
         test_data = [
             {
                 "case": "No input value",
                 "current": {"calc": [], "inpt": ""},
-                "result": TypeError,
+                "ending": {"calc": [], "inpt": ""},
+                "result": "No argument for function",
             },
             {
                 "case": "No input, last element of calc not a variable or function",
@@ -155,17 +159,23 @@ class RootNumberTest(SetupCalculatorDataTest):
                     "calc": [_CalcStringNumber(1), _CalcStringString("+")],
                     "inpt": "",
                 },
-                "result": TypeError,
+                "ending": {
+                    "calc": [_CalcStringNumber(1), _CalcStringString("+")],
+                    "inpt": "",
+                },
+                "result": "No argument for function",
             },
             {
                 "case": "Text stored in input",
                 "current": {"calc": [], "inpt": "abcdefg"},
-                "result": InvalidOperation,
+                "ending": {"calc": [], "inpt": "abcdefg"},
+                "result": "InvalidOperation",
             },
             {
                 "case": "List stored in input",
                 "current": {"calc": [], "inpt": ["1", "2", "3"]},
-                "result": ValueError,
+                "ending": {"calc": [], "inpt": ["1", "2", "3"]},
+                "result": "sign must be an integer with the value 0 or 1",
             },
             {
                 "case": "Injection attack #1",
@@ -173,24 +183,36 @@ class RootNumberTest(SetupCalculatorDataTest):
                     "calc": [],
                     "inpt": "__import__('os').system('dir')",
                 },
-                "result": InvalidOperation,
+                "ending": {
+                    "calc": [],
+                    "inpt": "__import__('os').system('dir')",
+                },
+                "result": "InvalidOperation",
             },
             {
                 "case": "Injection attack #2",
                 "current": {
                     "calc": [],
-                    "inpt": lambda: __import__("os").system("dir"),
+                    "inpt": lambdafunc,
                 },
-                "result": TypeError,
+                "ending": {
+                    "calc": [],
+                    "inpt": lambdafunc,
+                },
+                "result": "conversion from function to Decimal is not supported",
             },
         ]
 
         for data in test_data:
             with self.subTest(msg="root_number: " + data["case"]):
-                with self.assertRaises(data["result"]):
+                with self.assertLogs(level=logging.ERROR) as logmsgs:
                     self.run_basic_test(
                         func=self.calc_data.root_number,
                         cur_vals=data["current"],
+                        end_vals=data["ending"],
+                    )
+                    self.assertTrue(
+                        any(data["result"] in errmsg for errmsg in logmsgs.output)
                     )
 
 

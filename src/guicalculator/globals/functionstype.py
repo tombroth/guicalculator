@@ -35,3 +35,4 @@ class FunctionsType:
 
     display_func: str
     eval_func: str
+    post_param_eval: str

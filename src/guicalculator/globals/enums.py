@@ -53,8 +53,11 @@ class CalculatorSymbols(StrEnumBase):
 class CalculatorFunctions(FunctionsType, Enum):
     """Enum that represent functions used by the calculator like square root"""
 
-    NOFUNCTION = ("", "")
-    SQUAREROOT = ("sqrt", "Decimal.sqrt")
+    NOFUNCTION = ("", "", "")
+    SQUAREROOT = ("sqrt", "Decimal.sqrt", "")
+    NEGATION = ("-", "-", "")
+    INVERSION = ("1/", "1/", "")
+    SQUARE = ("sqr", "", " ** Decimal('2')")
 
     def __str__(self):
         return self.name 

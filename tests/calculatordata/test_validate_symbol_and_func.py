@@ -160,7 +160,7 @@ class ValidateSymbolAndFuncTest(SetupCalculatorDataTest):
                 "case": "Elements in function not str",
                 "params": {
                     "symbol": CalculatorSymbols.NOSYMBOL,
-                    "func": FunctionsType(1, 1),
+                    "func": FunctionsType(1, 1, 1),
                 },
                 "result": ValueError,
             },
@@ -168,7 +168,7 @@ class ValidateSymbolAndFuncTest(SetupCalculatorDataTest):
                 "case": "Invalid function",
                 "params": {
                     "symbol": CalculatorSymbols.NOSYMBOL,
-                    "func": FunctionsType("1/", "sqrt"),
+                    "func": FunctionsType("1/", "sqrt", "bob"),
                 },
                 "result": ValueError,
             },
@@ -176,7 +176,7 @@ class ValidateSymbolAndFuncTest(SetupCalculatorDataTest):
                 "case": "Invalid function #2",
                 "params": {
                     "symbol": CalculatorSymbols.NOSYMBOL,
-                    "func": FunctionsType("print", "print"),
+                    "func": FunctionsType("print", "print", "print"),
                 },
                 "result": ValueError,
             },

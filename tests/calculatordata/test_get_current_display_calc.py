@@ -59,7 +59,7 @@ class GetCurrentDisplayCalcTest(SetupCalculatorDataTest):
                     "inpt": "123",
                 },
                 "params": {"func": CalculatorFunctions.SQUAREROOT},
-                "result": "123 + sqrt(123)",
+                "result": "123 + (sqrt(123))",
             },
         ]
 

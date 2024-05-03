@@ -23,6 +23,7 @@ SOFTWARE.
 """
 
 from io import StringIO
+import logging
 import unittest
 from unittest.mock import patch
 
@@ -32,10 +33,10 @@ from tests.calculatordata.test__setup_calculatordata import \
 
 class ProcessButtonTest(SetupCalculatorDataTest):
 
-    # skipping this for now, it's just a big match/case statement to call 
+    # skipping this for now, it's just a big match/case statement to call
     # other functions and those functions are already tested
     #
-    # the alternative would be to use MagicMock just to make sure the 
+    # the alternative would be to use MagicMock just to make sure the
     # specified input runs the specified function
     #
     # def test_process_button(self):
@@ -57,34 +58,36 @@ class ProcessButtonTest(SetupCalculatorDataTest):
                 "case": "Unknown function Call",
                 "current": {"calc": [], "inpt": ""},
                 "params": {"buttoncmd": "UnknownFunctionCall"},
+                "result": ValueError,
             },
             {
                 "case": "Passing int instead of str",
                 "current": {"calc": [], "inpt": ""},
                 "params": {"buttoncmd": 123},
+                "result": ValueError,
             },
             {
                 "case": "Passing empty string",
                 "current": {"calc": [], "inpt": ""},
                 "params": {"buttoncmd": ""},
+                "result": ValueError,
             },
             {
                 "case": "Passing None",
                 "current": {"calc": [], "inpt": ""},
                 "params": {"buttoncmd": None},
+                "result": ValueError,
             },
         ]
 
         for data in test_data:
             with self.subTest(msg="process_button: " + data["case"]):
-                with patch("sys.stdout", new=StringIO()) as fake_out:
+                with self.assertRaises(data["result"]):
                     self.run_basic_test(
                         func=self.calc_data.process_button,
                         cur_vals=data["current"],
                         params=data["params"],
                     )
-                    expected_out = f"Unknown command: {data["params"]["buttoncmd"]!r}\n"
-                    self.assertEqual(fake_out.getvalue(), expected_out)
 
 
 if __name__ == "__main__":

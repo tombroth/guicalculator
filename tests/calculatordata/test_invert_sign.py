@@ -22,8 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import logging
 import unittest
-from decimal import InvalidOperation
 
 from guicalculator.calculator.calculatordata import (
     _CalcStringFunction,
@@ -42,21 +42,36 @@ class InvertSignTest(SetupCalculatorDataTest):
         test_data = [
             {
                 "case": "123 as str",
-                "current": {"inpt": "123"},
-                "ending": {"inpt": "-123"},
+                "current": {"calc": [], "inpt": "123"},
+                "ending": {
+                    "calc": [
+                        _CalcStringFunction(
+                            CalculatorFunctions.NEGATION, _CalcStringNumber(123)
+                        )
+                    ],
+                    "inpt": "",
+                },
             },
             {
                 "case": "123 as int",
-                "current": {"inpt": 123},
-                "ending": {"inpt": "-123"},
+                "current": {"calc": [], "inpt": 123},
+                "ending": {
+                    "calc": [
+                        _CalcStringFunction(
+                            CalculatorFunctions.NEGATION, _CalcStringNumber(123)
+                        )
+                    ],
+                    "inpt": "",
+                },
             },
             {
                 "case": "Variable",
                 "current": {"calc": [_CalcStringString("e")], "inpt": ""},
                 "ending": {
                     "calc": [
-                        _CalcStringString("-"),
-                        _CalcStringString("e"),
+                        _CalcStringFunction(
+                            CalculatorFunctions.NEGATION, _CalcStringString("e")
+                        )
                     ],
                     "inpt": "",
                 },
@@ -73,9 +88,11 @@ class InvertSignTest(SetupCalculatorDataTest):
                 },
                 "ending": {
                     "calc": [
-                        _CalcStringString("-"),
                         _CalcStringFunction(
-                            CalculatorFunctions.SQUAREROOT, _CalcStringNumber(2)
+                            CalculatorFunctions.NEGATION,
+                            _CalcStringFunction(
+                                CalculatorFunctions.SQUAREROOT, _CalcStringNumber(2)
+                            ),
                         ),
                     ],
                     "inpt": "",
@@ -86,8 +103,9 @@ class InvertSignTest(SetupCalculatorDataTest):
                 "current": {"calc": [_CalcStringNumber(2)], "inpt": ""},
                 "ending": {
                     "calc": [
-                        _CalcStringString("-"),
-                        _CalcStringNumber(2),
+                        _CalcStringFunction(
+                            CalculatorFunctions.NEGATION, _CalcStringNumber(2)
+                        )
                     ],
                     "inpt": "",
                 },
@@ -96,16 +114,20 @@ class InvertSignTest(SetupCalculatorDataTest):
                 "case": "double negative",
                 "current": {
                     "calc": [
-                        _CalcStringString("-"),
-                        _CalcStringNumber(2),
+                        _CalcStringFunction(
+                            CalculatorFunctions.NEGATION, _CalcStringNumber(2)
+                        )
                     ],
                     "inpt": "",
                 },
                 "ending": {
                     "calc": [
-                        _CalcStringString("-"),
-                        _CalcStringString("-"),
-                        _CalcStringNumber(2),
+                        _CalcStringFunction(
+                            CalculatorFunctions.NEGATION,
+                            _CalcStringFunction(
+                                CalculatorFunctions.NEGATION, _CalcStringNumber(2)
+                            ),
+                        )
                     ],
                     "inpt": "",
                 },
@@ -133,35 +155,45 @@ class InvertSignTest(SetupCalculatorDataTest):
     def test_invert_sign_invalid_input(self):
         """Test the invert_sign function with invalid input."""
 
+        lambdafunc = lambda: __import__("os").system("dir")
+
         test_data = [
             {
                 "case": "Text stored in input",
                 "current": {"inpt": "abcdefg"},
-                "result": InvalidOperation,
+                "ending": {"inpt": "abcdefg"},
+                "result": "InvalidOperation",
             },
             {
                 "case": "List stored in input",
                 "current": {"inpt": ["1", "2", "3"]},
-                "result": ValueError,
+                "ending": {"inpt": ["1", "2", "3"]},
+                "result": "sign must be an integer with the value 0 or 1",
             },
             {
                 "case": "Injection attack #1",
                 "current": {"inpt": "__import__('os').system('dir')"},
-                "result": InvalidOperation,
+                "ending": {"inpt": "__import__('os').system('dir')"},
+                "result": "InvalidOperation",
             },
             {
                 "case": "Injection attack #2",
-                "current": {"inpt": lambda: __import__("os").system("dir")},
-                "result": TypeError,
+                "current": {"inpt": lambdafunc},
+                "ending": {"inpt": lambdafunc},
+                "result": "conversion from function to Decimal is not supported",
             },
         ]
 
         for data in test_data:
             with self.subTest(msg="invert_sign: " + data["case"]):
-                with self.assertRaises(data["result"]):
+                with self.assertLogs(level=logging.ERROR) as logmsgs:
                     self.run_basic_test(
                         func=self.calc_data.invert_sign,
                         cur_vals=data["current"],
+                        end_vals=data["ending"],
+                    )
+                    self.assertTrue(
+                        any(data["result"] in errmsg for errmsg in logmsgs.output)
                     )
 
 

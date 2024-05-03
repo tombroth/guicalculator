@@ -134,11 +134,19 @@ class _CalcStringFunction(_CalcStringBase):
         )
 
     def get_disp(self) -> str:
-        x = f"{self._func.display_func}({self._param.get_disp()})"
+        if isinstance(self._param, _CalcStringFunction):
+            x = f"({self._func.display_func}{self._param.get_disp()})"
+        else:
+            x = f"({self._func.display_func}({self._param.get_disp()}))"
         return x
 
     def get_eval(self) -> str:
-        x = f"{self._func.eval_func}({self._param.get_eval()})"
+        if isinstance(self._param, _CalcStringFunction):
+            x = f"({self._func.eval_func}{self._param.get_eval()}{self._func.post_param_eval})"
+        elif self._func.eval_func:
+            x = f"({self._func.eval_func}({self._param.get_eval()}{self._func.post_param_eval}))"
+        else:
+            x = f"({self._param.get_eval()}{self._func.post_param_eval})"
         return x
 
 
@@ -253,7 +261,7 @@ class CalculatorData:
         and func into their _CalcStringBase representations. Used by the
         functions that display or update _current_calc.
 
-        Will validate that parameters are correct type but assumes that symbol 
+        Will validate that parameters are correct type but assumes that symbol
         and func have already passed through validate_symbol_and_func.
 
         Parameters
@@ -314,9 +322,7 @@ class CalculatorData:
                     isinstance(self._current_calc[-1], _CalcStringNumber)
                 )  # or a number
             ):
-                infnc = _CalcStringFunction(
-                    CalculatorFunctions.SQUAREROOT, self._current_calc[-1]
-                )
+                infnc = _CalcStringFunction(func, self._current_calc[-1])
                 if remove_parameter:
                     self._current_calc = self._current_calc[:-1]
 
@@ -564,7 +570,7 @@ class CalculatorData:
 
             case _:
                 self.bell()
-                print(f"Unknown command: {buttoncmd!r}")
+                raise ValueError(f"Unknown command: {buttoncmd!r}")
 
     @object_wrapper
     def button_press(self, symbol: str | int) -> None:
@@ -837,30 +843,10 @@ class CalculatorData:
         precision in the Decimal context.
         """
 
-        if self._current_input:
-            negateval = -(self.get_current_input() or Decimal(0))
-            self._current_input = numtostr(negateval) or ""
-            self.update_display()
-
-        elif self._current_calc and (
-            (
-                isinstance(self._current_calc[-1], _CalcStringString)
-                and (
-                    self._current_calc[-1].get_disp() in DEFAULT_VARIABLES.keys()
-                    or self._current_calc[-1].get_disp() in self._user_variables.keys()
-                )
-            )  # if we have a variable
-            or (
-                isinstance(self._current_calc[-1], _CalcStringFunction)
-            )  # or a function
-            or (isinstance(self._current_calc[-1], _CalcStringNumber))  # or a number
-        ):
-            inpt = self._current_calc.pop()
-            self.update_current_calc(CalculatorSymbols.SUBTRACTION)
-            self._current_calc.append(inpt)
-            self.update_display()
-
-        else:
+        try:
+            self.update_current_calc(func=CalculatorFunctions.NEGATION)
+        except Exception as e:
+            logerror(e, "invert_sign", 2)
             self.bell()
 
     @object_wrapper
@@ -875,33 +861,10 @@ class CalculatorData:
         precision in the Decimal context.
         """
 
-        inpt: _CalcStringBase | None = None
-
-        if self._current_input:
-            inpt, self._current_input = _CalcStringNumber(self._current_input), ""
-
-        elif self._current_calc and (
-            (
-                isinstance(self._current_calc[-1], _CalcStringString)
-                and (
-                    self._current_calc[-1].get_disp() in DEFAULT_VARIABLES.keys()
-                    or self._current_calc[-1].get_disp() in self._user_variables.keys()
-                )
-            )  # if we have a variable
-            or (
-                isinstance(self._current_calc[-1], _CalcStringFunction)
-            )  # or a function
-            or (isinstance(self._current_calc[-1], _CalcStringNumber))  # or a number
-        ):
-            inpt = self._current_calc.pop()
-
-        if inpt:
-            self.update_current_calc(CalculatorSymbols.OPENPAREN)
-            self._current_input = "1"
-            self.update_current_calc(CalculatorSymbols.DIVISION)
-            self._current_calc.append(inpt)
-            self.update_current_calc(CalculatorSymbols.CLOSEPAREN)
-        else:
+        try:
+            self.update_current_calc(func=CalculatorFunctions.INVERSION)
+        except Exception as e:
+            logerror(e, "inverse_number", 2)
             self.bell()
 
     @object_wrapper
@@ -916,9 +879,11 @@ class CalculatorData:
         precision in the Decimal context.
         """
 
-        self.update_current_calc(CalculatorSymbols.EXPONENTIATION)
-        self._current_input = "2"
-        self.update_current_calc()
+        try:
+            self.update_current_calc(func=CalculatorFunctions.SQUARE)
+        except Exception as e:
+            logerror(e, "square_number", 2)
+            self.bell()
 
     @object_wrapper
     def root_number(self) -> None:
@@ -935,8 +900,8 @@ class CalculatorData:
         try:
             self.update_current_calc(func=CalculatorFunctions.SQUAREROOT)
         except Exception as e:
+            logerror(e, "root_number", 2)
             self.bell()
-            raise e
 
     @object_wrapper
     def calculate(self) -> None:

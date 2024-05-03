@@ -22,10 +22,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import logging
 import unittest
 from decimal import InvalidOperation
 
-from guicalculator.calculator.calculatordata import _CalcStringNumber, _CalcStringString
+from guicalculator.calculator.calculatordata import _CalcStringFunction, _CalcStringNumber, _CalcStringString
+from guicalculator.globals.enums import CalculatorFunctions
 from tests.calculatordata.test__setup_calculatordata import SetupCalculatorDataTest
 
 
@@ -40,9 +42,9 @@ class SquareNumberTest(SetupCalculatorDataTest):
                 "current": {"calc": [], "inpt": "3"},
                 "ending": {
                     "calc": [
-                        _CalcStringNumber(3),
-                        _CalcStringString("**"),
-                        _CalcStringNumber(2),
+                        _CalcStringFunction(
+                            CalculatorFunctions.SQUARE, _CalcStringNumber(3)
+                        )
                     ],
                     "inpt": "",
                 },
@@ -52,12 +54,64 @@ class SquareNumberTest(SetupCalculatorDataTest):
                 "current": {"calc": [], "inpt": 3},
                 "ending": {
                     "calc": [
-                        _CalcStringNumber(3),
-                        _CalcStringString("**"),
-                        _CalcStringNumber(2),
+                        _CalcStringFunction(
+                            CalculatorFunctions.SQUARE, _CalcStringNumber(3)
+                        )
                     ],
                     "inpt": "",
                 },
+            },
+        ]
+
+        for data in test_data:
+            with self.subTest(msg="square_number: " + data["case"]):
+                self.run_basic_test(
+                    func=self.calc_data.square_number,
+                    cur_vals=data["current"],
+                    end_vals=data["ending"],
+                )
+
+    def test_square_number_invalid_input(self):
+        """Test the square_number function with invalid input."""
+
+        lambdafunc = lambda: __import__("os").system("dir")
+        
+        test_data = [
+            {
+                "case": "Text stored in input",
+                "current": {"calc": [], "inpt": "abcdefg"},
+                "ending": {"calc": [], "inpt": "abcdefg"},
+                "result": "InvalidOperation",
+            },
+            {
+                "case": "List stored in input",
+                "current": {"calc": [], "inpt": ["1", "2", "3"]},
+                "ending": {"calc": [], "inpt": ["1", "2", "3"]},
+                "result": "sign must be an integer with the value 0 or 1",
+            },
+            {
+                "case": "Injection attack #1",
+                "current": {
+                    "calc": [],
+                    "inpt": "__import__('os').system('dir')",
+                },
+                "ending": {
+                    "calc": [],
+                    "inpt": "__import__('os').system('dir')",
+                },
+                "result": "InvalidOperation",
+            },
+            {
+                "case": "Injection attack #2",
+                "current": {
+                    "calc": [],
+                    "inpt": lambdafunc,
+                },
+                "ending": {
+                    "calc": [],
+                    "inpt": lambdafunc,
+                },
+                "result": "conversion from function to Decimal is not supported",
             },
             {
                 "case": "No input value",
@@ -78,60 +132,23 @@ class SquareNumberTest(SetupCalculatorDataTest):
                         _CalcStringString("+"),
                         _CalcStringNumber(1),
                         _CalcStringString(")"),
-                        _CalcStringString("**"),
-                        _CalcStringNumber(2),
                     ],
                     "inpt": "",
                 },
+                "result": "No argument for function",
             },
         ]
 
         for data in test_data:
             with self.subTest(msg="square_number: " + data["case"]):
-                self.run_basic_test(
-                    func=self.calc_data.square_number,
-                    cur_vals=data["current"],
-                    end_vals=data["ending"],
-                )
-
-    def test_square_number_invalid_input(self):
-        """Test the square_number function with invalid input."""
-
-        test_data = [
-            {
-                "case": "Text stored in input",
-                "current": {"calc": [], "inpt": "abcdefg"},
-                "result": InvalidOperation,
-            },
-            {
-                "case": "List stored in input",
-                "current": {"calc": [], "inpt": ["1", "2", "3"]},
-                "result": ValueError,
-            },
-            {
-                "case": "Injection attack #1",
-                "current": {
-                    "calc": [],
-                    "inpt": "__import__('os').system('dir')",
-                },
-                "result": InvalidOperation,
-            },
-            {
-                "case": "Injection attack #2",
-                "current": {
-                    "calc": [],
-                    "inpt": lambda: __import__("os").system("dir"),
-                },
-                "result": TypeError,
-            },
-        ]
-
-        for data in test_data:
-            with self.subTest(msg="square_number: " + data["case"]):
-                with self.assertRaises(data["result"]):
+                with self.assertLogs(level=logging.ERROR) as logmsgs:
                     self.run_basic_test(
                         func=self.calc_data.square_number,
                         cur_vals=data["current"],
+                        end_vals=data["ending"],
+                    )
+                    self.assertTrue(
+                        any(data["result"] in errmsg for errmsg in logmsgs.output)
                     )
 
 

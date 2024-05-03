@@ -59,7 +59,7 @@ class GetCurrentEvalCalcTest(SetupCalculatorDataTest):
                     "inpt": "123",
                 },
                 "params": {"func": CalculatorFunctions.SQUAREROOT},
-                "result": "Decimal('123') ** Decimal.sqrt(Decimal('123'))",
+                "result": "Decimal('123') ** (Decimal.sqrt(Decimal('123')))",
             },
         ]
 

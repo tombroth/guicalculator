@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import logging
 import unittest
 from decimal import InvalidOperation
 
@@ -45,11 +46,9 @@ class InverseNumberTest(SetupCalculatorDataTest):
                 "current": {"calc": [], "inpt": "2"},
                 "ending": {
                     "calc": [
-                        _CalcStringString("("),
-                        _CalcStringNumber(1),
-                        _CalcStringString("/"),
-                        _CalcStringNumber(2),
-                        _CalcStringString(")"),
+                        _CalcStringFunction(
+                            CalculatorFunctions.INVERSION, _CalcStringNumber(2)
+                        ),
                     ],
                     "inpt": "",
                 },
@@ -59,11 +58,9 @@ class InverseNumberTest(SetupCalculatorDataTest):
                 "current": {"calc": [], "inpt": 2},
                 "ending": {
                     "calc": [
-                        _CalcStringString("("),
-                        _CalcStringNumber(1),
-                        _CalcStringString("/"),
-                        _CalcStringNumber(2),
-                        _CalcStringString(")"),
+                        _CalcStringFunction(
+                            CalculatorFunctions.INVERSION, _CalcStringNumber(2)
+                        ),
                     ],
                     "inpt": "",
                 },
@@ -73,11 +70,9 @@ class InverseNumberTest(SetupCalculatorDataTest):
                 "current": {"calc": [_CalcStringString("e")], "inpt": ""},
                 "ending": {
                     "calc": [
-                        _CalcStringString("("),
-                        _CalcStringNumber(1),
-                        _CalcStringString("/"),
-                        _CalcStringString("e"),
-                        _CalcStringString(")"),
+                        _CalcStringFunction(
+                            CalculatorFunctions.INVERSION, _CalcStringString("e")
+                        ),
                     ],
                     "inpt": "",
                 },
@@ -94,13 +89,12 @@ class InverseNumberTest(SetupCalculatorDataTest):
                 },
                 "ending": {
                     "calc": [
-                        _CalcStringString("("),
-                        _CalcStringNumber(1),
-                        _CalcStringString("/"),
                         _CalcStringFunction(
-                            CalculatorFunctions.SQUAREROOT, _CalcStringNumber(2)
+                            CalculatorFunctions.INVERSION,
+                            _CalcStringFunction(
+                                CalculatorFunctions.SQUAREROOT, _CalcStringNumber(2)
+                            ),
                         ),
-                        _CalcStringString(")"),
                     ],
                     "inpt": "",
                 },
@@ -110,11 +104,9 @@ class InverseNumberTest(SetupCalculatorDataTest):
                 "current": {"calc": [_CalcStringNumber(2)], "inpt": ""},
                 "ending": {
                     "calc": [
-                        _CalcStringString("("),
-                        _CalcStringNumber(1),
-                        _CalcStringString("/"),
-                        _CalcStringNumber(2),
-                        _CalcStringString(")"),
+                        _CalcStringFunction(
+                            CalculatorFunctions.INVERSION, _CalcStringNumber(2)
+                        ),
                     ],
                     "inpt": "",
                 },
@@ -142,16 +134,19 @@ class InverseNumberTest(SetupCalculatorDataTest):
     def test_inverse_number_invalid_input(self):
         """Test the inverse_number function with invalid input."""
 
+        lambdafunc = lambda: __import__("os").system("dir")
         test_data = [
             {
                 "case": "Text stored in input",
                 "current": {"calc": [], "inpt": "abcdefg"},
-                "result": InvalidOperation,
+                "ending": {"calc": [], "inpt": "abcdefg"},
+                "result": "InvalidOperation",
             },
             {
                 "case": "List stored in input",
                 "current": {"calc": [], "inpt": ["1", "2", "3"]},
-                "result": ValueError,
+                "ending": {"calc": [], "inpt": ["1", "2", "3"]},
+                "result": "sign must be an integer with the value 0 or 1",
             },
             {
                 "case": "Injection attack #1",
@@ -159,24 +154,36 @@ class InverseNumberTest(SetupCalculatorDataTest):
                     "calc": [],
                     "inpt": "__import__('os').system('dir')",
                 },
-                "result": InvalidOperation,
+                "ending": {
+                    "calc": [],
+                    "inpt": "__import__('os').system('dir')",
+                },
+                "result": "InvalidOperation",
             },
             {
                 "case": "Injection attack #2",
                 "current": {
                     "calc": [],
-                    "inpt": lambda: __import__("os").system("dir"),
+                    "inpt": lambdafunc,
                 },
-                "result": ValueError,
+                "ending": {
+                    "calc": [],
+                    "inpt": lambdafunc,
+                },
+                "result": "conversion from function to Decimal is not supported",
             },
         ]
 
         for data in test_data:
             with self.subTest(msg="inverse_number: " + data["case"]):
-                with self.assertRaises(data["result"]):
+                with self.assertLogs(level=logging.ERROR) as logmsgs:
                     self.run_basic_test(
                         func=self.calc_data.inverse_number,
                         cur_vals=data["current"],
+                        end_vals=data["ending"],
+                    )
+                    self.assertTrue(
+                        any(data["result"] in errmsg for errmsg in logmsgs.output)
                     )
 
 
