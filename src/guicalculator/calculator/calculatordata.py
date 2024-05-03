@@ -320,9 +320,9 @@ class CalculatorData:
                 (
                     isinstance(self._current_calc[-1], _CalcStringString)
                     and (
-                        d
-                        for d in [DEFAULT_VARIABLES, self._user_variables]
-                        if self._current_calc[-1].get_disp() in d
+                        self._current_calc[-1].get_disp() in DEFAULT_VARIABLES.keys()
+                        or self._current_calc[-1].get_disp()
+                        in self._user_variables.keys()
                     )
                 )
                 or (isinstance(self._current_calc[-1], _CalcStringFunction))
