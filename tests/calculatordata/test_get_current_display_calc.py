@@ -61,15 +61,6 @@ class GetCurrentDisplayCalcTest(SetupCalculatorDataTest):
                 "params": {"func": CalculatorFunctions.SQUAREROOT},
                 "result": "123 + sqrt(123)",
             },
-            {
-                "case": "sqrt, with no input",
-                "current": {
-                    "calc": [_CalcStringNumber(123), _CalcStringString("+")],
-                    "inpt": "",
-                },
-                "params": {"func": CalculatorFunctions.SQUAREROOT},
-                "result": "123 +",
-            },
         ]
 
         for data in test_data:
@@ -99,6 +90,15 @@ class GetCurrentDisplayCalcTest(SetupCalculatorDataTest):
                     "func": CalculatorFunctions.SQUAREROOT,
                 },
                 "result": ValueError,
+            },
+            {
+                "case": "sqrt, with no input",
+                "current": {
+                    "calc": [_CalcStringNumber(123), _CalcStringString("+")],
+                    "inpt": "",
+                },
+                "params": {"func": CalculatorFunctions.SQUAREROOT},
+                "result": TypeError,
             },
         ]
 

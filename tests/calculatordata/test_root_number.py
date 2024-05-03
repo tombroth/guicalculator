@@ -116,17 +116,6 @@ class RootNumberTest(SetupCalculatorDataTest):
                 },
             },
             {
-                "case": "No input, last element of calc not a variable or function",
-                "current": {
-                    "calc": [_CalcStringNumber(1), _CalcStringString("+")],
-                    "inpt": "",
-                },
-                "ending": {
-                    "calc": [_CalcStringNumber(1), _CalcStringString("+")],
-                    "inpt": "",
-                },
-            },
-            {
                 "case": "No input, last element of calc is number",
                 "current": {
                     "calc": [_CalcStringNumber(2)],
@@ -140,11 +129,6 @@ class RootNumberTest(SetupCalculatorDataTest):
                     ],
                     "inpt": "",
                 },
-            },
-            {
-                "case": "No input value",
-                "current": {"calc": [], "inpt": ""},
-                "ending": {"calc": [], "inpt": ""},
             },
         ]
 
@@ -160,6 +144,19 @@ class RootNumberTest(SetupCalculatorDataTest):
         """Test the root_number function with invalid input."""
 
         test_data = [
+            {
+                "case": "No input value",
+                "current": {"calc": [], "inpt": ""},
+                "result": TypeError,
+            },
+            {
+                "case": "No input, last element of calc not a variable or function",
+                "current": {
+                    "calc": [_CalcStringNumber(1), _CalcStringString("+")],
+                    "inpt": "",
+                },
+                "result": TypeError,
+            },
             {
                 "case": "Text stored in input",
                 "current": {"calc": [], "inpt": "abcdefg"},

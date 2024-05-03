@@ -54,7 +54,7 @@ from .validate_user_var import validate_user_vars
 
 class _CalcStringBase(ABC):
     """
-    _CalcStringBase - An internal Abstract Base Class to represent an entry 
+    _CalcStringBase - An internal Abstract Base Class to represent an entry
     in the _current_calc list.
     """
 
@@ -114,7 +114,7 @@ class _CalcStringNumber(_CalcStringBase):
 class _CalcStringFunction(_CalcStringBase):
     """
      _CalcStringFunction - An internal class to represent a function
-    (stored as a FunctionsType with optional _CalcStringBase parameters) 
+    (stored as a FunctionsType with optional _CalcStringBase parameters)
     in the _current_calc list.
     """
 
@@ -243,14 +243,14 @@ class CalculatorData:
                 )
 
     @object_wrapper
-    def _get_num_fnc_sym(
+    def get_num_fnc_sym(
         self, symbol: str, func: FunctionsType
     ) -> tuple[
         _CalcStringNumber | None, _CalcStringFunction | None, _CalcStringString | None
     ]:
         """
-        _get_num_fnc_sym - internal function to convert _current_input, symbol,
-         and func into their _CalcStringBase representations. Used by the 
+        get_num_fnc_sym - internal function to convert _current_input, symbol,
+         and func into their _CalcStringBase representations. Used by the
          functions that display or update _current_calc.
 
         Parameters
@@ -266,6 +266,9 @@ class CalculatorData:
             The _CalcStringBase representations of the number, function and symbol
         """
 
+        if func and not isinstance(func, FunctionsType):
+            raise TypeError(f"Function is not correct type")
+
         if self._current_input:
             inpt = _CalcStringNumber(
                 self.get_current_input(),
@@ -274,9 +277,36 @@ class CalculatorData:
         else:
             inpt = None
 
-        if func and func.display_func and inpt:
-            infnc = _CalcStringFunction(func, inpt)
-            inpt = None
+        if func and func != CalculatorFunctions.NOFUNCTION:
+            # if number being input
+            if inpt:
+                infnc = _CalcStringFunction(func, inpt)
+                inpt = None
+
+            # if number, variable, or function was just input
+            elif self._current_calc and (
+                (
+                    isinstance(self._current_calc[-1], _CalcStringString)
+                    and (
+                        self._current_calc[-1].get_disp() in DEFAULT_VARIABLES.keys()
+                        or self._current_calc[-1].get_disp()
+                        in self._user_variables.keys()
+                    )
+                )  # if we have a variable
+                or (
+                    isinstance(self._current_calc[-1], _CalcStringFunction)
+                )  # or a function
+                or (
+                    isinstance(self._current_calc[-1], _CalcStringNumber)
+                )  # or a number
+            ):
+                infnc = _CalcStringFunction(
+                    CalculatorFunctions.SQUAREROOT, self._current_calc.pop()
+                )
+
+            else:
+                raise TypeError("No argument for function")
+
         else:
             infnc = None
 
@@ -314,7 +344,7 @@ class CalculatorData:
 
         self.validate_symbol_and_func(symbol, func)
 
-        num, fnc, sym = self._get_num_fnc_sym(symbol, func)
+        num, fnc, sym = self.get_num_fnc_sym(symbol, func)
 
         tmpcalc: list[_CalcStringBase] = [c for c in [num, fnc, sym] if c != None]
 
@@ -355,7 +385,7 @@ class CalculatorData:
 
         self.validate_symbol_and_func(symbol, func)
 
-        num, fnc, sym = self._get_num_fnc_sym(symbol, func)
+        num, fnc, sym = self.get_num_fnc_sym(symbol, func)
 
         tmpcalc: list[_CalcStringBase] = [c for c in [num, fnc, sym] if c != None]
 
@@ -431,7 +461,7 @@ class CalculatorData:
 
         self.validate_symbol_and_func(symbol, func)
 
-        num, fnc, sym = self._get_num_fnc_sym(symbol, func)
+        num, fnc, sym = self.get_num_fnc_sym(symbol, func)
 
         tmpcalc: list[_CalcStringBase] = [c for c in [num, fnc, sym] if c != None]
 
@@ -885,34 +915,11 @@ class CalculatorData:
         precision in the Decimal context.
         """
 
-        # TODO: put all this logic into _get_num_fnc_sym to abstract it for future functions
-        # then this just becomes a single call to update_current_calc
-
-        # if we have a number being input
-        if self._current_input:
+        try:
             self.update_current_calc(func=CalculatorFunctions.SQUAREROOT)
-
-        # if we have a variable or number or function available to wrap
-        elif self._current_calc and (
-            (
-                isinstance(self._current_calc[-1], _CalcStringString)
-                and (
-                    self._current_calc[-1].get_disp() in DEFAULT_VARIABLES.keys()
-                    or self._current_calc[-1].get_disp() in self._user_variables.keys()
-                )
-            )  # if we have a variable
-            or (
-                isinstance(self._current_calc[-1], _CalcStringFunction)
-            )  # or a function
-            or (isinstance(self._current_calc[-1], _CalcStringNumber))  # or a number
-        ):
-            self._current_calc[-1] = _CalcStringFunction(
-                CalculatorFunctions.SQUAREROOT, self._current_calc[-1]
-            )
-            self.update_display()
-
-        else:
+        except Exception as e:
             self.bell()
+            raise e
 
     @object_wrapper
     def calculate(self) -> None:
@@ -942,15 +949,15 @@ class CalculatorData:
                 self._current_calc = []
                 self._current_input = numtostr(val) or ""
 
-            except Exception as error:
-                logerror(error, "calculate", 2)
+            except Exception as e:
+                logerror(e, "calculate", 2)
 
                 # clear the current calculation and print the error message
-                errmsg = error.__class__.__qualname__
+                errmsg = e.__class__.__qualname__
                 if errmsg == "TypeError":
-                    errmsg = str(error).split(":")[0]
+                    errmsg = str(e).split(":")[0]
                 elif errmsg == "SyntaxError":
-                    errmsg = f"{errmsg}: {str(error)}"
+                    errmsg = f"{errmsg}: {str(e)}"
                     unknown_line_1 = " (<unknown>, line 1)"
                     if errmsg.endswith(unknown_line_1):
                         errmsg = errmsg[: -(len(unknown_line_1))]

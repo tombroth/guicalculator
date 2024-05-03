@@ -28,7 +28,7 @@ from decimal import Decimal
 from tests.calculatordata.test__setup_calculatordata import SetupCalculatorDataTest
 
 
-class GetUserVariablesTest(SetupCalculatorDataTest):
+class SetUserVariablesTest(SetupCalculatorDataTest):
 
     def test_set_user_variables(self):
         """Test the set_user_variables function."""
