@@ -104,8 +104,8 @@ class _CalcStringNumber(_CalcStringBase):
 
     def get_eval(self) -> str:
         x = repr(
-            self._thenum.quantize(1)
-            if self._thenum == self._thenum.to_integral()
+            self._thenum.to_integral_value()
+            if self._thenum == self._thenum.to_integral_value()
             else self._thenum.normalize()
         )
         return x
