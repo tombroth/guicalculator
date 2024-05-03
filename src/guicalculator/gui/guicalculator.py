@@ -33,9 +33,14 @@ from .calcstyle import CalcStyle
 class GuiCalculator:
     """GuiCalculator - The root calculator window"""
 
-    def __init__(self) -> None:
+    def __init__(self, trap_exceptions: bool = True) -> None:
         self.root = Tk()
         self.root.title("Calculator")
+
+        if trap_exceptions:
+            # supress all top level exception processing
+            # any exceptions should be handled by logging module
+            self.root.report_callback_exception = lambda *_: None
 
         # style info for buttons
         self.style = CalcStyle()

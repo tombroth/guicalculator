@@ -107,12 +107,11 @@ def setup_logging(args: argparse.Namespace) -> None:
     args : argparse.Namespace
         The parsed command line arguments that contain logging options
     """
+    logger = logging.getLogger()
 
     if args.log_level == "none":
-        logging.getLogger().addHandler(logging.NullHandler())
+        logger.addHandler(logging.NullHandler())
         return
-
-    logger = logging.getLogger()
 
     if args.logging_output_file:
         # add an error handler for error/critical level to stderror
@@ -147,8 +146,8 @@ def main():
     args = parse_args()
 
     setup_logging(args)
-
-    _ = GuiCalculator()
+    
+    _ = GuiCalculator(args.log_level == "none")
 
 
 if __name__ == "__main__":

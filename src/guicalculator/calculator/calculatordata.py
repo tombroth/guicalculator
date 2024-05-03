@@ -244,14 +244,17 @@ class CalculatorData:
 
     @object_wrapper
     def get_num_fnc_sym(
-        self, symbol: str, func: FunctionsType
+        self, symbol: str, func: FunctionsType, remove_parameter: bool = False
     ) -> tuple[
         _CalcStringNumber | None, _CalcStringFunction | None, _CalcStringString | None
     ]:
         """
         get_num_fnc_sym - internal function to convert _current_input, symbol,
-         and func into their _CalcStringBase representations. Used by the
-         functions that display or update _current_calc.
+        and func into their _CalcStringBase representations. Used by the
+        functions that display or update _current_calc.
+
+        Will validate that parameters are correct type but assumes that symbol 
+        and func have already passed through validate_symbol_and_func.
 
         Parameters
         ----------
@@ -259,15 +262,26 @@ class CalculatorData:
             String to be added to the end of the calculation.
         func : FunctionsType
             Dataclass containing function to be added.
+        remove_parameter : bool, optional
+            If a parameter from _current_calc is needed for func, is it
+            okay to remove it from _current_calc, by default False
 
         Returns
         -------
         tuple[ _CalcStringNumber | None, _CalcStringFunction | None, _CalcStringString | None ]
             The _CalcStringBase representations of the number, function and symbol
+
+        Raises
+        ------
+        TypeError
+            Used for custom errors, message indicates what the specific error was.
         """
 
+        if symbol and not isinstance(symbol, str):
+            raise TypeError(f"Symbol is not correct type")
         if func and not isinstance(func, FunctionsType):
             raise TypeError(f"Function is not correct type")
+        # no need to check remove_parameter, Python will cast anything to bool
 
         if self._current_input:
             inpt = _CalcStringNumber(
@@ -301,8 +315,10 @@ class CalculatorData:
                 )  # or a number
             ):
                 infnc = _CalcStringFunction(
-                    CalculatorFunctions.SQUAREROOT, self._current_calc.pop()
+                    CalculatorFunctions.SQUAREROOT, self._current_calc[-1]
                 )
+                if remove_parameter:
+                    self._current_calc = self._current_calc[:-1]
 
             else:
                 raise TypeError("No argument for function")
@@ -314,6 +330,7 @@ class CalculatorData:
             sym = _CalcStringString(symbol)
         else:
             sym = None
+
         return inpt, infnc, sym
 
     @object_wrapper
@@ -461,7 +478,7 @@ class CalculatorData:
 
         self.validate_symbol_and_func(symbol, func)
 
-        num, fnc, sym = self.get_num_fnc_sym(symbol, func)
+        num, fnc, sym = self.get_num_fnc_sym(symbol, func, True)
 
         tmpcalc: list[_CalcStringBase] = [c for c in [num, fnc, sym] if c != None]
 
