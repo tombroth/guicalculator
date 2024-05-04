@@ -2,6 +2,34 @@
 
 The files in this directory:
 
+    py.typed - type hints for mypy
+
+    test_evaluate_calculation.py - tests for the evaluate_calculation.py module
+
+    test_logwrapper.py - test for the logwrapper.py module
+    
+    test_numtostr.py - tests for the numtostr.py module
+    
+    test_strtodecimal.py - tests for the strtodecimal.py module
+    
+    test_validate_user_var.py - tests for the validate_user_var.py module
+
+The subdirectories in this directory:
+
+    calculatordata - The tests for the calculatordata.py module
+
+Notes
+-----
+Tests currently only exist for the modules within src/calculator. 
+
+The modules within src/globals mostly declare things, so they are not tested.
+
+The modules within src/gui are for the user interface, and I am not sure if
+unit testing those would be possible or useful, they are best tested by using
+the app.
+
+The calculatordata.py module is large enough that it was split into one test per
+function and grouped into a subdirectory.
 """
 
 """

@@ -38,6 +38,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-__all__ = ["GuiCalculator"]
-
 from .gui.guicalculator import GuiCalculator
+
+__all__ = ["GuiCalculator"]
