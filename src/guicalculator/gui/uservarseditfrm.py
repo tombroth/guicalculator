@@ -174,6 +174,9 @@ class UserVarsEditFrm:
                 if widget_num >= len(remaining_vars):
                     widget_num = -1
                 self.uservars[remaining_vars[widget_num]].focus_set()
+            # otherwise, make a new row
+            else:
+                self.user_vars_edit_addrow()
 
     @gui_object_wrapper
     def add_current_calc(self) -> None:
@@ -200,8 +203,19 @@ class UserVarsEditFrm:
             self.set_errmsg(f"Invalid calculation: {s}")
             return
 
-        # add result to a new row
-        row = self.user_vars_edit_addrow()
+        # add result to either last row if blank or a new row
+        lastrow = None
+
+        if self.uservars.keys():
+            lastrow = max(r for (r, _) in self.uservars.keys())
+
+        if (lastrow and
+            not self.uservars[(lastrow, 0)].get().strip()
+            and not self.uservars[(lastrow, 1)].get().strip()
+        ):
+            row = lastrow
+        else:
+            row = self.user_vars_edit_addrow()
 
         self.uservars[(row, 0)].delete(0, END)
         self.uservars[(row, 0)].insert(0, "x")
