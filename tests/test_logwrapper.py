@@ -1,4 +1,4 @@
-"""test_logwrapper.py - Test script for the logwrapper function."""
+"""test_logwrapper.py - Test script for the logwrapper module."""
 
 """
 Copyright (c) 2024 Thomas Brotherton
@@ -145,7 +145,7 @@ class LogwrapperTest(unittest.TestCase):
 
         e = ValueError("Testing raising an error")
         funcname = "funcname"
-        
+
         with self.assertLogs(level=logging.ERROR) as logmsgs:
             lw.logerror(e, funcname)
             self.assertTrue(
