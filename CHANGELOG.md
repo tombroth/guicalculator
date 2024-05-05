@@ -4,6 +4,14 @@
 ## [unreleased] - 
 
 - Several minor improvements
+- Refactored most calculator functions ([#13](https://github.com/tombroth/guicalculator/issues/13))
+- Refactored how the current calculation is stored ([#12](https://github.com/tombroth/guicalculator/issues/12))
+- Added logging ([#4](https://github.com/tombroth/guicalculator/issues/4))
+- Updated handling of no input on various functions ([#10](https://github.com/tombroth/guicalculator/issues/10))
+- Changed the calculator state variables to be protected ([#11](https://github.com/tombroth/guicalculator/issues/11))
+- Reorganized the codebase to fit into three top level directories: calculator, globals, and gui ([#6](https://github.com/tombroth/guicalculator/issues/6))
+- Changed "Add current result as new variable" to call the parser directly, not updating the calculator state, and displaying an error message if there was an error ([#9](https://github.com/tombroth/guicalculator/issues/9))
+- Added enumerations and constants for several strings ([#8](https://github.com/tombroth/guicalculator/issues/8))
 - Changed classes to not inherit from Tk objects but to contain a Tk object ([#7](https://github.com/tombroth/guicalculator/issues/7))
 - Created new module calculatordata.py to contain calculator data and functions ([#7](https://github.com/tombroth/guicalculator/issues/7))
 - Created unit tests for calculatordata.py ([#7](https://github.com/tombroth/guicalculator/issues/7))
