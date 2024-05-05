@@ -68,10 +68,10 @@ class _CalcStringBase(ABC):
     def __eq__(self, other) -> bool: ...
 
     def __str__(self) -> str:
-        return self.get_disp()
+        return f"<{self.__class__.__qualname__} : {self.get_disp()}>"
 
     def __repr__(self) -> str:
-        return self.get_eval()
+        return f"<{self.__class__.__qualname__} : {self.get_eval()}>"
 
 
 class _CalcStringNumber(_CalcStringBase):
@@ -85,7 +85,7 @@ class _CalcStringNumber(_CalcStringBase):
     ) -> None:
         if isinstance(thenum, Decimal):
             self._thenum = thenum
-        elif isinstance(thenum, int) or isinstance(thenum, float):
+        elif isinstance(thenum, (int, float)):
             self._thenum = Decimal(thenum)
         elif isinstance(thenum, str):
             self._thenum = Decimal(thenum.replace(",", ""))
@@ -216,17 +216,9 @@ class CalculatorData:
         """
 
         # initialize lists of valid symbols and functions
-        valid_symbols = [cs.value for cs in CalculatorSymbols] + [
-            *DEFAULT_VARIABLES.keys()
-        ]
-
-        # double checking that variable names are str
-        # default variables are defined in code so should be safe
-        for v in self._user_variables.keys():
-            if isinstance(v, str):
-                valid_symbols.append(v)
-            else:
-                raise ValueError(f"User variable name is not str: {v!r}")
+        valid_symbols = [
+            cs.value for cs in CalculatorSymbols
+        ] + self.get_user_variable_names()
 
         valid_funcs = [cf for cf in CalculatorFunctions]
 
@@ -318,15 +310,11 @@ class CalculatorData:
             # if number, variable, or function was just input
             elif self._current_calc and (
                 (
-                    isinstance(self._current_calc[-1], _CalcStringString)
-                    and (
-                        self._current_calc[-1].get_disp() in DEFAULT_VARIABLES.keys()
-                        or self._current_calc[-1].get_disp()
-                        in self._user_variables.keys()
+                    isinstance(
+                        self._current_calc[-1], (_CalcStringNumber, _CalcStringFunction)
                     )
                 )
-                or (isinstance(self._current_calc[-1], _CalcStringFunction))
-                or (isinstance(self._current_calc[-1], _CalcStringNumber))
+                or (self._current_calc[-1].get_disp() in self.get_user_variable_names())
             ):
                 infnc = _CalcStringFunction(func, self._current_calc[-1])
                 if remove_parameter:
@@ -433,6 +421,41 @@ class CalculatorData:
             return None
 
     @object_wrapper
+    def get_user_variable_names(self, include_default: bool = True) -> list[str]:
+        """
+        get_user_variable_names - Return a list of current variable names
+
+        Validates that user variable names are string, doesn't check for keywords,
+        invalid identifier, duplicating a default variable, etc as that is done
+        by validate_user_var.
+
+        Parameters
+        ----------
+        include_default : bool, optional
+            include the default variables (e and pi), by default True
+
+        Returns
+        -------
+        list[str]
+            The variable names
+        """
+
+        varnames: list[str] = []
+
+        if include_default:
+            varnames.extend([*DEFAULT_VARIABLES.keys()])
+
+        # double checking that variable names are str
+        # default variables are defined in code so should be safe
+        for var in self._user_variables.keys():
+            if isinstance(var, str):
+                varnames.append(var)
+            else:
+                raise ValueError(f"User variable name is not str: {var!r}")
+
+        return varnames
+
+    @object_wrapper
     def get_user_variables(self) -> VariablesType:
         """
         get_user_variables - Return a deepcopy of _user_variables
@@ -484,7 +507,39 @@ class CalculatorData:
 
         num, fnc, sym = self.get_num_fnc_sym(symbol, func, True)
 
-        tmpcalc: list[_CalcStringBase] = [c for c in [num, fnc, sym] if c != None]
+        # check to see if we need any implied multiplications
+
+        mul_between = None  # the multiplication symbol between num and sym if needed
+        mul_before = None  # the multiplication symbol before (num, func, sym) if needed
+
+        # is the symbol a variable or open parenthesis
+        is_var_or_paren = (
+            sym
+            and sym.get_disp()
+            in [CalculatorSymbols.OPENPAREN.value] + self.get_user_variable_names()
+        )
+
+        if num or fnc or is_var_or_paren:
+
+            # only possibility is a number and either paren or variable
+            # function would consume number if available
+            if num and is_var_or_paren:
+                mul_between = _CalcStringString(CalculatorSymbols.MULTIPLICATION)
+
+            if self._current_calc:
+                last = self._current_calc[-1]
+
+                # if the last thing in the calculation is a number, function, close paren or variable
+                if isinstance(last, (_CalcStringNumber, _CalcStringFunction)) or (
+                    last.get_disp()
+                    in [CalculatorSymbols.CLOSEPAREN.value]
+                    + self.get_user_variable_names()
+                ):
+                    mul_before = _CalcStringString(CalculatorSymbols.MULTIPLICATION)
+
+        tmpcalc: list[_CalcStringBase] = [
+            c for c in [mul_before, num, mul_between, fnc, sym] if c != None
+        ]
 
         self._current_calc += tmpcalc
 
@@ -592,6 +647,25 @@ class CalculatorData:
         """
 
         if isinstance(symbol, int):
+
+            # if it is the first digit
+            if not self._current_input:
+
+                # and the previous thing on calculation is a number, function, variable, or close paren
+                if self._current_calc and (
+                    isinstance(
+                        self._current_calc[-1],
+                        (_CalcStringNumber, _CalcStringFunction),
+                    )
+                    or self._current_calc[-1].get_disp()
+                    in self.get_user_variable_names()
+                    + [CalculatorSymbols.CLOSEPAREN.value]
+                ):
+                    # add an explicit multiplication
+                    self._current_calc.append(
+                        _CalcStringString(CalculatorSymbols.MULTIPLICATION)
+                    )
+
             self._current_input += str(symbol)
             self.update_display()
 
@@ -621,9 +695,7 @@ class CalculatorData:
             last = self._current_calc[-1]._param
 
             # if it is a nested function or a function with a variable parameter, unnest
-            if isinstance(last, _CalcStringFunction) or isinstance(
-                last, _CalcStringString
-            ):
+            if isinstance(last, (_CalcStringFunction, _CalcStringString)):
                 self._current_calc[-1] = last
 
             # if it is a single number parameter
@@ -932,7 +1004,7 @@ class CalculatorData:
             except Exception as e:
                 logerror(e, "calculate", 2)
 
-                # clear the current calculation and print the error message
+                # clear the current calculation and display the error message
                 errmsg = e.__class__.__qualname__
                 if errmsg == "TypeError":
                     errmsg = str(e).split(":")[0]
