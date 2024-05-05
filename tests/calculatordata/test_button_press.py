@@ -24,7 +24,12 @@ SOFTWARE.
 
 import unittest
 
-from guicalculator.calculator.calculatordata import _CalcStringNumber, _CalcStringString
+from guicalculator.calculator.calculatordata import (
+    _CalcStringFunction,
+    _CalcStringNumber,
+    _CalcStringString,
+)
+from guicalculator.globals.enums import CalculatorFunctions
 from tests.calculatordata.test__setup_calculatordata import SetupCalculatorDataTest
 
 
@@ -65,6 +70,81 @@ class ButtonPressTest(SetupCalculatorDataTest):
                 "ending": {
                     "calc": [_CalcStringNumber(123)],
                     "inpt": "",
+                },
+            },
+            {
+                "case": "Existing inpt, calc ends with another number",
+                "current": {"calc": [_CalcStringNumber(3)], "inpt": "1"},
+                "params": {"symbol": 2},
+                "ending": {
+                    "calc": [_CalcStringNumber(3)],
+                    "inpt": "12",
+                },
+            },
+            {
+                "case": "No existing inpt, calc ends with another number",
+                "current": {"calc": [_CalcStringNumber(3)], "inpt": ""},
+                "params": {"symbol": 2},
+                "ending": {
+                    "calc": [_CalcStringNumber(3), _CalcStringString("*")],
+                    "inpt": "2",
+                },
+            },
+            {
+                "case": "No existing inpt, calc ends with a variable",
+                "current": {"calc": [_CalcStringString("e")], "inpt": ""},
+                "params": {"symbol": 2},
+                "ending": {
+                    "calc": [_CalcStringString("e"), _CalcStringString("*")],
+                    "inpt": "2",
+                },
+            },
+            {
+                "case": "No existing inpt, calc ends with a close paren",
+                "current": {"calc": [_CalcStringString(")")], "inpt": ""},
+                "params": {"symbol": 2},
+                "ending": {
+                    "calc": [_CalcStringString(")"), _CalcStringString("*")],
+                    "inpt": "2",
+                },
+            },
+            {
+                "case": "No existing inpt, calc ends with a function",
+                "current": {
+                    "calc": [
+                        _CalcStringFunction(
+                            CalculatorFunctions.SQUAREROOT, _CalcStringNumber(2)
+                        )
+                    ],
+                    "inpt": "",
+                },
+                "params": {"symbol": 2},
+                "ending": {
+                    "calc": [
+                        _CalcStringFunction(
+                            CalculatorFunctions.SQUAREROOT, _CalcStringNumber(2)
+                        ),
+                        _CalcStringString("*"),
+                    ],
+                    "inpt": "2",
+                },
+            },
+            {
+                "case": "No existing inpt, calc ends with a open paren",
+                "current": {"calc": [_CalcStringString("(")], "inpt": ""},
+                "params": {"symbol": 2},
+                "ending": {
+                    "calc": [_CalcStringString("(")],
+                    "inpt": "2",
+                },
+            },
+            {
+                "case": "No existing inpt, calc ends with +",
+                "current": {"calc": [_CalcStringString("+")], "inpt": ""},
+                "params": {"symbol": 2},
+                "ending": {
+                    "calc": [_CalcStringString("+")],
+                    "inpt": "2",
                 },
             },
         ]

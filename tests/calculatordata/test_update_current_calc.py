@@ -98,7 +98,834 @@ class UpdateCurrentCalcTest(SetupCalculatorDataTest):
                     "vars": {"x": Decimal("1234.56")},
                 },
                 "params": {"symbol": "x"},
-                "ending": {"calc": [_CalcStringString("x")], "inpt": ""},
+                "ending": {
+                    "calc": [_CalcStringString("x")],
+                    "inpt": "",
+                    "vars": {"x": Decimal("1234.56")},
+                },
+            },
+            # Checks for adding multiplication symbol
+            {
+                "case": "Number input, no symbol, calc ends with number",
+                "current": {
+                    "calc": [_CalcStringNumber(123)],
+                    "inpt": "123",
+                },
+                "params": {"symbol": ""},
+                "ending": {
+                    "calc": [
+                        _CalcStringNumber(123),
+                        _CalcStringString("*"),
+                        _CalcStringNumber(123),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Number input, no symbol, calc ends with variable",
+                "current": {
+                    "calc": [_CalcStringString("e")],
+                    "inpt": "123",
+                },
+                "params": {"symbol": ""},
+                "ending": {
+                    "calc": [
+                        _CalcStringString("e"),
+                        _CalcStringString("*"),
+                        _CalcStringNumber(123),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Number input, no symbol, calc ends with close paren",
+                "current": {
+                    "calc": [_CalcStringString(")")],
+                    "inpt": "123",
+                },
+                "params": {"symbol": ""},
+                "ending": {
+                    "calc": [
+                        _CalcStringString(")"),
+                        _CalcStringString("*"),
+                        _CalcStringNumber(123),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Number input, no symbol, calc ends with function",
+                "current": {
+                    "calc": [
+                        _CalcStringFunction(
+                            CalculatorFunctions.SQUAREROOT, _CalcStringNumber(123)
+                        ),
+                    ],
+                    "inpt": "123",
+                },
+                "params": {"symbol": ""},
+                "ending": {
+                    "calc": [
+                        _CalcStringFunction(
+                            CalculatorFunctions.SQUAREROOT, _CalcStringNumber(123)
+                        ),
+                        _CalcStringString("*"),
+                        _CalcStringNumber(123),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Number input, no symbol, calc ends with open paren",
+                "current": {
+                    "calc": [_CalcStringString("(")],
+                    "inpt": "123",
+                },
+                "params": {"symbol": ""},
+                "ending": {
+                    "calc": [
+                        _CalcStringString("("),
+                        _CalcStringNumber(123),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Number input, no symbol, calc ends with +",
+                "current": {
+                    "calc": [_CalcStringString("+")],
+                    "inpt": "123",
+                },
+                "params": {"symbol": ""},
+                "ending": {
+                    "calc": [
+                        _CalcStringString("+"),
+                        _CalcStringNumber(123),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Number input and open parenthesis, calc ends with number",
+                "current": {
+                    "calc": [_CalcStringNumber(123)],
+                    "inpt": "123",
+                },
+                "params": {"symbol": "("},
+                "ending": {
+                    "calc": [
+                        _CalcStringNumber(123),
+                        _CalcStringString("*"),
+                        _CalcStringNumber(123),
+                        _CalcStringString("*"),
+                        _CalcStringString("("),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Number input and open parenthesis, calc ends with variable",
+                "current": {
+                    "calc": [_CalcStringString("e")],
+                    "inpt": "123",
+                },
+                "params": {"symbol": "("},
+                "ending": {
+                    "calc": [
+                        _CalcStringString("e"),
+                        _CalcStringString("*"),
+                        _CalcStringNumber(123),
+                        _CalcStringString("*"),
+                        _CalcStringString("("),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Number input and open parenthesis, calc ends with close paren",
+                "current": {
+                    "calc": [_CalcStringString(")")],
+                    "inpt": "123",
+                },
+                "params": {"symbol": "("},
+                "ending": {
+                    "calc": [
+                        _CalcStringString(")"),
+                        _CalcStringString("*"),
+                        _CalcStringNumber(123),
+                        _CalcStringString("*"),
+                        _CalcStringString("("),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Number input and open parenthesis, calc ends with function",
+                "current": {
+                    "calc": [
+                        _CalcStringFunction(
+                            CalculatorFunctions.SQUAREROOT, _CalcStringNumber(123)
+                        )
+                    ],
+                    "inpt": "123",
+                },
+                "params": {"symbol": "("},
+                "ending": {
+                    "calc": [
+                        _CalcStringFunction(
+                            CalculatorFunctions.SQUAREROOT, _CalcStringNumber(123)
+                        ),
+                        _CalcStringString("*"),
+                        _CalcStringNumber(123),
+                        _CalcStringString("*"),
+                        _CalcStringString("("),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Number input and open parenthesis, calc ends with open paren",
+                "current": {
+                    "calc": [_CalcStringString("(")],
+                    "inpt": "123",
+                },
+                "params": {"symbol": "("},
+                "ending": {
+                    "calc": [
+                        _CalcStringString("("),
+                        _CalcStringNumber(123),
+                        _CalcStringString("*"),
+                        _CalcStringString("("),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Number input and open parenthesis, calc ends with +",
+                "current": {
+                    "calc": [_CalcStringString("+")],
+                    "inpt": "123",
+                },
+                "params": {"symbol": "("},
+                "ending": {
+                    "calc": [
+                        _CalcStringString("+"),
+                        _CalcStringNumber(123),
+                        _CalcStringString("*"),
+                        _CalcStringString("("),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Number input and +, calc ends with number",
+                "current": {
+                    "calc": [_CalcStringNumber(123)],
+                    "inpt": "123",
+                },
+                "params": {"symbol": "+"},
+                "ending": {
+                    "calc": [
+                        _CalcStringNumber(123),
+                        _CalcStringString("*"),
+                        _CalcStringNumber(123),
+                        _CalcStringString("+"),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Number input and +, calc ends with variable",
+                "current": {
+                    "calc": [_CalcStringString("e")],
+                    "inpt": "123",
+                },
+                "params": {"symbol": "+"},
+                "ending": {
+                    "calc": [
+                        _CalcStringString("e"),
+                        _CalcStringString("*"),
+                        _CalcStringNumber(123),
+                        _CalcStringString("+"),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Number input and +, calc ends with close paren",
+                "current": {
+                    "calc": [_CalcStringString(")")],
+                    "inpt": "123",
+                },
+                "params": {"symbol": "+"},
+                "ending": {
+                    "calc": [
+                        _CalcStringString(")"),
+                        _CalcStringString("*"),
+                        _CalcStringNumber(123),
+                        _CalcStringString("+"),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Number input and +, calc ends with function",
+                "current": {
+                    "calc": [
+                        _CalcStringFunction(
+                            CalculatorFunctions.SQUAREROOT, _CalcStringNumber(123)
+                        )
+                    ],
+                    "inpt": "123",
+                },
+                "params": {"symbol": "+"},
+                "ending": {
+                    "calc": [
+                        _CalcStringFunction(
+                            CalculatorFunctions.SQUAREROOT, _CalcStringNumber(123)
+                        ),
+                        _CalcStringString("*"),
+                        _CalcStringNumber(123),
+                        _CalcStringString("+"),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Number input and +, calc ends with open paren",
+                "current": {
+                    "calc": [_CalcStringString("(")],
+                    "inpt": "123",
+                },
+                "params": {"symbol": "+"},
+                "ending": {
+                    "calc": [
+                        _CalcStringString("("),
+                        _CalcStringNumber(123),
+                        _CalcStringString("+"),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Number input and +, calc ends with +",
+                "current": {
+                    "calc": [_CalcStringString("+")],
+                    "inpt": "123",
+                },
+                "params": {"symbol": "+"},
+                "ending": {
+                    "calc": [
+                        _CalcStringString("+"),
+                        _CalcStringNumber(123),
+                        _CalcStringString("+"),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Function input, calc ends with number",
+                "current": {
+                    "calc": [_CalcStringNumber(123)],
+                    "inpt": "123",
+                },
+                "params": {"func": CalculatorFunctions.SQUAREROOT},
+                "ending": {
+                    "calc": [
+                        _CalcStringNumber(123),
+                        _CalcStringString("*"),
+                        _CalcStringFunction(
+                            CalculatorFunctions.SQUAREROOT, _CalcStringNumber(123)
+                        ),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Function input, calc ends with variable",
+                "current": {
+                    "calc": [_CalcStringString("e")],
+                    "inpt": "123",
+                },
+                "params": {"func": CalculatorFunctions.SQUAREROOT},
+                "ending": {
+                    "calc": [
+                        _CalcStringString("e"),
+                        _CalcStringString("*"),
+                        _CalcStringFunction(
+                            CalculatorFunctions.SQUAREROOT, _CalcStringNumber(123)
+                        ),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Function input, calc ends with close paren",
+                "current": {
+                    "calc": [_CalcStringString(")")],
+                    "inpt": "123",
+                },
+                "params": {"func": CalculatorFunctions.SQUAREROOT},
+                "ending": {
+                    "calc": [
+                        _CalcStringString(")"),
+                        _CalcStringString("*"),
+                        _CalcStringFunction(
+                            CalculatorFunctions.SQUAREROOT, _CalcStringNumber(123)
+                        ),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Function input, calc ends with function",
+                "current": {
+                    "calc": [
+                        _CalcStringFunction(
+                            CalculatorFunctions.SQUAREROOT, _CalcStringNumber(123)
+                        )
+                    ],
+                    "inpt": "123",
+                },
+                "params": {"func": CalculatorFunctions.SQUAREROOT},
+                "ending": {
+                    "calc": [
+                        _CalcStringFunction(
+                            CalculatorFunctions.SQUAREROOT, _CalcStringNumber(123)
+                        ),
+                        _CalcStringString("*"),
+                        _CalcStringFunction(
+                            CalculatorFunctions.SQUAREROOT, _CalcStringNumber(123)
+                        ),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Function input, calc ends with open paren",
+                "current": {
+                    "calc": [_CalcStringString("(")],
+                    "inpt": "123",
+                },
+                "params": {"func": CalculatorFunctions.SQUAREROOT},
+                "ending": {
+                    "calc": [
+                        _CalcStringString("("),
+                        _CalcStringFunction(
+                            CalculatorFunctions.SQUAREROOT, _CalcStringNumber(123)
+                        ),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Function input, calc ends with +",
+                "current": {
+                    "calc": [_CalcStringString("+")],
+                    "inpt": "123",
+                },
+                "params": {"func": CalculatorFunctions.SQUAREROOT},
+                "ending": {
+                    "calc": [
+                        _CalcStringString("+"),
+                        _CalcStringFunction(
+                            CalculatorFunctions.SQUAREROOT, _CalcStringNumber(123)
+                        ),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Variable input, no number, calc ends with number",
+                "current": {
+                    "calc": [_CalcStringNumber(123)],
+                    "inpt": "",
+                },
+                "params": {"symbol": "e"},
+                "ending": {
+                    "calc": [
+                        _CalcStringNumber(123),
+                        _CalcStringString("*"),
+                        _CalcStringString("e"),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Variable input, no number, calc ends with variable",
+                "current": {
+                    "calc": [_CalcStringString("e")],
+                    "inpt": "",
+                },
+                "params": {"symbol": "e"},
+                "ending": {
+                    "calc": [
+                        _CalcStringString("e"),
+                        _CalcStringString("*"),
+                        _CalcStringString("e"),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Variable input, no number, calc ends with close paren",
+                "current": {
+                    "calc": [_CalcStringString(")")],
+                    "inpt": "",
+                },
+                "params": {"symbol": "e"},
+                "ending": {
+                    "calc": [
+                        _CalcStringString(")"),
+                        _CalcStringString("*"),
+                        _CalcStringString("e"),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Variable input, no number, calc ends with function",
+                "current": {
+                    "calc": [
+                        _CalcStringFunction(
+                            CalculatorFunctions.SQUAREROOT, _CalcStringNumber(123)
+                        )
+                    ],
+                    "inpt": "",
+                },
+                "params": {"symbol": "e"},
+                "ending": {
+                    "calc": [
+                        _CalcStringFunction(
+                            CalculatorFunctions.SQUAREROOT, _CalcStringNumber(123)
+                        ),
+                        _CalcStringString("*"),
+                        _CalcStringString("e"),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Variable input, no number, calc ends with open paren",
+                "current": {
+                    "calc": [_CalcStringString("(")],
+                    "inpt": "",
+                },
+                "params": {"symbol": "e"},
+                "ending": {
+                    "calc": [
+                        _CalcStringString("("),
+                        _CalcStringString("e"),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Variable input, no number, calc ends with +",
+                "current": {
+                    "calc": [_CalcStringString("+")],
+                    "inpt": "",
+                },
+                "params": {"symbol": "e"},
+                "ending": {
+                    "calc": [
+                        _CalcStringString("+"),
+                        _CalcStringString("e"),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Open parenthesis input, no number, calc ends with number",
+                "current": {
+                    "calc": [_CalcStringNumber(123)],
+                    "inpt": "",
+                },
+                "params": {"symbol": "("},
+                "ending": {
+                    "calc": [
+                        _CalcStringNumber(123),
+                        _CalcStringString("*"),
+                        _CalcStringString("("),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Open parenthesis input, no number, calc ends with variable",
+                "current": {
+                    "calc": [_CalcStringString("e")],
+                    "inpt": "",
+                },
+                "params": {"symbol": "("},
+                "ending": {
+                    "calc": [
+                        _CalcStringString("e"),
+                        _CalcStringString("*"),
+                        _CalcStringString("("),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Open parenthesis input, no number, calc ends with close paren",
+                "current": {
+                    "calc": [_CalcStringString(")")],
+                    "inpt": "",
+                },
+                "params": {"symbol": "("},
+                "ending": {
+                    "calc": [
+                        _CalcStringString(")"),
+                        _CalcStringString("*"),
+                        _CalcStringString("("),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Open parenthesis input, no number, calc ends with function",
+                "current": {
+                    "calc": [
+                        _CalcStringFunction(
+                            CalculatorFunctions.SQUAREROOT, _CalcStringNumber(123)
+                        )
+                    ],
+                    "inpt": "",
+                },
+                "params": {"symbol": "("},
+                "ending": {
+                    "calc": [
+                        _CalcStringFunction(
+                            CalculatorFunctions.SQUAREROOT, _CalcStringNumber(123)
+                        ),
+                        _CalcStringString("*"),
+                        _CalcStringString("("),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Open parenthesis input, no number, calc ends with open paren",
+                "current": {
+                    "calc": [_CalcStringString("(")],
+                    "inpt": "",
+                },
+                "params": {"symbol": "("},
+                "ending": {
+                    "calc": [
+                        _CalcStringString("("),
+                        _CalcStringString("("),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Open parenthesis input, no number, calc ends with +",
+                "current": {
+                    "calc": [_CalcStringString("+")],
+                    "inpt": "",
+                },
+                "params": {"symbol": "("},
+                "ending": {
+                    "calc": [
+                        _CalcStringString("+"),
+                        _CalcStringString("("),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Close parenthesis input, no number, calc ends with number",
+                "current": {
+                    "calc": [_CalcStringNumber(123)],
+                    "inpt": "",
+                },
+                "params": {"symbol": ")"},
+                "ending": {
+                    "calc": [
+                        _CalcStringNumber(123),
+                        _CalcStringString(")"),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Close parenthesis input, no number, calc ends with variable",
+                "current": {
+                    "calc": [_CalcStringString("e")],
+                    "inpt": "",
+                },
+                "params": {"symbol": ")"},
+                "ending": {
+                    "calc": [
+                        _CalcStringString("e"),
+                        _CalcStringString(")"),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Close parenthesis input, no number, calc ends with close paren",
+                "current": {
+                    "calc": [_CalcStringString(")")],
+                    "inpt": "",
+                },
+                "params": {"symbol": ")"},
+                "ending": {
+                    "calc": [
+                        _CalcStringString(")"),
+                        _CalcStringString(")"),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Close parenthesis input, no number, calc ends with function",
+                "current": {
+                    "calc": [
+                        _CalcStringFunction(
+                            CalculatorFunctions.SQUAREROOT, _CalcStringNumber(123)
+                        )
+                    ],
+                    "inpt": "",
+                },
+                "params": {"symbol": ")"},
+                "ending": {
+                    "calc": [
+                        _CalcStringFunction(
+                            CalculatorFunctions.SQUAREROOT, _CalcStringNumber(123)
+                        ),
+                        _CalcStringString(")"),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Close parenthesis input, no number, calc ends with open paren",
+                "current": {
+                    "calc": [_CalcStringString("(")],
+                    "inpt": "",
+                },
+                "params": {"symbol": ")"},
+                "ending": {
+                    "calc": [
+                        _CalcStringString("("),
+                        _CalcStringString(")"),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "Close parenthesis input, no number, calc ends with +",
+                "current": {
+                    "calc": [_CalcStringString("+")],
+                    "inpt": "",
+                },
+                "params": {"symbol": ")"},
+                "ending": {
+                    "calc": [
+                        _CalcStringString("+"),
+                        _CalcStringString(")"),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "+ input, no number, calc ends with number",
+                "current": {
+                    "calc": [_CalcStringNumber(123)],
+                    "inpt": "",
+                },
+                "params": {"symbol": "+"},
+                "ending": {
+                    "calc": [
+                        _CalcStringNumber(123),
+                        _CalcStringString("+"),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "+ input, no number, calc ends with variable",
+                "current": {
+                    "calc": [_CalcStringString("e")],
+                    "inpt": "",
+                },
+                "params": {"symbol": "+"},
+                "ending": {
+                    "calc": [
+                        _CalcStringString("e"),
+                        _CalcStringString("+"),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "+ input, no number, calc ends with close paren",
+                "current": {
+                    "calc": [_CalcStringString(")")],
+                    "inpt": "",
+                },
+                "params": {"symbol": "+"},
+                "ending": {
+                    "calc": [
+                        _CalcStringString(")"),
+                        _CalcStringString("+"),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "+ input, no number, calc ends with function",
+                "current": {
+                    "calc": [
+                        _CalcStringFunction(
+                            CalculatorFunctions.SQUAREROOT, _CalcStringNumber(123)
+                        )
+                    ],
+                    "inpt": "",
+                },
+                "params": {"symbol": "+"},
+                "ending": {
+                    "calc": [
+                        _CalcStringFunction(
+                            CalculatorFunctions.SQUAREROOT, _CalcStringNumber(123)
+                        ),
+                        _CalcStringString("+"),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "+ input, no number, calc ends with open paren",
+                "current": {
+                    "calc": [_CalcStringString("(")],
+                    "inpt": "",
+                },
+                "params": {"symbol": "+"},
+                "ending": {
+                    "calc": [
+                        _CalcStringString("("),
+                        _CalcStringString("+"),
+                    ],
+                    "inpt": "",
+                },
+            },
+            {
+                "case": "+ input, no number, calc ends with +",
+                "current": {
+                    "calc": [_CalcStringString("+")],
+                    "inpt": "",
+                },
+                "params": {"symbol": "+"},
+                "ending": {
+                    "calc": [
+                        _CalcStringString("+"),
+                        _CalcStringString("+"),
+                    ],
+                    "inpt": "",
+                },
             },
         ]
 
