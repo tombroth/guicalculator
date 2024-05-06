@@ -25,11 +25,12 @@ SOFTWARE.
 import unittest
 from decimal import Decimal
 
-from guicalculator.calculator.calculatordata import (
+from guicalculator.calculator.calculatordata.private.types import (
     _CalcStringFunction,
     _CalcStringNumber,
     _CalcStringString,
 )
+from guicalculator.calculator.calculatordata.private.updatecalc import update_current_calc
 from guicalculator.globals import PI, CalculatorFunctions
 from tests.calculatordata.test__setup_calculatordata import SetupCalculatorDataTest
 
@@ -932,9 +933,9 @@ class UpdateCurrentCalcTest(SetupCalculatorDataTest):
         for data in test_data:
             with self.subTest(msg="update_current_calc: " + data["case"]):
                 self.run_basic_test(
-                    func=self.calc_data.update_current_calc,
+                    func=update_current_calc,
                     cur_vals=data["current"],
-                    params=data["params"],
+                    params={"self": self.calc_data, **data["params"]},
                     end_vals=data["ending"],
                 )
 
@@ -978,9 +979,9 @@ class UpdateCurrentCalcTest(SetupCalculatorDataTest):
             with self.subTest(msg="update_current_calc: " + data["case"]):
                 with self.assertRaises(data["result"]):
                     self.run_basic_test(
-                        func=self.calc_data.update_current_calc,
+                        func=update_current_calc,
                         cur_vals=data["current"],
-                        params=data["params"],
+                        params={"self": self.calc_data, **data["params"]},
                     )
 
 

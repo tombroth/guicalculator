@@ -26,7 +26,12 @@ import logging
 import unittest
 from decimal import Decimal
 
-from guicalculator.calculator.calculatordata import _CalcStringFunction, _CalcStringNumber, _CalcStringString
+from guicalculator.calculator.calculatordata.private.types import (
+    _CalcStringFunction,
+    _CalcStringNumber,
+    _CalcStringString,
+)
+from guicalculator.calculator.calculatordata.private.calculate import calculate
 from guicalculator.globals.constants import PI
 from guicalculator.globals.enums import CalculatorFunctions
 from tests.calculatordata.test__setup_calculatordata import SetupCalculatorDataTest
@@ -106,8 +111,9 @@ class CalculateTest(SetupCalculatorDataTest):
         for data in test_data:
             with self.subTest(msg="calculate: " + data["case"]):
                 self.run_basic_test(
-                    func=self.calc_data.calculate,
+                    func=calculate,
                     cur_vals=data["current"],
+                    params={"self": self.calc_data},
                     end_vals=data["ending"],
                 )
 
@@ -143,8 +149,9 @@ class CalculateTest(SetupCalculatorDataTest):
             with self.subTest(msg="calculate: " + data["case"]):
                 with self.assertLogs(level=logging.ERROR) as logmsgs:
                     self.run_basic_test(
-                        func=self.calc_data.calculate,
+                        func=calculate,
                         cur_vals=data["current"],
+                        params={"self": self.calc_data},
                         end_vals=data["ending"],
                     )
                     self.assertTrue(

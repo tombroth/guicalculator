@@ -24,9 +24,10 @@ SOFTWARE.
 
 import logging
 import unittest
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal
 
-from guicalculator.calculator.calculatordata import (
+from guicalculator.calculator.calculatordata.private.rootnum import root_number
+from guicalculator.calculator.calculatordata.private.types import (
     _CalcStringFunction,
     _CalcStringNumber,
     _CalcStringString,
@@ -136,8 +137,9 @@ class RootNumberTest(SetupCalculatorDataTest):
         for data in test_data:
             with self.subTest(msg="root_number: " + data["case"]):
                 self.run_basic_test(
-                    func=self.calc_data.root_number,
+                    func=root_number,
                     cur_vals=data["current"],
+                    params={"self": self.calc_data},
                     end_vals=data["ending"],
                 )
 
@@ -207,8 +209,9 @@ class RootNumberTest(SetupCalculatorDataTest):
             with self.subTest(msg="root_number: " + data["case"]):
                 with self.assertLogs(level=logging.ERROR) as logmsgs:
                     self.run_basic_test(
-                        func=self.calc_data.root_number,
+                        func=root_number,
                         cur_vals=data["current"],
+                        params={"self": self.calc_data},
                         end_vals=data["ending"],
                     )
                     self.assertTrue(

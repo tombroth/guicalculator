@@ -25,6 +25,7 @@ SOFTWARE.
 import unittest
 from decimal import Decimal, InvalidOperation
 
+from guicalculator.calculator.calculatordata.private.getcurinpt import get_current_input
 from tests.calculatordata.test__setup_calculatordata import SetupCalculatorDataTest
 
 
@@ -59,8 +60,9 @@ class GetCurrentInputTest(SetupCalculatorDataTest):
         for data in test_data:
             with self.subTest(msg="get_current_input: " + data["case"]):
                 res = self.run_basic_test(
-                    func=self.calc_data.get_current_input,
+                    func=get_current_input,
                     cur_vals=data["current"],
+                    params={"self": self.calc_data},
                     end_vals=data["current"],
                 )
                 self.assertEqual(res, data["result"])
@@ -101,8 +103,9 @@ class GetCurrentInputTest(SetupCalculatorDataTest):
             with self.subTest(msg="get_current_input: " + data["case"]):
                 with self.assertRaises(data["result"]):
                     self.run_basic_test(
-                        func=self.calc_data.get_current_input,
+                        func=get_current_input,
                         cur_vals=data["current"],
+                        params={"self": self.calc_data},
                     )
 
 

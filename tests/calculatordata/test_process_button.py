@@ -22,18 +22,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from io import StringIO
-import logging
 import unittest
-from unittest.mock import patch
 
-from tests.calculatordata.test__setup_calculatordata import \
-    SetupCalculatorDataTest
+from guicalculator.calculator.calculatordata.functions.processbutton import (
+    process_button,
+)
+from tests.calculatordata.test__setup_calculatordata import SetupCalculatorDataTest
 
 
 class ProcessButtonTest(SetupCalculatorDataTest):
 
-    # skipping this for now, it's just a big match/case statement to call
+    # skipping valid test for now, it's just a big match/case statement to call
     # other functions and those functions are already tested
     #
     # the alternative would be to use MagicMock just to make sure the
@@ -84,9 +83,9 @@ class ProcessButtonTest(SetupCalculatorDataTest):
             with self.subTest(msg="process_button: " + data["case"]):
                 with self.assertRaises(data["result"]):
                     self.run_basic_test(
-                        func=self.calc_data.process_button,
+                        func=process_button,
                         cur_vals=data["current"],
-                        params=data["params"],
+                        params={"self": self.calc_data, **data["params"]},
                     )
 
 

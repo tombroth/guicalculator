@@ -1,4 +1,6 @@
-""""""
+"""
+test__setup_calculatordata.py - The base class for CalculatorData tests
+"""
 
 """
 Copyright (c) 2024 Thomas Brotherton
@@ -23,7 +25,7 @@ SOFTWARE.
 """
 
 import unittest
-from tkinter import Tk
+from tkinter import StringVar, Tk
 from typing import Any, Callable
 from unittest.mock import MagicMock
 
@@ -46,6 +48,7 @@ class SetupCalculatorDataTest(unittest.TestCase):
         write_to_display,
         bell,
         vars_popup,
+        memval=StringVar(),
     )
 
     def set_current_vars(self, cur_vals: dict) -> None:

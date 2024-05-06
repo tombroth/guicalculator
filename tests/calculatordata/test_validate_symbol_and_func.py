@@ -24,6 +24,7 @@ SOFTWARE.
 
 import unittest
 
+from guicalculator.calculator.calculatordata.private.validatesymfunc import validate_symbol_and_func
 from guicalculator.globals import CalculatorFunctions
 from guicalculator.globals.enums import CalculatorSymbols
 from guicalculator.globals.functionstype import FunctionsType
@@ -110,7 +111,7 @@ class ValidateSymbolAndFuncTest(SetupCalculatorDataTest):
 
         for data in test_data:
             with self.subTest(msg="validate_symbol_and_func: " + data["case"]):
-                self.calc_data.validate_symbol_and_func(**data["params"])
+                validate_symbol_and_func(self.calc_data, **data["params"])
 
     def test_validate_symbol_and_func_invalid_input(self):
         """Test the validate_symbol_and_func function with invalid input."""
@@ -193,7 +194,7 @@ class ValidateSymbolAndFuncTest(SetupCalculatorDataTest):
         for data in test_data:
             with self.subTest(msg="validate_symbol_and_func: " + data["case"]):
                 with self.assertRaises(data["result"]):
-                    self.calc_data.validate_symbol_and_func(**data["params"])
+                    validate_symbol_and_func(self.calc_data, ** data["params"])
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-"""test_invert_sign.py - Test script for the invert_sign function."""
+"""test_negte.py - Test script for the negate function."""
 
 """
 Copyright (c) 2024 Thomas Brotherton
@@ -25,7 +25,8 @@ SOFTWARE.
 import logging
 import unittest
 
-from guicalculator.calculator.calculatordata import (
+from guicalculator.calculator.calculatordata.private.negate import negate
+from guicalculator.calculator.calculatordata.private.types import (
     _CalcStringFunction,
     _CalcStringNumber,
     _CalcStringString,
@@ -36,8 +37,8 @@ from tests.calculatordata.test__setup_calculatordata import SetupCalculatorDataT
 
 class InvertSignTest(SetupCalculatorDataTest):
 
-    def test_invert_sign(self):
-        """Test the invert_sign function."""
+    def test_negate(self):
+        """Test the negate function."""
 
         test_data = [
             {
@@ -145,15 +146,16 @@ class InvertSignTest(SetupCalculatorDataTest):
         ]
 
         for data in test_data:
-            with self.subTest(msg="invert_sign: " + data["case"]):
+            with self.subTest(msg="negate: " + data["case"]):
                 self.run_basic_test(
-                    func=self.calc_data.invert_sign,
+                    func=negate,
                     cur_vals=data["current"],
+                    params={"self": self.calc_data},
                     end_vals=data["ending"],
                 )
 
-    def test_invert_sign_invalid_input(self):
-        """Test the invert_sign function with invalid input."""
+    def test_negate_invalid_input(self):
+        """Test the negate function with invalid input."""
 
         lambdafunc = lambda: __import__("os").system("dir")
 
@@ -185,11 +187,12 @@ class InvertSignTest(SetupCalculatorDataTest):
         ]
 
         for data in test_data:
-            with self.subTest(msg="invert_sign: " + data["case"]):
+            with self.subTest(msg="negate: " + data["case"]):
                 with self.assertLogs(level=logging.ERROR) as logmsgs:
                     self.run_basic_test(
-                        func=self.calc_data.invert_sign,
+                        func=negate,
                         cur_vals=data["current"],
+                        params={"self": self.calc_data},
                         end_vals=data["ending"],
                     )
                     self.assertTrue(

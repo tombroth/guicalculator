@@ -25,6 +25,7 @@ SOFTWARE.
 from decimal import InvalidOperation
 import unittest
 
+from guicalculator.calculator.calculatordata.private.memstore import memory_store
 from tests.calculatordata.test__setup_calculatordata import SetupCalculatorDataTest
 
 
@@ -64,8 +65,9 @@ class MemoryStoreTest(SetupCalculatorDataTest):
         for data in test_data:
             with self.subTest(msg="memory_store: " + data["case"]):
                 self.run_basic_test(
-                    func=self.calc_data.memory_store,
+                    func=memory_store,
                     cur_vals=data["current"],
+                    params={"self": self.calc_data},
                     end_vals=data["ending"],
                 )
 
@@ -92,8 +94,9 @@ class MemoryStoreTest(SetupCalculatorDataTest):
             with self.subTest(msg="memory_store: " + data["case"]):
                 with self.assertRaises(data["result"]):
                     self.run_basic_test(
-                        func=self.calc_data.memory_store,
+                        func=memory_store,
                         cur_vals=data["current"],
+                        params={"self": self.calc_data},
                     )
 
 

@@ -24,6 +24,7 @@ SOFTWARE.
 
 import unittest
 
+from guicalculator.calculator.calculatordata.private.memclear import memory_clear
 from tests.calculatordata.test__setup_calculatordata import SetupCalculatorDataTest
 
 
@@ -53,8 +54,9 @@ class MemoryClearTest(SetupCalculatorDataTest):
         for data in test_data:
             with self.subTest(msg="memory_clear: " + data["case"]):
                 self.run_basic_test(
-                    func=self.calc_data.memory_clear,
+                    func=memory_clear,
                     cur_vals=data["current"],
+                    params={"self": self.calc_data},
                     end_vals=data["ending"],
                 )
 

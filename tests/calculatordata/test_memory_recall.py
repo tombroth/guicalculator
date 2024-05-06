@@ -25,6 +25,7 @@ SOFTWARE.
 import unittest
 from decimal import InvalidOperation
 
+from guicalculator.calculator.calculatordata.private.memrecall import memory_recall
 from tests.calculatordata.test__setup_calculatordata import SetupCalculatorDataTest
 
 
@@ -54,8 +55,9 @@ class MemoryRecallTest(SetupCalculatorDataTest):
         for data in test_data:
             with self.subTest(msg="memory_recall: " + data["case"]):
                 self.run_basic_test(
-                    func=self.calc_data.memory_recall,
+                    func=memory_recall,
                     cur_vals=data["current"],
+                    params={"self": self.calc_data},
                     end_vals=data["ending"],
                 )
 
@@ -79,8 +81,9 @@ class MemoryRecallTest(SetupCalculatorDataTest):
             with self.subTest(msg="memory_recall: " + data["case"]):
                 with self.assertRaises(data["result"]):
                     self.run_basic_test(
-                        func=self.calc_data.memory_recall,
+                        func=memory_recall,
                         cur_vals=data["current"],
+                        params={"self": self.calc_data},
                     )
 
 

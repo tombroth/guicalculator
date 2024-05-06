@@ -24,7 +24,11 @@ SOFTWARE.
 
 import unittest
 
-from guicalculator.calculator.calculatordata import _CalcStringNumber, _CalcStringString
+from guicalculator.calculator.calculatordata.functions.evalcalc import get_current_eval_calc
+from guicalculator.calculator.calculatordata.private.types import (
+    _CalcStringNumber,
+    _CalcStringString,
+)
 from guicalculator.globals import CalculatorFunctions
 from tests.calculatordata.test__setup_calculatordata import SetupCalculatorDataTest
 
@@ -66,9 +70,9 @@ class GetCurrentEvalCalcTest(SetupCalculatorDataTest):
         for data in test_data:
             with self.subTest(msg="get_current_eval_calc: " + data["case"]):
                 res = self.run_basic_test(
-                    func=self.calc_data.get_current_eval_calc,
+                    func=get_current_eval_calc,
                     cur_vals=data["current"],
-                    params=data["params"],
+                    params={"self": self.calc_data, **data["params"]},
                     end_vals=data["current"],
                 )
                 self.assertEqual(res, data["result"])
@@ -106,9 +110,9 @@ class GetCurrentEvalCalcTest(SetupCalculatorDataTest):
             with self.subTest(msg="get_current_eval_calc: " + data["case"]):
                 with self.assertRaises(data["result"]):
                     self.run_basic_test(
-                        func=self.calc_data.get_current_eval_calc,
+                        func=get_current_eval_calc,
                         cur_vals=data["current"],
-                        params=data["params"],
+                        params={"self": self.calc_data, **data["params"]},
                     )
 
 

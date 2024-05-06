@@ -25,6 +25,7 @@ SOFTWARE.
 import unittest
 from decimal import InvalidOperation
 
+from guicalculator.calculator.calculatordata.private.memadd import memory_add
 from tests.calculatordata.test__setup_calculatordata import SetupCalculatorDataTest
 
 
@@ -75,9 +76,9 @@ class MemoryAddTest(SetupCalculatorDataTest):
         for data in test_data:
             with self.subTest(msg="memory_add: " + data["case"]):
                 self.run_basic_test(
-                    func=self.calc_data.memory_add,
+                    func=memory_add,
                     cur_vals=data["current"],
-                    params=data["params"],
+                    params={"self": self.calc_data, **data["params"]},
                     end_vals=data["ending"],
                 )
 
@@ -117,8 +118,9 @@ class MemoryAddTest(SetupCalculatorDataTest):
             with self.subTest(msg="memory_add: " + data["case"]):
                 with self.assertRaises(data["result"]):
                     self.run_basic_test(
-                        func=self.calc_data.memory_add,
+                        func=memory_add,
                         cur_vals=data["current"],
+                        params={"self": self.calc_data},
                     )
 
 

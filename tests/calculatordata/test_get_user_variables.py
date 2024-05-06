@@ -25,6 +25,7 @@ SOFTWARE.
 from decimal import Decimal
 import unittest
 
+from guicalculator.calculator.calculatordata.functions.getuservar import get_user_variables
 from tests.calculatordata.test__setup_calculatordata import SetupCalculatorDataTest
 
 
@@ -64,8 +65,9 @@ class GetUserVariablesTest(SetupCalculatorDataTest):
         for data in test_data:
             with self.subTest(msg="get_user_variables: " + data["case"]):
                 res = self.run_basic_test(
-                    func=self.calc_data.get_user_variables,
+                    func=get_user_variables,
                     cur_vals=data["current"],
+                    params={"self": self.calc_data},
                     end_vals=data["ending"],
                 )
                 self.assertEqual(res, data["result"])

@@ -24,6 +24,7 @@ SOFTWARE.
 
 import unittest
 
+from guicalculator.calculator.calculatordata.private.getuservarnames import get_user_variable_names
 from tests.calculatordata.test__setup_calculatordata import SetupCalculatorDataTest
 
 
@@ -66,9 +67,9 @@ class GetUserVariableNamesTest(SetupCalculatorDataTest):
         for data in test_data:
             with self.subTest(msg="get_user_variable_names: " + data["case"]):
                 result = self.run_basic_test(
-                    func=self.calc_data.get_user_variable_names,
+                    func=get_user_variable_names,
                     cur_vals=data["current"],
-                    params=data["params"],
+                    params={"self": self.calc_data, **data["params"]},
                     end_vals=data["ending"],
                 )
                 self.assertEqual(result, data["result"])
@@ -92,9 +93,9 @@ class GetUserVariableNamesTest(SetupCalculatorDataTest):
             with self.subTest(msg="get_user_variable_names: " + data["case"]):
                 with self.assertRaises(data["result"]):
                     self.run_basic_test(
-                        func=self.calc_data.get_user_variable_names,
+                        func=get_user_variable_names,
                         cur_vals=data["current"],
-                        params=data["params"],
+                        params={"self": self.calc_data, **data["params"]},
                     )
 
 

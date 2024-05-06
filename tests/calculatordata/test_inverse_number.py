@@ -24,9 +24,9 @@ SOFTWARE.
 
 import logging
 import unittest
-from decimal import InvalidOperation
 
-from guicalculator.calculator.calculatordata import (
+from guicalculator.calculator.calculatordata.private.invnum import inverse_number
+from guicalculator.calculator.calculatordata.private.types import (
     _CalcStringFunction,
     _CalcStringNumber,
     _CalcStringString,
@@ -126,8 +126,9 @@ class InverseNumberTest(SetupCalculatorDataTest):
         for data in test_data:
             with self.subTest(msg="inverse_number: " + data["case"]):
                 self.run_basic_test(
-                    func=self.calc_data.inverse_number,
+                    func=inverse_number,
                     cur_vals=data["current"],
+                    params={"self": self.calc_data},
                     end_vals=data["ending"],
                 )
 
@@ -178,8 +179,9 @@ class InverseNumberTest(SetupCalculatorDataTest):
             with self.subTest(msg="inverse_number: " + data["case"]):
                 with self.assertLogs(level=logging.ERROR) as logmsgs:
                     self.run_basic_test(
-                        func=self.calc_data.inverse_number,
+                        func=inverse_number,
                         cur_vals=data["current"],
+                        params={"self": self.calc_data},
                         end_vals=data["ending"],
                     )
                     self.assertTrue(

@@ -24,7 +24,11 @@ SOFTWARE.
 
 import unittest
 
-from guicalculator.calculator.calculatordata import _CalcStringNumber, _CalcStringString
+from guicalculator.calculator.calculatordata.private.clearall import clear_all
+from guicalculator.calculator.calculatordata.private.types import (
+    _CalcStringNumber,
+    _CalcStringString,
+)
 from tests.calculatordata.test__setup_calculatordata import SetupCalculatorDataTest
 
 
@@ -58,8 +62,9 @@ class ClearAllTest(SetupCalculatorDataTest):
                 cleardispcnt = self.clear_display.call_count
 
                 self.run_basic_test(
-                    func=self.calc_data.clear_all,
+                    func=clear_all,
                     cur_vals=data["current"],
+                    params={"self": self.calc_data},
                     end_vals=data["ending"],
                 )
 

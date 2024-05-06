@@ -24,7 +24,11 @@ SOFTWARE.
 
 import unittest
 
-from guicalculator.calculator.calculatordata import _CalcStringNumber, _CalcStringString
+from guicalculator.calculator.calculatordata.private.clearvalue import clear_value
+from guicalculator.calculator.calculatordata.private.types import (
+    _CalcStringNumber,
+    _CalcStringString,
+)
 from tests.calculatordata.test__setup_calculatordata import SetupCalculatorDataTest
 
 
@@ -58,8 +62,9 @@ class ClearValueTest(SetupCalculatorDataTest):
         for data in test_data:
             with self.subTest(msg="clear_value: " + data["case"]):
                 self.run_basic_test(
-                    func=self.calc_data.clear_value,
+                    func=clear_value,
                     cur_vals=data["current"],
+                    params={"self": self.calc_data},
                     end_vals=data["ending"],
                 )
 

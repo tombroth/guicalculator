@@ -25,6 +25,7 @@ SOFTWARE.
 import unittest
 from decimal import InvalidOperation
 
+from guicalculator.calculator.calculatordata.private.memswap import memory_swap
 from tests.calculatordata.test__setup_calculatordata import SetupCalculatorDataTest
 
 
@@ -64,8 +65,9 @@ class MemorySwapTest(SetupCalculatorDataTest):
         for data in test_data:
             with self.subTest(msg="memory_swap: " + data["case"]):
                 self.run_basic_test(
-                    func=self.calc_data.memory_swap,
+                    func=memory_swap,
                     cur_vals=data["current"],
+                    params={"self": self.calc_data},
                     end_vals=data["ending"],
                 )
 
@@ -105,8 +107,9 @@ class MemorySwapTest(SetupCalculatorDataTest):
             with self.subTest(msg="memory_swap: " + data["case"]):
                 with self.assertRaises(data["result"]):
                     self.run_basic_test(
-                        func=self.calc_data.memory_swap,
+                        func=memory_swap,
                         cur_vals=data["current"],
+                        params={"self": self.calc_data},
                     )
 
 

@@ -25,6 +25,7 @@ SOFTWARE.
 import unittest
 from decimal import Decimal, InvalidOperation
 
+from guicalculator.calculator.calculatordata.private.getmem import get_current_memory
 from tests.calculatordata.test__setup_calculatordata import SetupCalculatorDataTest
 
 
@@ -57,8 +58,9 @@ class GetCurrentMemoryTest(SetupCalculatorDataTest):
         for data in test_data:
             with self.subTest(msg="get_current_memory: " + data["case"]):
                 res = self.run_basic_test(
-                    func=self.calc_data.get_current_memory,
+                    func=get_current_memory,
                     cur_vals=data["current"],
+                    params={"self": self.calc_data},
                     end_vals=data["ending"],
                 )
                 self.assertEqual(res, data["result"])
@@ -83,8 +85,9 @@ class GetCurrentMemoryTest(SetupCalculatorDataTest):
             with self.subTest(msg="get_current_memory: " + data["case"]):
                 with self.assertRaises(data["result"]):
                     self.run_basic_test(
-                        func=self.calc_data.get_current_memory,
+                        func=get_current_memory,
                         cur_vals=data["current"],
+                        params={"self": self.calc_data},
                     )
 
 

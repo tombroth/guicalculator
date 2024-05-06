@@ -24,9 +24,13 @@ SOFTWARE.
 
 import logging
 import unittest
-from decimal import InvalidOperation
 
-from guicalculator.calculator.calculatordata import _CalcStringFunction, _CalcStringNumber, _CalcStringString
+from guicalculator.calculator.calculatordata.private.squarenum import square_number
+from guicalculator.calculator.calculatordata.private.types import (
+    _CalcStringFunction,
+    _CalcStringNumber,
+    _CalcStringString,
+)
 from guicalculator.globals.enums import CalculatorFunctions
 from tests.calculatordata.test__setup_calculatordata import SetupCalculatorDataTest
 
@@ -66,8 +70,9 @@ class SquareNumberTest(SetupCalculatorDataTest):
         for data in test_data:
             with self.subTest(msg="square_number: " + data["case"]):
                 self.run_basic_test(
-                    func=self.calc_data.square_number,
+                    func=square_number,
                     cur_vals=data["current"],
+                    params={"self": self.calc_data},
                     end_vals=data["ending"],
                 )
 
@@ -75,7 +80,7 @@ class SquareNumberTest(SetupCalculatorDataTest):
         """Test the square_number function with invalid input."""
 
         lambdafunc = lambda: __import__("os").system("dir")
-        
+
         test_data = [
             {
                 "case": "Text stored in input",
@@ -143,8 +148,9 @@ class SquareNumberTest(SetupCalculatorDataTest):
             with self.subTest(msg="square_number: " + data["case"]):
                 with self.assertLogs(level=logging.ERROR) as logmsgs:
                     self.run_basic_test(
-                        func=self.calc_data.square_number,
+                        func=square_number,
                         cur_vals=data["current"],
+                        params={"self": self.calc_data},
                         end_vals=data["ending"],
                     )
                     self.assertTrue(

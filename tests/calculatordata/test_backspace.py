@@ -24,7 +24,8 @@ SOFTWARE.
 
 import unittest
 
-from guicalculator.calculator.calculatordata import (
+from guicalculator.calculator.calculatordata.private.backspace import backspace
+from guicalculator.calculator.calculatordata.private.types import (
     _CalcStringFunction,
     _CalcStringNumber,
     _CalcStringString,
@@ -133,8 +134,9 @@ class BackspaceTest(SetupCalculatorDataTest):
         for data in test_data:
             with self.subTest(msg="button_press: " + data["case"]):
                 self.run_basic_test(
-                    func=self.calc_data.backspace,
+                    func=backspace,
                     cur_vals=data["current"],
+                    params={"self": self.calc_data},
                     end_vals=data["ending"],
                 )
 

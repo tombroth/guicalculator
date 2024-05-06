@@ -25,7 +25,8 @@ SOFTWARE.
 from decimal import Decimal
 import unittest
 
-from guicalculator.calculator.calculatordata import (
+from guicalculator.calculator.calculatordata.private.getnumfncsym import get_num_fnc_sym
+from guicalculator.calculator.calculatordata.private.types import (
     _CalcStringFunction,
     _CalcStringNumber,
     _CalcStringString,
@@ -365,9 +366,9 @@ class GetNumFncSymTest(SetupCalculatorDataTest):
         for data in test_data:
             with self.subTest(msg="get_num_fnc_sym: " + data["case"]):
                 res = self.run_basic_test(
-                    func=self.calc_data.get_num_fnc_sym,
+                    func=get_num_fnc_sym,
                     cur_vals=data["current"],
-                    params=data["params"],
+                    params={"self": self.calc_data, **data["params"]},
                     end_vals=data["ending"],
                 )
                 self.assertEqual(res, data["result"])
@@ -413,9 +414,9 @@ class GetNumFncSymTest(SetupCalculatorDataTest):
             with self.subTest(msg="get_num_fnc_sym: " + data["case"]):
                 with self.assertRaises(data["result"]):
                     self.run_basic_test(
-                        func=self.calc_data.get_num_fnc_sym,
+                        func=get_num_fnc_sym,
                         cur_vals=data["current"],
-                        params=data["params"],
+                        params={"self": self.calc_data, **data["params"]},
                     )
 
 

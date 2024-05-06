@@ -25,6 +25,7 @@ SOFTWARE.
 import unittest
 from decimal import Decimal
 
+from guicalculator.calculator.calculatordata.functions.setuservar import set_user_variables
 from tests.calculatordata.test__setup_calculatordata import SetupCalculatorDataTest
 
 
@@ -82,9 +83,9 @@ class SetUserVariablesTest(SetupCalculatorDataTest):
         for data in test_data:
             with self.subTest(msg="set_user_variables: " + data["case"]):
                 self.run_basic_test(
-                    func=self.calc_data.set_user_variables,
+                    func=set_user_variables,
                     cur_vals=data["current"],
-                    params=data["params"],
+                    params={"self": self.calc_data, **data["params"]},
                     end_vals=data["ending"],
                 )
 
@@ -157,9 +158,9 @@ class SetUserVariablesTest(SetupCalculatorDataTest):
             with self.subTest(msg="set_user_variables: " + data["case"]):
                 with self.assertRaises(data["result"]):
                     self.run_basic_test(
-                        func=self.calc_data.set_user_variables,
+                        func=set_user_variables,
                         cur_vals=data["current"],
-                        params=data["params"],
+                        params={"self": self.calc_data, **data["params"]},
                     )
 
 
