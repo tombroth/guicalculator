@@ -1,5 +1,5 @@
 """
-getiservar.py - The get_user_variables function, returns a deepcopy of the 
+getuservar.py - The get_user_variables function, returns a deepcopy of the 
 current user variables.
 """
 

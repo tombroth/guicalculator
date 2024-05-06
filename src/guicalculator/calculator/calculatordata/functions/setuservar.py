@@ -1,5 +1,5 @@
 """
-processbutton.py - The set_user_variables function, validates the input user 
+setuservar.py - The set_user_variables function, validates the input user 
 variables and then stores them in CalculatorData.
 """
 
