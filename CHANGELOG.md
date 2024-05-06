@@ -4,6 +4,7 @@
 ## [unreleased] - 
 
 - Several minor improvements
+- Added explicit multiplication operators where implied multiplication would exist ([#14](https://github.com/tombroth/guicalculator/issues/14))
 - Refactored most calculator functions ([#13](https://github.com/tombroth/guicalculator/issues/13))
 - Refactored how the current calculation is stored ([#12](https://github.com/tombroth/guicalculator/issues/12))
 - Added logging ([#4](https://github.com/tombroth/guicalculator/issues/4))
