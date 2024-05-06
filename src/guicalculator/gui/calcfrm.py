@@ -25,9 +25,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from tkinter import END, scrolledtext, ttk
+from tkinter import END, StringVar, scrolledtext, ttk
 
-from ..calculator import CalculatorData, gui_object_wrapper
+from ..calculator import CalculatorData, get_current_display_calc, gui_object_wrapper
 from ..globals import TkEvents
 from .btndispfrm import BtnDispFrm
 from .memdispfrm import MemDispFrm
@@ -42,6 +42,7 @@ class CalcFrm:
 
     def __init__(self, master) -> None:
         self.frm = ttk.Frame(master, padding=5)
+        self.memval = StringVar()  # the value stored in memory
 
         # the calculator data
         self.calculator_data = CalculatorData(
@@ -50,6 +51,7 @@ class CalcFrm:
             write_to_display=self.write_to_display,
             bell=self.frm.bell,
             vars_popup=self.vars_popup,
+            memval=self.memval,
         )
 
         # scrolled text display
@@ -65,7 +67,7 @@ class CalcFrm:
         self.frm.rowconfigure(0, weight=1)
 
         # frame to hold the memory display
-        self.memfrm = MemDispFrm(master=self.frm, calculator_data=self.calculator_data)
+        self.memfrm = MemDispFrm(master=self.frm, memval=self.memval)
         self.frm.rowconfigure(1, weight=0)
 
         # frame to hold the buttons
@@ -112,7 +114,7 @@ class CalcFrm:
         # replace last line
         self.display.delete("end-1l", "end")
         self.display.insert(
-            "end", f"\n{self.calculator_data.get_current_display_calc()}"
+            "end", f"\n{get_current_display_calc(self.calculator_data)}"
         )
         # move to end
         self.display.see(END)

@@ -27,8 +27,8 @@ SOFTWARE.
 
 from tkinter import ttk
 
-from ..calculator import CalculatorData, gui_object_wrapper
-from ..globals import TkEvents
+from ..calculator import CalculatorData, gui_object_wrapper, process_button
+from ..globals import CalculatorCommands, TkEvents
 from .uservarseditpopup import UserVarsEditPopup
 
 
@@ -77,7 +77,7 @@ class VarsPopupTreeFrmButtons:
 
     @gui_object_wrapper
     def user_vars_select(self) -> None:
-        """user_vars_select - Return selected variable to the calculator."""
+        """user_vars_select - Return selected variable to the calculator"""
 
         vars_tree = self.vars_tree
 
@@ -87,8 +87,13 @@ class VarsPopupTreeFrmButtons:
             vars_tree.selection()
             and vars_tree.selection()[0] not in vars_tree.get_children()
         ):
-            self.calculator_data.button_press(
-                vars_tree.item(vars_tree.selection()[0])["text"]
+            # self.calculator_data.button_press(
+            #     vars_tree.item(vars_tree.selection()[0])["text"]
+            # )
+            process_button(
+                self.calculator_data,
+                CalculatorCommands.BASICBUTTON,
+                vars_tree.item(vars_tree.selection()[0])["text"],
             )
 
         self.frm.winfo_toplevel().destroy()

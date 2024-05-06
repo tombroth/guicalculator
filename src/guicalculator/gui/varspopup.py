@@ -27,9 +27,8 @@ SOFTWARE.
 
 from tkinter import Toplevel
 
-from guicalculator.globals import TkEvents
-
 from ..calculator import CalculatorData
+from ..globals import TkEvents
 from .varspopuptreefrm import VarsPopupTreeFrm
 from .varspopuptreefrmbuttons import VarsPopupTreeFrmButtons
 

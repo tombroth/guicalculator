@@ -27,7 +27,12 @@ SOFTWARE.
 
 from tkinter import ttk
 
-from ..calculator import CalculatorData, numtostr, gui_object_wrapper
+from ..calculator import (
+    CalculatorData,
+    get_user_variables,
+    gui_object_wrapper,
+    numtostr,
+)
 from ..globals import DEFAULT_VARIABLES, VariablesType
 
 
@@ -71,7 +76,7 @@ class VarsPopupTreeFrm:
 
         # Add user variables
         self.add_variable_section(
-            "user variables", self.calculator_data.get_user_variables()
+            "user variables", get_user_variables(self.calculator_data)
         )
 
         self.frm.grid(row=0, column=0, sticky="news")

@@ -1,6 +1,6 @@
 """
 functionstype.py - Class FunctionsType, stores functions used by the 
-calculator.
+calculator
 """
 
 """

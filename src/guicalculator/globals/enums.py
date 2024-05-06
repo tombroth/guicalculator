@@ -29,8 +29,10 @@ from enum import Enum, StrEnum, unique
 
 from .functionstype import FunctionsType
 
+
 class StrEnumBase(StrEnum):
     """Base class for StrEnum to set __repr__"""
+
     def __repr__(self):
         return self.__class__.__name__ + "." + self.name
 
@@ -60,7 +62,7 @@ class CalculatorFunctions(FunctionsType, Enum):
     SQUARE = ("sqr", "", " ** Decimal('2')")
 
     def __str__(self):
-        return self.name 
+        return self.name
 
     def __repr__(self):
         return self.__class__.__name__ + "." + self.name
@@ -77,7 +79,7 @@ class CalculatorCommands(StrEnumBase):
     CLEARALL = "clearAll"
     CLEARVALUE = "clearValue"
     INVERSENUMBER = "inverseNumber"
-    INVERTSIGN = "invertSign"
+    NEGATE = "negate"
     MEMADD = "memAdd"
     MEMCLEAR = "memClear"
     MEMRECALL = "memRecall"

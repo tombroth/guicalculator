@@ -34,7 +34,7 @@ from .enums import ButtonLabels, ButtonStyles, CalculatorCommands, TkEvents
 @dataclass
 class ButtonInfo:
     """
-    ButtonInfo - Information needed to create a button on the calculator.
+    ButtonInfo - Information needed to create a button on the calculator
 
     Parameters
     ----------

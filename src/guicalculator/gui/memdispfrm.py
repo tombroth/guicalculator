@@ -24,21 +24,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from tkinter import ttk
-
-from ..calculator import CalculatorData
+from tkinter import StringVar, ttk
 
 
 class MemDispFrm:
     """MemDispFrm - The memory display frame."""
 
-    def __init__(self, master, calculator_data: CalculatorData) -> None:
+    def __init__(self, master, memval: StringVar) -> None:
         self.frm = ttk.Frame(master)
 
         self.memlbl = ttk.Label(self.frm, text="Memory:")
         self.memlbl.grid(row=0, column=0, sticky="e")
 
-        self.mem_txt = calculator_data.get_memory_label(master=self.frm)
+        self.mem_txt = ttk.Label(self.frm, textvariable=memval)
         self.mem_txt.grid(row=0, column=1, sticky="w")
 
         self.frm.columnconfigure(0, weight=0)

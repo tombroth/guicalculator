@@ -31,9 +31,13 @@ from typing import Any
 from ..calculator import (
     CalculatorData,
     evaluate_calculation,
+    get_current_display_calc,
+    get_current_eval_calc,
+    get_user_variables,
+    gui_object_wrapper,
     logerror,
     numtostr,
-    gui_object_wrapper,
+    set_user_variables,
     strtodecimal,
     validate_user_var,
 )
@@ -84,7 +88,7 @@ class UserVarsEditFrm:
         """
         self.uservars: dict[tuple[int, int], ttk.Entry] = {}
 
-        for k, v in self.calculator_data.get_user_variables().items():
+        for k, v in get_user_variables(self.calculator_data).items():
             lastrow += 1
             self.addrow(lastrow, k, (numtostr(v, commas=True) or ""))
 
@@ -182,7 +186,7 @@ class UserVarsEditFrm:
     def add_current_calc(self) -> None:
         """Add the current calculation result as a variable"""
 
-        currcalc = self.calculator_data.get_current_eval_calc()
+        currcalc = get_current_eval_calc(self.calculator_data)
         if not currcalc:
             self.set_errmsg(f"No calculation available")
             return
@@ -191,12 +195,12 @@ class UserVarsEditFrm:
         try:
             # calling the parser directly so we don't mess with the current display
             result = evaluate_calculation(
-                currcalc, self.calculator_data.get_user_variables()
+                currcalc, get_user_variables(self.calculator_data)
             )
         except Exception as e:
             logerror(e, "add_current_calc", 2)
 
-            s = self.calculator_data.get_current_display_calc()
+            s = get_current_display_calc(self.calculator_data)
             trimlen = 35
             if len(s) > trimlen:
                 s = s[: (trimlen - 4)] + " ..."
@@ -209,8 +213,9 @@ class UserVarsEditFrm:
         if self.uservars.keys():
             lastrow = max(r for (r, _) in self.uservars.keys())
 
-        if (lastrow and
-            not self.uservars[(lastrow, 0)].get().strip()
+        if (
+            lastrow
+            and not self.uservars[(lastrow, 0)].get().strip()
             and not self.uservars[(lastrow, 1)].get().strip()
         ):
             row = lastrow
@@ -428,7 +433,7 @@ class UserVarsEditFrm:
             newuservars[nam] = val_decimal or Decimal(0)
 
         # save the new variables
-        self.calculator_data.set_user_variables(newuservars)
+        set_user_variables(self.calculator_data, newuservars)
 
         # close this window
         self.frm.winfo_toplevel().destroy()

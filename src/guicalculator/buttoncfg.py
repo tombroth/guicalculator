@@ -179,7 +179,7 @@ buttons: dict[ButtonLocation, ButtonInfo] = {
     ),
     ButtonLocation(2, 5, 0): ButtonInfo(
         label=ButtonLabels.INVERTSIGN,
-        command=CalculatorCommands.INVERTSIGN,
+        command=CalculatorCommands.NEGATE,
         style=ButtonStyles.NUMBER,
     ),
     ButtonLocation(2, 5, 1): ButtonInfo(

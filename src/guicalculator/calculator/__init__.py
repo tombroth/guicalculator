@@ -37,6 +37,13 @@ SOFTWARE.
 """
 
 from .calculatordata import CalculatorData
+from .calculatordata.functions import (
+    get_current_display_calc,
+    get_current_eval_calc,
+    get_user_variables,
+    process_button,
+    set_user_variables,
+)
 from .evaluate_calculation import evaluate_calculation
 from .logwrapper import (
     enable_gui_logging,
@@ -52,13 +59,18 @@ from .validate_user_var import validate_user_var, validate_user_vars
 __all__ = [
     "CalculatorData",
     "enable_gui_logging",
+    "evaluate_calculation",
+    "get_current_display_calc",
+    "get_current_eval_calc",
+    "get_user_variables",
     "gui_object_wrapper",
     "logerror",
     "numtostr",
     "object_wrapper",
     "plain_wrapper",
+    "process_button",
+    "set_user_variables",
     "strtodecimal",
     "validate_user_var",
     "validate_user_vars",
-    "evaluate_calculation",
 ]

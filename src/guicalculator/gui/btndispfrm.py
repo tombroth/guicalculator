@@ -27,7 +27,7 @@ SOFTWARE.
 from tkinter import ttk
 
 from ..buttoncfg import ButtonInfo, ButtonLocation, buttons
-from ..calculator import CalculatorData, gui_object_wrapper
+from ..calculator import CalculatorData, gui_object_wrapper, process_button
 from ..globals import CalculatorCommands
 
 
@@ -84,10 +84,10 @@ class BtnDispFrm:
 
         # create the button
         if btn_info.command:
-            cmd = lambda x=btn_info.command: self.calculator_data.process_button(x)
+            cmd = lambda x=btn_info.command: process_button(self.calculator_data, x)
         else:
-            cmd = lambda x=btn_info.label: self.calculator_data.process_button(
-                CalculatorCommands.BASICBUTTON, x
+            cmd = lambda x=btn_info.label: process_button(
+                self.calculator_data, CalculatorCommands.BASICBUTTON, x
             )
 
         btnopts: dict = {"text": btn_info.label, "command": cmd}
