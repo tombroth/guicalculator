@@ -30,7 +30,9 @@ from guicalculator.calculator.calculatordata.private.types import (
     _CalcStringNumber,
     _CalcStringString,
 )
-from guicalculator.calculator.calculatordata.private.updatecalc import update_current_calc
+from guicalculator.calculator.calculatordata.private.updatecalc import (
+    update_current_calc,
+)
 from guicalculator.globals import PI, CalculatorFunctions
 from tests.calculatordata.test__setup_calculatordata import SetupCalculatorDataTest
 
@@ -982,6 +984,7 @@ class UpdateCurrentCalcTest(SetupCalculatorDataTest):
                         func=update_current_calc,
                         cur_vals=data["current"],
                         params={"self": self.calc_data, **data["params"]},
+                        end_vals=data["current"],
                     )
 
 

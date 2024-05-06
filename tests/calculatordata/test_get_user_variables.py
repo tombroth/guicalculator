@@ -22,10 +22,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from decimal import Decimal
 import unittest
+from decimal import Decimal
 
-from guicalculator.calculator.calculatordata.functions.getuservar import get_user_variables
+from guicalculator.calculator.calculatordata.functions.getuservar import (
+    get_user_variables,
+)
 from tests.calculatordata.test__setup_calculatordata import SetupCalculatorDataTest
 
 

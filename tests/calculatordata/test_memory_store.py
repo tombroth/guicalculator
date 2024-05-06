@@ -22,8 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from decimal import InvalidOperation
 import unittest
+from decimal import InvalidOperation
 
 from guicalculator.calculator.calculatordata.private.memstore import memory_store
 from tests.calculatordata.test__setup_calculatordata import SetupCalculatorDataTest
@@ -97,6 +97,7 @@ class MemoryStoreTest(SetupCalculatorDataTest):
                         func=memory_store,
                         cur_vals=data["current"],
                         params={"self": self.calc_data},
+                        end_vals=data["current"],
                     )
 
 

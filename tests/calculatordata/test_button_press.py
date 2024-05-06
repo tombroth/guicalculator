@@ -24,12 +24,12 @@ SOFTWARE.
 
 import unittest
 
+from guicalculator.calculator.calculatordata.private.buttonpress import button_press
 from guicalculator.calculator.calculatordata.private.types import (
     _CalcStringFunction,
     _CalcStringNumber,
     _CalcStringString,
 )
-from guicalculator.calculator.calculatordata.private.buttonpress import button_press
 from guicalculator.globals.enums import CalculatorFunctions
 from tests.calculatordata.test__setup_calculatordata import SetupCalculatorDataTest
 
@@ -155,7 +155,7 @@ class ButtonPressTest(SetupCalculatorDataTest):
                 self.run_basic_test(
                     func=button_press,
                     cur_vals=data["current"],
-                    params={"self": self.calc_data, ** data["params"]},
+                    params={"self": self.calc_data, **data["params"]},
                     end_vals=data["ending"],
                 )
 
@@ -184,6 +184,7 @@ class ButtonPressTest(SetupCalculatorDataTest):
                         func=button_press,
                         cur_vals=data["current"],
                         params={"self": self.calc_data, **data["params"]},
+                        end_vals=data["current"],
                     )
 
 

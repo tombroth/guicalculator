@@ -161,6 +161,7 @@ class SetUserVariablesTest(SetupCalculatorDataTest):
                         func=set_user_variables,
                         cur_vals=data["current"],
                         params={"self": self.calc_data, **data["params"]},
+                        end_vals=data["current"],
                     )
 
 

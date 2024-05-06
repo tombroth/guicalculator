@@ -26,12 +26,12 @@ import logging
 import unittest
 from decimal import Decimal
 
+from guicalculator.calculator.calculatordata.private.calculate import calculate
 from guicalculator.calculator.calculatordata.private.types import (
     _CalcStringFunction,
     _CalcStringNumber,
     _CalcStringString,
 )
-from guicalculator.calculator.calculatordata.private.calculate import calculate
 from guicalculator.globals.constants import PI
 from guicalculator.globals.enums import CalculatorFunctions
 from tests.calculatordata.test__setup_calculatordata import SetupCalculatorDataTest
@@ -130,7 +130,10 @@ class CalculateTest(SetupCalculatorDataTest):
         test_data = [
             {
                 "case": "1 + 1",
-                "current": {"calc": [_CalcStringString("Decimal(1)"), _CalcStringString("+")], "inpt": "1"},
+                "current": {
+                    "calc": [_CalcStringString("Decimal(1)"), _CalcStringString("+")],
+                    "inpt": "1",
+                },
                 "ending": {"calc": [], "inpt": ""},
                 "result": "Decimal function should only have str parameter",
             },

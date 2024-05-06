@@ -22,8 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from decimal import Decimal
 import unittest
+from decimal import Decimal
 
 from guicalculator.calculator.calculatordata.private.getnumfncsym import get_num_fnc_sym
 from guicalculator.calculator.calculatordata.private.types import (
@@ -417,6 +417,7 @@ class GetNumFncSymTest(SetupCalculatorDataTest):
                         func=get_num_fnc_sym,
                         cur_vals=data["current"],
                         params={"self": self.calc_data, **data["params"]},
+                        end_vals=data["current"],
                     )
 
 

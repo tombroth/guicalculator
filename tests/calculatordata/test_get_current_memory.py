@@ -88,6 +88,7 @@ class GetCurrentMemoryTest(SetupCalculatorDataTest):
                         func=get_current_memory,
                         cur_vals=data["current"],
                         params={"self": self.calc_data},
+                        end_vals=data["current"],
                     )
 
 

@@ -207,7 +207,11 @@ class ValidateUserVarsTest(unittest.TestCase):
             },
             {
                 "case": "Injection attack 4",
-                "params": {"user_variables": {lambda: __import__("os").system("dir"): Decimal(1)}},
+                "params": {
+                    "user_variables": {
+                        lambda: __import__("os").system("dir"): Decimal(1)
+                    }
+                },
                 "result": TypeError,
             },
         ]

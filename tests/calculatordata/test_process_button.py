@@ -86,6 +86,7 @@ class ProcessButtonTest(SetupCalculatorDataTest):
                         func=process_button,
                         cur_vals=data["current"],
                         params={"self": self.calc_data, **data["params"]},
+                        end_vals=data["current"],
                     )
 
 

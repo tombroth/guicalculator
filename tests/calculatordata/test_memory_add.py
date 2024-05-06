@@ -121,6 +121,7 @@ class MemoryAddTest(SetupCalculatorDataTest):
                         func=memory_add,
                         cur_vals=data["current"],
                         params={"self": self.calc_data},
+                        end_vals=data["current"],
                     )
 
 

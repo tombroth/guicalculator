@@ -110,6 +110,7 @@ class MemorySwapTest(SetupCalculatorDataTest):
                         func=memory_swap,
                         cur_vals=data["current"],
                         params={"self": self.calc_data},
+                        end_vals=data["current"],
                     )
 
 

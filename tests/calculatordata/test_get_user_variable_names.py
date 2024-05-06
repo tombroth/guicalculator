@@ -24,7 +24,9 @@ SOFTWARE.
 
 import unittest
 
-from guicalculator.calculator.calculatordata.private.getuservarnames import get_user_variable_names
+from guicalculator.calculator.calculatordata.private.getuservarnames import (
+    get_user_variable_names,
+)
 from tests.calculatordata.test__setup_calculatordata import SetupCalculatorDataTest
 
 
@@ -96,6 +98,7 @@ class GetUserVariableNamesTest(SetupCalculatorDataTest):
                         func=get_user_variable_names,
                         cur_vals=data["current"],
                         params={"self": self.calc_data, **data["params"]},
+                        end_vals=data["current"],
                     )
 
 

@@ -24,7 +24,9 @@ SOFTWARE.
 
 import unittest
 
-from guicalculator.calculator.calculatordata.functions.evalcalc import get_current_eval_calc
+from guicalculator.calculator.calculatordata.functions.evalcalc import (
+    get_current_eval_calc,
+)
 from guicalculator.calculator.calculatordata.private.types import (
     _CalcStringNumber,
     _CalcStringString,
@@ -113,6 +115,7 @@ class GetCurrentEvalCalcTest(SetupCalculatorDataTest):
                         func=get_current_eval_calc,
                         cur_vals=data["current"],
                         params={"self": self.calc_data, **data["params"]},
+                        end_vals=data["current"],
                     )
 
 
