@@ -3,8 +3,6 @@
 
 The files in this directory:
 
-    calculatordata.py - The Calculator class with calculator data and functions
-
     evaluate_calculation.py - The parser function, evaluate_calculation
 
     numtostr.py - The Decimal number to string function
@@ -12,6 +10,10 @@ The files in this directory:
     strtodecimal.py - The string to Decimal function
     
     validate_user_var.py - The user variable validation function
+
+The subdirectories in this directory:
+
+    calculatordata - The CalculatorData class with related functions.
 """
 
 """
