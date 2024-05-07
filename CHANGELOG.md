@@ -1,9 +1,10 @@
 # Change Log
 
 
-## [unreleased] - 
+## [0.1.3] - 2024-05-07
 
 - Several minor improvements
+- Moved the calculator data object that had all the calculator functions into a subproject, split apart the functions into separate files ([#15](https://github.com/tombroth/guicalculator/issues/15))
 - Added explicit multiplication operators where implied multiplication would exist ([#14](https://github.com/tombroth/guicalculator/issues/14))
 - Refactored most calculator functions ([#13](https://github.com/tombroth/guicalculator/issues/13))
 - Refactored how the current calculation is stored ([#12](https://github.com/tombroth/guicalculator/issues/12))
