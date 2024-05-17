@@ -17,7 +17,7 @@
             "type": "debugpy",
             "request": "launch",
             "module": "guicalculator",
-        }
+        },
         {
             "name": "Python Debugger: guicalculator (logging=warn)",
             "type": "debugpy",
@@ -27,6 +27,6 @@
                 "-l",
                 "warn"
             ]
-        }
+        },
     ]
 }
